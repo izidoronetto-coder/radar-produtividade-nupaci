@@ -1,0 +1,706 @@
+RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
+Versão 7.6
+
+NOVIDADES DA VERSÃO 7.6 — ADEQUAÇÃO TRANSVERSAL À COLUNA FeitoOutro
+
+- Ajuste de manutenção da entrega: o card “Feitos por terceiros” e o título “Processos concluídos pelo servidor” passaram a reutilizar exatamente a estrutura visual dos demais cards da Visão geral, mantendo tooltip, teclado e clique sem quebra do conteúdo.
+- A data automática do Acompanhamento Diário agora considera primeiro a maior Data2 ou Data3 operacional que não esteja no futuro. A Data/Referência só é usada como contingência quando não existe Data2 nem Data3, e uma data selecionada que ultrapasse a última data operacional válida é reajustada automaticamente.
+- A classificação de conclusão foi centralizada. Conclusão própria exige Feito = Sim, Data3 válida e FeitoOutro vazio. Somente essa classe gera produtividade, documentos, ranking, meta, dia produtivo, horários, tempo de execução, ritmo, intervalos, pausas e concentração produtiva.
+- FeitoOutro reconhece “Outro servidor” e “Gabinete”; a variante “Por outro servidor” é normalizada internamente como “Outro servidor”. O valor bruto original continua preservado para auditoria.
+- Feito por terceiro é resolução operacional, e não produção do servidor destinatário. Resolução operacional = conclusão própria + feito por terceiro.
+- A Data3 de FeitoOutro representa o momento em que o servidor ou gestor registrou a resolução por terceiro. Ela não representa necessariamente o momento da execução do terceiro e não entra em cálculos temporais de produtividade individual.
+- FeitoOutro válido retira a distribuição da pendência somente a partir da Data3. Antes dela, a distribuição pode permanecer pendente. Uma redistribuição posterior continua podendo gerar nova pendência.
+- A ProditividadeDiaNUPACI prevalece na identificação de FeitoOutro quando existe correspondência segura com NUPACIProdutividade. A conciliação continua usando processo, servidor, atividade e Data3; nunca apenas o número do processo. A ausência de FeitoOutro na base histórica não é, por si só, divergência.
+- Valores não reconhecidos de FeitoOutro permanecem auditáveis como “Feito por terceiro — valor não reconhecido”, sem atribuição produtiva. Combinações inconsistentes de FeitoOutro, Feito, Nao-feito e Data3 não são corrigidas silenciosamente e, quando existirem, aparecem no indicador clicável “Inconsistências FeitoOutro”.
+- Acompanhamento das distribuições agora separa Feitos pelo servidor, Feitos por terceiros, Pendentes, Não feitos e Resolvidos operacionalmente. Também separa Taxa de execução própria, Taxa de resolução por terceiros e Taxa de resolução operacional.
+- Evolução das distribuições e conclusões agora distingue Distribuídos, Concluídos pelo servidor e Feitos por terceiros. A barra de terceiros mostra a composição Outro servidor/Gabinete. Documentos permanecem exclusivamente na conclusão própria.
+- Origem dos cadastramentos distingue Cumpridos pelo destinatário e Feitos por terceiros nas quatro visões, com totais e detalhamentos próprios.
+- Acompanhamento Diário exibe os registros de resolução por terceiros como contexto operacional separado. Esses eventos não criam dia produtivo, meta, janela, turno, primeira/última conclusão, intervalo, pausa ou concentração.
+- Os detalhamentos passam a mostrar “Situação da realização”, “Tipo de terceiro” e “Data3 / resolução”, evitando chamar uma Data3 de FeitoOutro de conclusão produtiva.
+- A atualidade das bases distingue “Última conclusão produtiva” de “Data3 mais recente registrada”. “Base atualizada até” continua representando o evento operacional mais recente.
+- CSV e Microsoft Lists usam a mesma normalização, conciliação e classificação. CSV antigo sem FeitoOutro — ou com a coluna totalmente vazia — mantém o comportamento anterior sem alerta desnecessário.
+- Na fotografia anexada desta entrega, a ProditividadeDiaNUPACI contém 778 registros válidos de FeitoOutro: 653 “Outro servidor” e 125 “Gabinete”. Esses números servem somente como validação da amostra e não estão fixados no código.
+
+REGRAS CENTRAIS DA VERSÃO 7.6
+
+1. Conclusão própria: Feito = Sim + Data3 válida + FeitoOutro vazio.
+2. Feito por terceiro: Feito = Sim + Nao-feito diferente de Sim + Data3 válida + FeitoOutro preenchido.
+3. Resolução operacional: conclusão própria + feito por terceiro.
+4. Pendência histórica: permanece até a Data3 da resolução e é removida somente a partir desse instante.
+5. Dia produtivo: exige pelo menos uma conclusão própria válida; um dia contendo apenas FeitoOutro não é produtivo.
+6. Documentos produzidos: soma de Quantidade apenas das conclusões próprias.
+7. Valores inesperados ou combinações inconsistentes: não geram produtividade e permanecem auditáveis.
+
+TESTES DA VERSÃO 7.6
+
+- Validada conclusão própria, Outro servidor, Gabinete, pendência antes/depois da Data3, redistribuição posterior, eventos diferentes para o mesmo processo, prevalência segura da base diária, arquivo antigo sem FeitoOutro, valor desconhecido, combinação inconsistente e dia contendo somente FeitoOutro.
+- Validada a exclusão de FeitoOutro dos universos produtivos: processos, documentos, ranking, metas, dias produtivos, tempo de execução, ritmo, pausas, primeira/última conclusão e mapa de concentração.
+- Validada a inclusão operacional em estoque histórico, Acompanhamento das distribuições, três taxas, Evolução e Acompanhamento Diário contextual.
+- Validada a equivalência da camada de entrada: tanto CSV quanto Microsoft Lists entregam FeitoOutro ao mesmo classificador central. A extensão continua solicitando e transportando o campo FeitoOutro em modo somente leitura.
+- A integração, cache, atualização incremental, progresso, fallback CSV, filtros, buscas, ordenações, popups, exportações e responsividade da v7.5 permanecem disponíveis.
+
+INTEGRAÇÃO COM MICROSOFT LISTS — VERSÃO 7.6 (ESTRUTURA PRESERVADA DA 7.5)
+
+- A extensão desta entrega aparece no Chrome com o nome “Extensão RADAR Produtividade”. A revisão interna é 0.16.22d-int.9-radar7.5-refresh e contém exclusivamente integração, diagnóstico e cache do Microsoft Lists. Painel de tarefas, Secretaria, indicador de polos, fila, assinatura, automações do PJe, logs e inspeção de página foram retirados da extensão.
+- Correção da atualização após a carga inicial: “Atualizar agora” reconstrói integralmente e de forma transacional as duas listas, sem confiar em uma marca geral possivelmente atrasada do SharePoint. A versão anterior só consultava mudanças quando esse metadado indicava alteração, o que podia confirmar a sincronização mantendo o conteúdo anterior.
+- As consultas do Lists passaram a solicitar dados sem cache HTTP. Nas atualizações incrementais de abertura, a extensão sempre confere Modified/ID; diferenças de contagem acionam uma releitura completa. Antes de redesenhar o painel, o RADAR ainda compara a quantidade recebida com o total confirmado e preserva a base anterior se a leitura estiver incompleta.
+- Ao clicar em “Atualizar agora” com o painel aberto, o cabeçalho passa a mostrar a etapa, a lista em leitura, o percentual e quantos registros já foram lidos em relação ao total. O carregamento da cache local também informa o avanço e a conclusão em 100% permanece visível por alguns segundos.
+- Nas consultas incrementais do SharePoint, o universo de registros alterados não é conhecido antes do término. Nessa etapa, a barra permanece em andamento e apresenta a quantidade realmente localizada, sem calcular um percentual artificial; assim que o total confiável volta a estar disponível, o percentual reaparece.
+- Correção da integração: a leitura usa páginas de até 2.000 itens e tolera até 120 segundos por página; campos ocultos e somente leitura não entram na seleção; uma coluna adicional incompatível não impede a leitura dos campos essenciais; e a localização da lista possui contingência pelo catálogo, endereço institucional e GUID retornado pelo SharePoint.
+- A paginação reconhece odata.nextLink, @odata.nextLink e __next. Em caso de falha, a tela agora informa a lista, a etapa e o código HTTP disponíveis, sem exibir registros, credenciais ou o endereço integral da consulta.
+- O schema interno da cache passou a 3. Foi corrigida a diferença de formato entre registros da carga completa e registros atualizados incrementalmente, que podia entregar uma entrada nula ao adaptador e produzir o erro “Cannot read properties of null (reading 'date')”. A instalação desta revisão força uma nova carga completa; entradas antigas incompatíveis são recuperadas quando possível e nunca são interpretadas como registros válidos nulos.
+- A entrada principal pode ser feita diretamente pelas listas institucionais NUPACIProdutividade e ProditividadeDiaNUPACI, por intermédio da extensão autorizada do Chrome. O carregamento manual dos CSVs, inclusive arrastar e soltar, permanece integralmente disponível como alternativa.
+- O site institucional confirmado é https://tjce365-my.sharepoint.com/personal/47294_tjce_jus_br. As duas visualizações fornecidas apontam para /Lists/NUPACIProdutividade/ e /Lists/ProditividadeDiaNUPACI/. Parâmetros de tela como e e CID não participam da API; a extensão consulta o site e os títulos oficiais das listas.
+- O Radar detecta a extensão por um canal exclusivo RADAR_NUPACI_V1. A ponte aceita apenas comandos conhecidos de consulta, valida a página oficial https://izidoronetto-coder.github.io/radar-produtividade-nupaci/ e, para teste local, exige o marcador interno do próprio Radar.
+- A extensão reaproveita a sessão Microsoft 365 já autenticada no navegador e consulta o SharePoint com credenciais de sessão. O HTML não contém login, senha, token, client secret, cookie, chave de API ou dado institucional incorporado.
+- A integração é estritamente somente leitura. O módulo do Radar não possui operação de criação, alteração ou exclusão no Microsoft Lists.
+- Antes de ler os itens, a extensão consulta os metadados reais das colunas e relaciona Title, InternalName e TypeAsString. Text, Choice, MultiChoice, Number, Boolean, DateTime, User/Person, Lookup e valores nulos são convertidos para o mesmo modelo normalizado usado pelo CSV. FeitoOutro e colunas adicionais leves permanecem auditáveis como campos dinâmicos.
+- O caminho analítico é único: CSV ou Microsoft Lists → inputGateway → normalização/conciliação oficial → índices centrais → filtros → modelos em cache → painéis. Não existem cálculos, reconciliações ou versões paralelas dos indicadores para cada origem.
+- Na primeira sincronização, as duas listas são percorridas por todas as páginas indicadas pelo SharePoint. O antigo teto fixo de páginas não é aplicado ao Radar; a proteção contra repetição da mesma página evita ciclo infinito sem truncar silenciosamente a base.
+- Depois da carga completa, a atualização incremental consulta Modified com sobreposição de dez minutos e também ID maior que o maior identificador conhecido. A sobreposição reduz o risco de perda por diferença de relógio; os itens são deduplicados pelo ID estável. Alterações posteriores em Data3, Feito, Não-feito, FeitoOutro, Observação e demais campos selecionados são capturadas mesmo em registros antigos.
+- Uma leitura completa é refeita no primeiro uso, quando o schema da cache muda, quando a cache deixa de ser compatível, por solicitação forçada ou após sete dias. Essa releitura periódica também corrige exclusões que o mecanismo incremental por Modified/ID não consegue identificar imediatamente.
+- A cache volumosa fica no IndexedDB da própria extensão, banco radarNupaciListsCache, schema 3. São persistidos os registros de cada lista por geração e os metadados locais: contagem, maior ID, maior Modified, maior Data2, maior Data3, colunas, geração, última carga completa e última sincronização válida.
+- A atualização das duas listas é transacional. Uma nova geração completa só se torna válida depois que as duas listas terminam e são conferidas; falha em uma delas não substitui a cache completa anterior por uma visão parcial.
+- Ao abrir o Radar com cache válida, os dados locais recentes podem ser usados imediatamente. “Atualizar agora” consulta o Microsoft Lists, atualiza a cache e entrega as mesmas fontes normalizadas ao inputGateway sem recarregar a página. Se a rede falhar, o Radar mantém a cache anterior e mostra claramente a data da última sincronização bem-sucedida.
+- “Última sincronização” é o instante da consulta. “Última distribuição” é a maior Data2 válida; “Última conclusão produtiva” é a maior Data3 de conclusão própria; “Data3 mais recente registrada” pode incluir FeitoOutro; e “Base atualizada até” é o evento operacional mais recente. Uma data não substitui a outra.
+- A interface distingue “Origem dos dados: Microsoft Lists” e “Origem dos dados: CSV local”. O contexto acompanha os relatórios e exportações gerenciais. Carregar CSV afeta somente a sessão atual do Radar e não sobrescreve a cache persistente das listas.
+- Estados tratados: extensão detectada, primeira sincronização necessária, sincronização em andamento, concluída, extensão ausente, sessão Microsoft expirada, rede/SharePoint indisponível, cache local anterior e cancelamento.
+
+INSTALAÇÃO OU ATUALIZAÇÃO DA EXTENSÃO
+
+1. Extraia o ZIP da extensão para uma pasta permanente. Não execute o Radar de dentro do ZIP.
+2. No Chrome, abra chrome://extensions, ative “Modo do desenvolvedor” e escolha “Carregar sem compactação”.
+3. Selecione a pasta plugin-integracao-v75, aquela que contém diretamente manifest.json.
+4. Remova ou desative a integração anterior e mantenha habilitada somente a extensão chamada “Extensão RADAR Produtividade”.
+5. Para abrir index.html diretamente do computador, habilite “Permitir acesso a URLs de arquivo” nos detalhes da extensão. No endereço oficial do GitHub Pages essa permissão adicional não é necessária.
+6. Entre normalmente no Microsoft 365/SharePoint institucional no mesmo perfil do Chrome. A extensão reutiliza essa sessão; o Radar não solicita credenciais.
+7. Abra o Radar e clique em “Atualizar bases do Microsoft Lists”. Na primeira utilização, aguarde a leitura completa das duas listas.
+8. O popup da extensão possui somente “Testar as duas listas” e “Copiar diagnóstico”. Antes da primeira carga, utilize o teste para confirmar sessão, acesso, contagem e campos das duas listas.
+
+TESTES DA INTEGRAÇÃO PRESERVADA DA VERSÃO 7.5
+
+- Hotfix do Lists validado com simulações específicas de: coluna opcional recusada com repetição pelos campos essenciais; localização alternativa da lista pelo endereço institucional e GUID; e paginação no formato @odata.nextLink.
+- Teste-ouro automatizado com o mesmo conjunto por CSV e pela ponte Lists: 3 processos, 6 documentos, 2 conclusões, 1 pendência, 1 FeitoOutro e as mesmas colunas dinâmicas. Os universos e as métricas comparadas foram idênticos.
+- Regressão da versão 7.4 aprovada: carregamento, índices, cálculo sob demanda, filtros globais e locais, busca, ordenação, pop-up, coluna adicional, Tabela analítica e navegação mobile.
+- Estados simulados e aprovados: extensão ausente com fallback CSV; sessão expirada; rede indisponível; primeira sincronização; cache válida; falha de atualização preservando a cache anterior.
+- Extensão validada para: descoberta de nomes internos; Boolean, Person, Lookup e null; FeitoOutro; coluna extra; rejeição de origem externa; rota somente leitura; e 105 páginas encadeadas, confirmando ausência do teto legado de 80 páginas.
+- Desempenho revalidado no Chrome local: 100.000 registros em 5,61 s, 250.000 em 16,72 s e 500.000 em 45,29 s para carga inicial sintética. O cenário de 500.000 permaneceu funcional, sem erro de JavaScript, usando aproximadamente 1,07 GB na coleta observada. Pop-ups ou filtros que materializam universos muito amplos continuam tendo custo proporcional ao resultado solicitado.
+- A validação local não substitui a conferência final com a sessão institucional real, os nomes internos efetivos e o endereço oficial já publicado. Antes de distribuir a versão, executar no ambiente autorizado: primeira carga real, incremento sem mudanças, novo registro, alteração de item antigo, Data3 posterior, FeitoOutro posterior, falha de uma lista, exportações e comparação dos totais reais CSV × Lists.
+
+LIMITAÇÕES CONHECIDAS DA INTEGRAÇÃO
+
+- Exclusões no SharePoint podem permanecer na cache incremental até a próxima carga completa periódica de sete dias ou uma reconstrução forçada. Inclusões e alterações são detectadas por Modified/ID.
+- A primeira sincronização de centenas de milhares de itens depende da velocidade do SharePoint, da rede, do computador e do volume de colunas. O progresso mostra fase, lista, páginas e registros lidos, mas não inventa percentual quando o total confiável ainda não está disponível.
+- A versão suporta tecnicamente cerca de 500 mil registros no ensaio local, mas exige memória disponível e pode apresentar espera perceptível em operações que precisam materializar resultados muito grandes.
+- O Radar publicado só utilizará a nova integração depois que este index.html for efetivamente publicado no endereço oficial e a extensão atualizada estiver instalada no mesmo perfil do Chrome.
+
+NOVIDADES DA VERSÃO 7.4
+
+- Esta versão reorganiza internamente o Radar para bases progressivamente maiores, sem remover ou simplificar painéis, indicadores, filtros, tabelas, tooltips, pop-ups, drill-downs, pesquisas, ordenações, cópias ou exportações da versão 7.3.
+- O CSV passou a ser interpretado linha a linha. Cada registro é convertido assim que termina, evitando manter simultaneamente uma matriz completa do arquivo e outra coleção completa de objetos. Textos categóricos repetidos são reaproveitados em memória e somente colunas adicionais não mapeadas permanecem em rawValues.
+- A normalização e a reconciliação continuam respeitando as regras consolidadas. Quando existe uma única fonte, o Radar reutiliza seus objetos normalizados; quando existem as duas fontes, mantém a conciliação oficial e a prevalência já documentada.
+- Após a carga, o motor cria índices compactos para processo, Data2, Data3 e todas as dimensões dos filtros globais: coordenadoria, equipe, servidor, atividade, sistema, prioridade, situação e demais campos configurados. Os índices apontam para os registros normalizados e não substituem o histórico detalhado.
+- Os filtros globais passaram a compartilhar um único recorte central, suas contagens compatíveis e um cache curto de combinações recentes. O cache é invalidado ao trocar bases, filtros ou parâmetros relevantes, evitando que resultados antigos sejam reutilizados.
+- Cálculos caros e repetidos — estado atual, eventos de conclusão, métricas gerais, atividades, agregações por servidor e acompanhamento de metas — passaram a reutilizar resultados somente enquanto o mesmo universo de registros continuar válido.
+- Os painéis fora da área visível são marcados como pendentes e calculados quando o usuário efetivamente navega até eles. O Sumário e o painel ativo permanecem prioritários. Essa renderização sob demanda reduz o custo inicial sem reduzir o universo analítico ou alterar exportações.
+- Buscas textuais de tabelas e painéis receberam espera discreta de 190 ms após a digitação. A Tabela analítica mantém sua paginação de 25 linhas; não foi introduzida virtualização arriscada onde a paginação já limita com segurança a quantidade de elementos visuais.
+- Operações perceptivelmente pesadas exibem feedback discreto de processamento. O Radar continua sendo um HTML único, processado localmente, sem backend, envio das bases, API externa, telemetria de conteúdo ou dependência analítica pesada.
+- Foi criado um ponto único de entrada de dados em window.RadarNUPACI.inputGateway. O adaptador operacional continua sendo csv-local; uma futura fonte poderá entregar registros normalizados por commitNormalizedSources. Microsoft Lists aparece apenas como adaptador futuro identificado, sem conexão, leitura ou envio de dados nesta versão.
+- A API de diagnóstico window.RadarNUPACI.getPerformance() informa tempos internos, quantidade de registros, índices e memória quando o navegador disponibiliza essa medição. Ela não envia essas informações a nenhum destino.
+- Foram protegidos cálculos de mínimo, máximo e estatísticas contra expansão de vetores muito grandes na pilha do navegador, mantendo os mesmos resultados numéricos.
+
+ARQUITETURA DE DESEMPENHO
+
+Fluxo interno: adaptador de entrada → parser incremental → normalização/reconciliação → índices centrais → motor de filtros → modelos analíticos em cache → renderização sob demanda.
+
+- Normalização única: processo, textos, datas, booleanos, prioridade, origem, status e demais campos são preparados na entrada. Os painéis recebem os mesmos registros normalizados e não voltam ao texto original do CSV.
+- Índices: processo possui acesso direto a seus eventos; Data2 e Data3 possuem índices por dia; as dimensões dos filtros possuem índices e contagens centrais. Arrays tipados são usados nos índices categóricos e temporais depois da construção.
+- Filtros: a assinatura inclui época da base, períodos, consulta de processos e seleções categóricas. O recorte e as contagens em cascata são calculados juntos e até três combinações recentes são mantidas em cache.
+- Cache: resultados derivados são associados ao universo exato de linhas que os originou. Nova base ou novo recorte gera novas referências e invalida os resultados incompatíveis. Parâmetros locais continuam participando das regras específicas de cada painel.
+- Cálculo sob demanda: a troca de base ou filtro marca os módulos como alterados. Somente Sumário, Visão geral e a seção ativa são atualizados imediatamente; os demais são calculados quando entram na área visível ou quando o usuário os seleciona na navegação.
+- Cálculo e apresentação: as agregações são consolidadas antes da alteração visual. O número de reconstruções desnecessárias do DOM foi reduzido, preservando cópias, PNG, XLSX, pop-ups e o conjunto completo dos resultados.
+- Virtualização: foi avaliada, mas não introduzida nesta versão. As tabelas potencialmente mais extensas já possuem paginação ou recortes visuais próprios, e a mudança poderia afetar acessibilidade, altura de linhas, sticky headers e exportações. Nenhum resultado foi truncado.
+- Web Worker: foi avaliado, mas não adotado. Após o parser incremental e o fim da renderização antecipada de todos os painéis, parsing e indexação deixaram de ser o principal custo. Copiar centenas de milhares de objetos para um Worker aumentaria memória e serialização em um HTML único.
+- Pré-agregações: foram priorizadas memoizações de estado, conclusões, métricas, atividades, servidores e metas. O histórico original permanece acessível para auditorias e drill-downs.
+- Camada de entrada: painéis não conhecem a origem física. CSV continua sendo a única entrada operacional; uma futura integração poderá adaptar Microsoft Lists ao mesmo contrato normalizado, sem reescrever os painéis.
+
+TESTES DE DESEMPENHO DA VERSÃO 7.4
+
+Os ensaios abaixo foram executados localmente no navegador de teste com bases sintéticas representativas contendo múltiplos servidores, atividades, datas, redistribuições, pendências, conclusões, FeitoOutro, coordenadorias, equipes e cadastradores. São medições deste computador, não garantias para todos os equipamentos.
+
+Linhas | Carga total | Parsing | Reconciliação | Normalização | Índices | 1ª renderização | Filtro | Busca | Troca de painel | Popup | Ordenação | Memória observada
+50.000 | 3,61 s | 496 ms | 78 ms | 185 ms | 2 ms | 1,78 s | 409 ms | 284 ms | 624 ms | 933 ms | 975 ms | aproximadamente 116 MB
+100.000 | 5,90 s | 871 ms | 151 ms | 327 ms | 4 ms | 3,10 s | 590 ms | 284 ms | 1,21 s | 2,06 s | 1,15 s | aproximadamente 92 MB na coleta disponível
+250.000 | 15,17 s | 2,12 s | 409 ms | 1,14 s | 7 ms | 8,77 s | 1,40 s | 300 ms | 2,41 s | 4,67 s | 2,80 s | aproximadamente 491 MB
+500.000 | 38,76 s | 3,94 s | 981 ms | 3,66 s | 12 ms | 22,22 s | 3,37 s | 285 ms | 4,77 s | 15,05 s | 5,07 s | aproximadamente 662 MB
+
+Como referência, o cenário de 8 mil linhas que anteriormente exigia cerca de 26,7 s no ensaio passou a carregar em aproximadamente 1,90 s, com primeira renderização de aproximadamente 735 ms. A busca permanece responsiva porque sua espera controlada evita cálculo a cada tecla.
+
+LIMITES OPERACIONAIS OBSERVADOS
+
+- O Radar permaneceu funcional e sem erro de JavaScript até 500 mil linhas no teste. Contudo, 500 mil linhas ainda exigem computador com memória disponível: a carga inicial foi de cerca de 38,8 s, filtros de grande abrangência ficaram em torno de 3,4 s e um pop-up muito amplo chegou a aproximadamente 15 s.
+- Memória do navegador varia conforme coleta de lixo, navegador, número de colunas adicionais e combinação das bases; por isso os valores acima são aproximados. Duas bases grandes e muitas colunas personalizadas podem elevar o consumo.
+- O alvo desta versão foi retirar varreduras e renderizações integrais repetidas das operações comuns. Análises ou pop-ups que precisam materializar centenas de milhares de linhas continuam tendo custo proporcional ao volume correto solicitado.
+- Se volumes acima de 500 mil linhas se tornarem rotina e os limites observados forem insuficientes, a próxima avaliação deve considerar processamento em Worker, virtualização especializada ou motor analítico local, sempre depois de validar privacidade, HTML único, exportações e regras de negócio.
+- Os testes funcionais confirmaram carregamento, índices, renderização sob demanda, filtros, pesquisa, ordenação, pop-up, coluna adicional da Tabela analítica, navegação em mobile e ausência de erros. Nenhuma visualização ou funcionalidade foi removida.
+
+NOVIDADES DA VERSÃO 7.3
+
+- “Evolução das distribuições e conclusões” passou a exibir linhas horizontais de média diária. Em Distribuídos aparece somente a média de distribuídos; em Concluídos, somente a média de concluídos; em Comparar, as duas referências aparecem simultaneamente.
+- A média usa exatamente os valores diários da série ativa e o número de dias apresentados no eixo. Todos os dias corridos entre a Data inicial e a Data final são representados e participam do denominador, inclusive quando o valor do dia é zero.
+- Processos preservam a contagem de números distintos por dia, com Data2 para Distribuídos e Data3 para Concluídos. Documentos preservam a soma de Quantidade dos registros concluídos pela Data3; processos e documentos são calculados separadamente.
+- As linhas, os rótulos compactos e a legenda informam os valores médios do recorte. A legenda possui explicação acessível por foco, clique/toque ou hover, sem alterar os detalhamentos das barras.
+- As médias são recalculadas imediatamente ao alterar datas, atalhos de período, filtros globais, Processos/Documentos, Distribuídos/Concluídos/Comparar ou bases carregadas.
+- “Entenda as regras” foi ampliado para explicar o denominador, a participação dos dias zerados, a origem temporal de cada série, a separação entre processos e documentos e o caráter apenas comparativo da linha média.
+- A visualização foi adaptada para rolagem horizontal e telas menores. Exportações de imagem preservam as novas linhas e a legenda do mesmo recorte apresentado.
+- Foram preservados o período local, Data2, Data3, processos distintos por dia, documentos, saldo, atalhos, filtros, Bases utilizadas, drill-downs, tooltips, demais painéis e todas as funcionalidades da versão 7.2.
+
+NOVIDADES DA VERSÃO 7.2
+
+- Origem dos cadastramentos ganhou recorte temporal local próprio, independente dos períodos gerais. O painel abre na Data2 operacional mais recente e permite selecionar outra data ou ampliar manualmente para Data inicial e Data final, inclusive.
+- O recorte de Origem utiliza exclusivamente Data2. Registros sem Data2 válida não são associados artificialmente a outra data. Gestão, Autocadastramento, Outros, Não informado, gestor para si, repetidas, múltiplas atividades, redistribuídos, processos, linhas, documentos, tabelas, totais e detalhamentos são recalculados sobre o mesmo universo local.
+- Busca, aba e ordenação de Origem são preservadas ao trocar a data sempre que continuam válidas. “Entenda as regras” e “Bases utilizadas” passaram a documentar Data2, escopo local, compatibilização e prevalência das fontes.
+- Acompanhamento das distribuições também ganhou data única ou período local. A data padrão é a data operacional mais recente encontrada em Data2 ou Data3, sem modificar os filtros temporais de outros módulos.
+- Nesse acompanhamento, os indicadores mantêm suas naturezas temporais: distribuições, origens, processos distintos e distribuições adicionais usam Data2; conclusões e documentos produzidos usam Data3.
+- Pendentes e Não feitos são reconstruídos como estoque na data final do recorte. A posição considera a movimentação mais recente existente até aquele momento; uma conclusão posterior não apaga retroativamente uma pendência e uma redistribuição posterior pode gerar nova pendência.
+- Pendente mais antigo pesquisa todo o estoque existente na data final, inclusive processos distribuídos antes da Data inicial. Assim, o recorte define quando o estoque é observado, sem limitar artificialmente a antiguidade das pendências.
+- A Taxa de execução passou a declarar explicitamente sua fórmula temporal: conclusões com Data3 no recorte ÷ distribuições com Data2 no recorte. Ela pode superar 100% quando o período conclui estoque antigo; sem distribuições, não é criado percentual artificial.
+- As quatro visões do acompanhamento — Por servidor, Por atividade, Por data e Por cadastrador —, além de busca, ordenação, cards, percentuais, totais, pop-ups, auditorias e drill-downs, compartilham o mesmo recorte local e os mesmos conjuntos auditáveis.
+- Os controles dos dois painéis seguem a mesma linguagem compacta e responsiva: Data analisada, Ampliar período, Data inicial, Data final e Voltar para data única. As exportações registram o recorte local aplicado.
+- Foram preservadas assignmentKey, distribuições distintas, deduplicação, conciliação das bases, classificação de origem, status histórico, navegação interna, filtros categóricos gerais e todas as funcionalidades aprovadas na versão 7.1.
+
+NOVIDADES DA VERSÃO 7.1
+
+- Distribuição institucional ganhou o quadro “Prioridades”, posicionado depois de Atividades. A grade mantém duas linhas de três quadros: Equipes, Coordenadorias e Servidores por coordenadoria; Sistemas, Atividades e Prioridades.
+- Prioridades lista somente os valores efetivamente encontrados na coluna Prioridade. Campo vazio ou sem identificação válida é apresentado como “Não informado”; não são criadas categorias artificiais.
+- A unidade de contagem é a mesma dos quadros Equipes, Coordenadorias, Sistemas e Atividades: processos distintos concluídos dentro de cada categoria. Um processo presente em mais de uma categoria pode participar da respectiva categoria, conforme a lógica institucional já consolidada.
+- Cada prioridade apresenta quantidade absoluta e percentual sobre o total do próprio quadro. A linha TOTAL soma as categorias exibidas e apresenta 100%; o denominador não é o total geral do Radar.
+- O quadro respeita todos os filtros ativos. Seus números são clicáveis e abrem os processos concluídos daquela prioridade, mantendo os drill-downs e a navegação interna existentes.
+- A produção concluída e seus atributos prevalecem da NUPACIProdutividade. Quando o campo Prioridade estiver vazio no registro histórico compatibilizado, ProdutividadeDiaNUPACI pode complementá-lo. Registros correspondentes são conciliados antes do agrupamento, evitando dupla contagem.
+- O tooltip de Prioridades documenta significado, unidade, percentual, fontes, compatibilização e prevalência. O botão “Bases utilizadas” de Distribuição institucional também passou a mencionar expressamente a prioridade.
+- Corrigida exclusivamente a composição visual do card “Servidores avaliáveis” em Acompanhamento Diário de Atividade e Perfil Operacional. Título, ícone informativo, número e texto auxiliar agora seguem a mesma grade interna, altura e espaçamento dos outros cinco cards.
+- O ajuste do card é responsivo em desktop, notebook, larguras intermediárias e mobile. Não houve alteração no cálculo, tooltip, clique, filtro, regra de dia avaliável ou dados exibidos.
+- Todas as regras, filtros, painéis, tooltips, pop-ups, drill-downs, exportações, sticky headers, responsividade e navegação da versão 7.0 foram preservados.
+
+NOVIDADES DA VERSÃO 7.0
+
+- Todos os painéis passaram a exibir “ⓘ Bases utilizadas”. Cada explicação identifica as fontes realmente empregadas, o papel de cada base, a forma de compatibilização/deduplicação, a regra de prevalência e as limitações específicas do módulo. NUPACIProdutividade permanece como fonte prioritária da produção histórica/concluída; ProdutividadeDiaNUPACI permanece como fonte de distribuição, pendência e situação operacional.
+- Origem dos cadastramentos ganhou “Entenda as regras” pormenorizado. Gestão é a linha cujo Cadastrador pertence à lista de gestores, inclusive quando o gestor cadastra para si. Autocadastramento exige Cadastrador = Servidor e cadastrador fora da lista de gestores. Outros identifica cadastrador não gestor e diferente do destinatário; Não informado identifica ausência de nome válido.
+- No mesmo painel, Processo é número distinto no agrupamento; Linha é ocorrência registrada e pode se repetir por distribuição, atividade, data ou evento operacional; Documento é a soma de Quantidade. Cumpridos, Pendentes e Não classificados representam o status consolidado do processo, enquanto a origem continua sendo uma análise de eventos/linhas.
+- Gestor para si próprio permanece em Gestão. Distribuição repetida usa processo + servidor + atividade + mesmo dia da Data2 e conta como linha extra além da primeira, sem presumir erro. Múltiplas atividades e redistribuições também são neutras e auditáveis. O cabeçalho LINHAS ganhou explicação resumida acessível.
+- Tempo de Execução e Comparativo agora permite Média, Mediana, Máximo e Mínimo como métrica principal. Média representa a soma dividida pela quantidade; Mediana é o tempo central e resiste melhor a extremos; Máximo e Mínimo são os casos extremos e exigem contexto. A microajuda muda com a métrica ativa.
+- A ordenação do Tempo de Execução contempla maior/menor média, mediana, máximo e mínimo, preservando maior piora e maior melhora quando existe comparação. Os cards mantêm as demais medidas como informações auxiliares.
+- A quantidade do Tempo de Execução passou a ser “processo distinto por dia de Data2”: repetição do mesmo processo no mesmo dia é deduplicada; nova distribuição em outro dia conta como outra ocorrência operacional. Assim, o mesmo número pode contribuir mais de uma vez em um período longo sem ser duplicado dentro do mesmo dia.
+- No Ritmo de conclusão, o card Mediana recebeu explicação didática: é o intervalo central; 50% dos intervalos ficaram abaixo ou iguais e 50% acima ou iguais. O exemplo de 10, 12, 15, 18 minutos e 3 horas demonstra por que a mediana de 15 minutos representa melhor o intervalo típico que a média de 47 minutos.
+- Distribuição institucional passou a mostrar valor e percentual de cada linha sobre o total do próprio quadro, além da linha TOTAL com 100%, em Equipes, Coordenadorias, Sistemas e Atividades. Os percentuais não usam o total geral do Radar.
+- Incluído “Servidores por coordenadoria” entre Coordenadorias e Sistemas. O quadro conta servidores observados nas bases carregadas, sem depender apenas da produção do período, e informa de modo contextual os processos concluídos por servidor. Como as bases não constituem cadastro funcional de lotação, servidores sem qualquer registro carregado não podem ser identificados; a limitação é exibida no painel e no tooltip.
+- Acompanhamento das distribuições recebeu memoização segura dos cálculos consolidados e das medições de grupos. O cache é invalidado pela troca do conjunto filtrado ou da lista de gestores, preservando abas, busca, ordenação, filtros, totais, percentuais e drill-downs sem exibir resultados antigos.
+- Mapa de Concentração Produtiva ganhou período local próprio, independente dos períodos gerais. O padrão é um único dia — a data operacional mais recente com conclusão disponível. É possível escolher outro dia ou usar “Ampliar janela” para informar Data inicial e Data final manualmente.
+- O período local funciona em Hora a hora, Turnos NUPACI e Personalizado e preserva busca, células clicáveis, primeira/última conclusão, faixa predominante, padrão do recorte e drill-downs. “Como interpretar” diferencia o dia único da recorrência em intervalo e lembra que ausência de conclusão numa faixa não comprova ausência de trabalho.
+- A versão permanece totalmente local, em HTML único, sem servidor, login ou dependência externa adicional. Filtros, pop-ups, histórico “← Voltar”, cópias, exportações, sticky headers, responsividade e demais módulos da 6.9 foram preservados.
+
+NOVIDADES DA VERSÃO 6.9
+
+- Incluído, depois do Mapa de Concentração Produtiva, o painel “Acompanhamento Diário de Atividade e Perfil Operacional”. Ele combina a situação da data analisada com o perfil histórico recente, sem afirmar que um servidor não trabalhou.
+- A data padrão é a data operacional mais recente encontrada em Data2 ou Data3 nas bases carregadas, e não a data do computador. O gestor pode selecionar outra data histórica; a data analisada permanece sempre visível.
+- O processo disponível no dia exige Data/Referência e Data2 iguais ou anteriores à data analisada, considera a movimentação mais recente até aquele dia e verifica se o processo esteve pendente para o servidor em algum momento do dia. Uma conclusão registrada no próprio dia não apaga a disponibilidade anterior. Redistribuições posteriores não alteram retroativamente o histórico.
+- Data é a referência/cumprimento; Data2 é a distribuição/cadastro; Data3 é a conclusão. Concluídos contam processos distintos com Data3 na data analisada. Documentos somam a coluna Quantidade dos registros concluídos no dia.
+- Dia útil é segunda a sexta-feira, sem inferência de feriados. Dia produtivo possui ao menos uma conclusão. Dia avaliável é dia útil com processos disponíveis. Dia sem disponibilidade é não avaliável e não reduz as taxas do perfil.
+- A meta esperada equivalente reutiliza as metas oficiais por atividade. Para uma mistura de atividades disponíveis: Meta equivalente = Processos disponíveis ÷ soma de (Processos da atividade ÷ Meta oficial da atividade). Se alguma atividade necessária não possui meta, o painel mostra “Dados insuficientes” e não cria 0% artificial.
+- Situações do dia: Sem conclusão = zero conclusões com disponibilidade; Muito abaixo = produção inferior a 50% da meta; Abaixo = de 50% a menos de 100%; Meta atingida = 100% ou mais; Sem elementos para avaliação = sem disponibilidade ou sem dados suficientes para a meta.
+- “Sem conclusão” significa exclusivamente que nenhuma conclusão foi identificada na base na data analisada. Não significa ausência, falta, afastamento, férias ou inexistência de outras formas de trabalho.
+- Cards clicáveis filtram Servidores avaliáveis, Sem conclusão, Muito abaixo, Abaixo, Meta atingida e Sem elementos. Cada card, coluna, percentual e classificação sensível possui explicação acessível.
+- A tabela exibe Servidor, Processos disponíveis, Concluídos, Documentos, Meta esperada equivalente, % da meta, Situação hoje, Perfil histórico, Dias críticos e Última conclusão. Os números auditáveis abrem os registros que os compõem.
+- O recorte histórico padrão usa os últimos 20 dias úteis. Também estão disponíveis 5, 10, 30 dias úteis e intervalo personalizado; sábados e domingos são excluídos e feriados não são inferidos.
+- Dia crítico é dia avaliável com zero conclusão ou produção abaixo de 50% da meta. A taxa de dias críticos usa somente dias avaliáveis como denominador.
+- Perfil histórico padrão: Dados insuficientes com menos de 5 dias avaliáveis; Padrão consistente com meta atingida em pelo menos 70% e dias críticos abaixo de 20%; Recorrência de baixa execução com pelo menos 30% de dias críticos; demais situações = Oscilante. Recorrência recente sinaliza 3 dias avaliáveis críticos consecutivos.
+- O botão “Configurar critérios” permite alterar recorte, mínimo de dias avaliáveis, limite de Muito abaixo, percentual para consistência, percentual para recorrência e quantidade de dias consecutivos. “Entenda as regras” sempre informa os parâmetros ativos.
+- A ficha histórica do servidor possui quatro blocos: situação da data; histórico recente; perfil produtivo; evolução diária clicável. Ela apresenta médias por dia avaliável e por dia produtivo separadamente, mediana, documentos, atividade predominante, execução, primeira e última conclusão típicas, janela observada, pausas, intervalos e concentração horária.
+- Pausas, intervalos, janela produtiva e metas reutilizam as regras já existentes no Radar. O histórico interno de pop-ups e o botão “← Voltar” preservam o contexto dos detalhamentos.
+- Filtros locais incluem busca, Coordenadoria, Equipe, Servidor, Situação, Perfil, Recorrência recente e Atividade. Filtros globais categóricos compatíveis continuam respeitados; os períodos gerais não alteram silenciosamente a reconstrução histórica local.
+- O modal “Entenda as regras” documenta fonte, datas, disponibilidade, tipos de dia, meta, situação, criticidade, perfil, recorrência, médias, pausas, intervalos, jornada, limitações e parâmetros. O painel deixa explícito que reuniões, treinamentos, atividades externas, afastamentos e outras ocorrências ausentes das bases exigem interpretação gerencial.
+- A implementação preserva Visão geral, Evolução, Tempo de Execução, rankings, matrizes, perfis, ritmo, distribuições, metas, concentração, Estatísticas, Tabela analítica, filtros, exportações, responsividade e navegação existentes na 6.8.
+
+NOVIDADES DA VERSÃO 6.8
+
+- “Evolução das distribuições e conclusões” ganhou um período próprio do gráfico, com Data inicial, Data final e atalhos Hoje, Últimos 7 dias, Este mês, Período completo e Restaurar período.
+- O período local restringe somente a janela de calendário do gráfico. Distribuições continuam posicionadas pela Data2 e conclusões pela Data3. Os filtros gerais de distribuição e conclusão não são modificados, e os demais painéis permanecem inalterados.
+- O gráfico continua respeitando os filtros categóricos gerais de Coordenadoria, Servidor, Equipe, Atividade, Sistema, Cadastrador e Prioridade. No modo Processos, a indicação “Unidade: processos distintos por dia” esclarece que cada número de processo conta uma vez em cada data, mesmo com múltiplas distribuições no mesmo dia.
+- O conteúdo existente de “Entenda as regras” foi ampliado para documentar o período local, Data2, Data3, processos distintos por dia, documentos, comparação, saldo diário e a diferença em relação às distribuições distintas do painel de acompanhamento.
+- Em “Acompanhamento das distribuições”, a nomenclatura “Distribuídos” passou a ser apresentada como “Distribuições” ou “Distribuições registradas”, sem alterar a chave operacional nem o significado da métrica.
+- O acompanhamento ganhou uma leitura executiva compacta com Processos distintos, Distribuições e Distribuições adicionais. A fórmula é: Distribuições adicionais = Distribuições − Processos distintos.
+- Distribuição adicional significa uma atribuição além da primeira ocorrência daquele processo no recorte. Ela pode decorrer de redistribuição, mudança de servidor, mudança de atividade ou outra situação legítima; não é classificada automaticamente como erro ou duplicidade.
+- “Distribuições adicionais” é clicável e abre exatamente as ocorrências adicionais que compõem o indicador, com busca, ordenação, filtros rápidos, colunas configuráveis, cópia, exportação e “← Voltar”. A origem da distribuição e a posição da ocorrência ficam registradas no contexto de auditoria.
+- O botão já existente “Entenda as regras” do acompanhamento agora diferencia distribuições distintas de processos distintos e preserva as explicações de Feitos, Pendentes, Gestão, Servidor, percentuais do TOTAL e outras origens.
+- Foram preservadas integralmente as regras, os filtros, os painéis, os aprofundamentos, as exportações, a responsividade e as funcionalidades aprovadas na versão 6.7.
+
+NOVIDADES DA VERSÃO 6.7
+
+- Em “Acompanhamento das distribuições”, a tabela ganhou a coluna ordenável e clicável “Incluídos pela gestão”, posicionada entre Execução e Incluídos pelo servidor. A origem reutiliza exatamente a classificação já consolidada em Origem dos cadastramentos: Gestão, Autocadastramento, Outros e Não informado.
+- A linha TOTAL de Acompanhamento das distribuições agora mostra, em Feitos, Pendentes, Incluídos pela gestão e Incluídos pelo servidor, o valor absoluto acompanhado do percentual sobre o total de Distribuídos do recorte. Outros e Não informado continuam no denominador; por isso, Gestão + Servidor não é forçado a 100%.
+- Gestão e autocadastramento preservam aprofundamento integral até os processos que compõem cada número. O novo botão “Entenda as regras” documenta universo, denominador, classificação das origens, execução e limitações de leitura.
+- Incluído o painel “Tempo de Execução e Comparativo”, imediatamente após a Visão geral. O indicador usa exclusivamente registros concluídos com Data2 e Data3 válidas e calcula Tempo de execução = Data3 − Data2, sem alterar as regras dos demais módulos.
+- O novo painel permite analisar por Atividade, Servidor ou Coordenadoria; alternar entre média e mediana; ordenar por maior tempo, menor tempo, maior piora ou maior melhora; e comparar com período equivalente anterior, imediatamente anterior ou personalizado.
+- Cada cartão informa quantidade de processos, média, mediana, menor e maior duração. Um clique abre o detalhamento pesquisável e ordenável com Processo, Servidor, Coordenadoria, Atividade, Data2, Data3, tempo calculado, Cadastrador, Observação, Sistema e Prioridade, preservando o acesso ao histórico do processo e o botão “← Voltar”.
+- O painel de tempo ganhou filtros locais em cascata, com busca, multiseleção, Selecionar todos, Limpar, contagens por processos e possibilidade de adicionar ou remover Atividade, Servidor, Coordenadoria, Equipe, Cadastrador, Prioridade, Sistema e Feito. A troca da visualização não mantém filtros ocultos.
+- Registros com Data2 ou Data3 ausente, ou com Data3 anterior à Data2, ficam fora do cálculo de tempo e permanecem auditáveis em um alerta próprio. “Entenda as regras” explica fórmula, universo, comparação, melhora/piora e a limitação de que o tempo decorrido não equivale ao tempo efetivamente trabalhado.
+- O detalhamento “Servidores com produção” preserva a busca por nome e ganhou Atividade como filtro fixo, filtros adicionais em cascata, contagens recalculadas de processos e documentos, limpeza de seleções e “Entenda as regras”. Os números e a lista de servidores passam a responder ao mesmo recorte local.
+- Foram preservados os cálculos, filtros gerais, pop-ups, histórico de navegação, exportações, responsividade e todas as funcionalidades aprovadas até a versão 6.6.
+
+NOVIDADES DA VERSÃO 6.6
+
+- O painel Servidor × atividade passou a usar a NUPACIProdutividade como fonte oficial da atividade dos trabalhos concluídos. Quando existe um registro correspondente nas duas bases, a atividade da base diária não cria uma segunda contagem.
+- A correspondência é feita de forma segura pela combinação de processo, servidor e cronologia da conclusão, usando Data2, Referência, quantidade e sistema somente como critérios de desempate. Correspondências ambíguas não são forçadas e não geram alertas indevidos.
+- Divergências de atividade entre registros correspondentes são apresentadas em um alerta discreto acima da matriz. A comunicação é neutra: informa que os valores das bases são diferentes, sem presumir quem realizou eventual alteração ou sua causa.
+- O botão “Ver divergências” abre um detalhamento pesquisável e ordenável com Processo, Servidor, Coordenadoria, atividade em cada base, Data, Data2, Data3, Feito, Registrar e Observação. A janela oferece filtros rápidos, cópia da lista de processos, exportação e navegação interna com “← Voltar”.
+- Cada servidor com divergência recebe um indicador discreto e clicável, que abre somente as ocorrências daquele servidor.
+- Células, totais por servidor e a nova linha TOTAL DO RECORTE contam processos distintos segundo a atividade oficial, sem duplicar o mesmo par correspondente. Os números continuam clicáveis e preservam os aprofundamentos existentes.
+- A matriz agora explica de forma permanente por que a soma das atividades pode superar o Total: cada coluna conta processos distintos naquela atividade, enquanto o Total conta cada processo apenas uma vez, mesmo que ele apareça em atividades diferentes. O cabeçalho foi identificado como “Total distinto”, e as linhas afetadas mostram a quantidade de contagens adicionais entre atividades.
+- O botão “Entenda as regras” documenta a fonte oficial, o papel complementar da ProditividadeDiaNUPACI, a regra de divergência, a prevenção de dupla contagem e a impossibilidade de atribuir causalidade a partir da diferença entre bases.
+- Todas as mudanças desta versão ficaram restritas ao painel Servidor × atividade. Demais métricas, filtros, regras de status, histórico, pop-ups e exportações foram preservados.
+
+NOVIDADES DA VERSÃO 6.5
+
+- O topo do Radar informa a atualidade operacional consolidada: “Última distribuição” é a maior Data2 válida; “Última conclusão produtiva” é a maior Data3 de conclusão própria; “Data3 mais recente registrada” inclui registros operacionais de FeitoOutro; e “Base atualizada até” é o evento operacional mais recente. Ausências são exibidas como “não identificada”, sem usar o relógio do navegador como substituto.
+- Os cartões individuais NUPACIProdutividade e ProditividadeDiaNUPACI apresentam as mesmas três datas calculadas exclusivamente sobre os registros da respectiva fonte, junto da quantidade de linhas e do período identificado.
+- Os ícones de informação do topo e dos cartões abrem “Entenda a atualidade operacional”. A ajuda esclarece o escopo consolidado ou individual e informa que as datas representam eventos efetivamente registrados, não o horário de carregamento dos arquivos no Radar.
+- A navegação lateral foi estabilizada. O item escolhido fica ativo desde o clique até o fim da rolagem, o observador automático deixa de competir durante a transição e volta a atuar após a chegada. O destino considera a altura real do cabeçalho sticky, inclusive em cliques rápidos, no celular e no botão “Voltar ao topo”.
+- O efeito cascata dos filtros laterais passou a calcular o recorte e as contagens compatíveis em uma única varredura da base, em vez de repetir uma varredura completa para cada filtro.
+- Estruturas derivadas reutilizadas, como métricas gerais e cálculos de pausas, receberam memoização vinculada ao próprio conjunto de linhas e ao limite ativo. Os caches são reiniciados na troca das bases, evitando resultados desatualizados.
+- Painéis visíveis são atualizados imediatamente; módulos pesados fora da área visível são atualizados de forma progressiva e também sob demanda ao serem acessados. Pesquisas textuais receberam debounce curto para evitar reconstruções a cada tecla sem comprometer a sensação de resposta.
+- Foram preservados cálculos, filtros em cascata, buscas, pop-ups, histórico “← Voltar”, exportações, responsividade e todas as regras de negócio consolidadas na versão 6.4.
+
+NOVIDADES DA VERSÃO 6.4
+
+- “Evolução da produção” passou a se chamar “Evolução das distribuições e conclusões”. Além de Processos e Documentos, o quadro permite alternar entre Distribuídos, Concluídos e Comparar.
+- Processos distribuídos são distintos por Data2; Concluídos pelo servidor são conclusões próprias por Data3; Feitos por terceiros são resoluções operacionais por Data3, com composição Outro servidor/Gabinete. No modo Comparar, o saldo operacional é Distribuídos − Concluídos pelo servidor − Feitos por terceiros. Esse saldo de fluxo não representa automaticamente a variação exata do estoque pendente.
+- Documentos permanecem disponíveis somente em Concluídos. A coluna Quantidade representa documentos efetivamente produzidos, por isso o Radar não cria uma leitura artificial de “documentos distribuídos”. O botão “Entenda as regras” documenta Data2, Data3, processos distintos, documentos e a limitação do saldo.
+- A linha TOTAL DO RECORTE de “Perfil de atuação e atividades simultâneas” ficou compacta. A coluna Outras atividades mostra até três atividades e, quando houver excesso, apresenta “+ N outras”. O detalhamento preserva todas as atividades, combinações, percentuais e documentos e permite abrir os respectivos registros.
+- “Ritmo de conclusão” ganhou filtros próprios em cascata. Atividade e Servidor permanecem sempre visíveis; “+ Adicionar filtro” permite incluir Coordenadoria, Equipe, Cadastrador/Distribuidor, Sistema, Prioridade, Feito, Compensação e Data.
+- Cada filtro do Ritmo possui busca, multisseleção, Selecionar todos, Limpar, contagens recalculadas pelos demais filtros ativos e remoção dos campos adicionais. A estrutura dos filtros adicionais é lembrada neste navegador, mas as seleções não são persistidas escondidas. Faixas, média, mediana, menor, maior e aprofundamentos são recalculados sobre o mesmo universo filtrado.
+- O botão “Entenda as regras” do Ritmo esclarece que o indicador mede intervalos entre conclusões consecutivas pela Data3 do mesmo servidor no mesmo dia; a primeira conclusão não gera intervalo e dias diferentes não são cruzados. O intervalo não representa, isoladamente, tempo efetivamente dedicado ao processo.
+- Todos os pop-ups de processos que exibem a coluna Referência agora mostram um ícone de informação clicável. Referência/Data indica para quando a distribuição foi programada; Data2 indica quando o cadastro/distribuição ocorreu; Data3 indica quando houve conclusão. O horário 00:00 da Referência não é interpretado como horário real da distribuição.
+- “Ranking detalhado” ganhou busca instantânea por servidor, compatível com nome completo ou parcial e sem distinção entre maiúsculas, minúsculas ou acentos. O botão × restaura o ranking completo sem alterar posições, ordenação ou métricas.
+- Diretriz adotada a partir desta versão: toda nova métrica, classificação, gráfico, fórmula ou leitura gerencial relevante deve ser avaliada para receber “Entenda as regras”, explicando fonte, cálculo, interpretação, limitações e o que não pode ser inferido.
+
+CORREÇÃO DE AUDITORIA DA VERSÃO 6.3 — ESTADO ATUAL EM ORIGEM DOS CADASTRAMENTOS
+
+- Corrigida uma assimetria na classificação de processos redistribuídos. “Cumpridos” já utilizava a chave do processo para aplicar o estado atual consolidado a todos os agrupamentos que continham aquele processo; “Pendentes” dependia da presença da própria linha mais recente dentro do agrupamento. Por isso, uma redistribuição posterior podia deixar o processo contado em Processos do cadastrador, servidor, data ou atividade anterior, mas fora de Pendentes naquele mesmo agrupamento.
+- Cumpridos e Pendentes agora são calculados sobre o mesmo universo de processos distintos e pela mesma chave de processo. A distribuição/movimentação mais recente continua sendo definida prioritariamente pela Data2, com os desempates já consolidados por Data, Data3 e ordem estável dos registros.
+- Criada a categoria clicável “Não classificados” nas quatro visões de Origem dos cadastramentos. Ela reúne processos cuja movimentação mais recente está marcada como Não feito ou cujos dados não permitem confirmar com segurança conclusão ou pendência, como combinações inconsistentes entre Feito e Data3.
+- A identidade auditável passa a ser: Processos = Cumpridos + Pendentes + Não classificados. As três categorias são mutuamente exclusivas e exaustivas dentro de cada agrupamento.
+- O aprofundamento de Não classificados apresenta Processo, Servidor, Cadastrador, Coordenadoria, Data, Data2, Data3, Feito, Não feito, Atividade e Observação, além do acesso à tabela analítica completa.
+- Foram validados processos concluídos, pendentes, redistribuídos, com múltiplas conclusões, Feito vazio, Data3 vazia, combinações inconsistentes, Data2 ausente, empate de Data2, duplicidades, mudança de servidor e mudança de cadastrador.
+
+NOVIDADES DA VERSÃO 6.3
+
+- O Mapa de Concentração Produtiva ganhou o botão “Como interpretar”. A explicação diferencia a recorrência percentual da quantidade absoluta de conclusões, esclarece que 100% significa presença da faixa em todos os dias produtivos do servidor — e não concentração de toda a produção naquela faixa — e documenta a regra da linha PADRÃO DO RECORTE com combinações servidor × dia produtivo.
+- Na visão Turnos NUPACI, a mesma ajuda informa que as faixas possuem durações diferentes e devem ser lidas como blocos comportamentais da jornada, sem comparação direta entre os intervalos.
+- Incluída busca instantânea por servidor no Mapa de Concentração, sem distinção entre maiúsculas, minúsculas ou acentos. O botão × restaura a lista completa, e a linha PADRÃO DO RECORTE é recalculada apenas com os servidores visíveis. O texto pesquisado permanece preservado ao abrir detalhamentos e utilizar “← Voltar”.
+- A janela de pausas passou a exibir a observação do processo anterior e a observação do processo seguinte, exatamente a partir da coluna Observacao da base. Ausências são indicadas por “—”, textos longos podem ser abertos integralmente e uma nota esclarece que a observação é apenas contexto, sem justificar isoladamente o intervalo.
+- O detalhamento “Servidores com produção” ganhou busca instantânea por nome e comando de limpeza, mantendo a ordem, os números e o acesso à ficha gerencial dos servidores encontrados.
+- As quatro visões de Origem dos cadastramentos agora exibem a sequência Processos, Cumpridos e Pendentes. Cumpridos e Pendentes utilizam a posição atual consolidada de cada processo, são ordenáveis, participam dos totais e abrem exatamente os registros que compõem cada número, preservando o histórico interno dos pop-ups.
+
+NOVIDADES DA VERSÃO 6.2
+
+- A regra de “Pendentes” foi unificada em Origem dos cadastramentos e Acompanhamento das distribuições. O número agora representa processos únicos cuja distribuição ou movimentação mais recente permanece pendente para o servidor atual. Redistribuições retiram a pendência do servidor anterior e conclusões posteriores encerram a pendência, sem apagar o histórico.
+- Estatísticas ganhou o cartão “Documentos produzidos”, imediatamente após “Pendente mais antigo”. O total corresponde à soma da coluna Quantidade dos registros concluídos no recorte e pode ser diferente do número de processos cumpridos. O cartão respeita todos os filtros, permanece visível e recalcula automaticamente nas trocas de período, além de abrir os registros que compõem a soma.
+- O Mapa de Concentração Produtiva passou a oferecer os modos Hora a hora, Turnos NUPACI e Personalizado. A troca recalcula percentuais, intensidade, faixa predominante, PADRÃO DO RECORTE e todos os aprofundamentos.
+- Hora a hora apresenta as faixas < 8h, cada hora entre 08h e 18h e > 18h. Turnos NUPACI utiliza < 8h, 08–11, 11–12, 12–13, 13–15, 15–18 e > 18h. Como as faixas de Turnos NUPACI possuem durações diferentes, devem ser lidas como blocos comportamentais da jornada, e não como intervalos diretamente comparáveis.
+- No modo Personalizado é possível adicionar faixas com nome opcional, remover, reorganizar e restaurar o padrão. As preferências são guardadas somente no navegador atual. A metodologia coletiva continua usando combinações servidor × dia produtivo, nunca média simples dos percentuais individuais.
+- As quatro visões de Origem dos cadastramentos agora possuem aprofundamento integral. Nomes, métricas, origens e totais abrem um resumo contextual e permitem explorar os registros com pesquisa, ordenação, filtros rápidos, colunas visíveis, cópia, exportação e “← Voltar”.
+- Os pop-ups contextuais preservam cadastrador, servidor, atividade, data, origem e a regra oficial de pendência correspondente à célula selecionada.
+- Cabeçalhos das tabelas extensas foram padronizados como fixos dentro da própria área de rolagem, inclusive em pop-ups. A rolagem horizontal, as primeiras colunas fixas e o uso em celular permanecem compatíveis.
+
+NOVIDADES DA VERSÃO 6.1
+
+- Incluído, imediatamente após a tabela de Metas e jornada, o “Mapa de Concentração Produtiva”. Ele mostra por servidor a recorrência de registros de conclusão nas faixas 08h–10h, 10h–12h, 12h–14h, 14h–16h, 16h–18h e Após 18h.
+- A medida principal do mapa é o percentual de dias produtivos do servidor com ao menos uma conclusão na faixa. A quantidade absoluta de conclusões permanece disponível nas células e nos detalhamentos. O mapa utiliza somente conclusões válidas pela Data3 e respeita todos os filtros ativos.
+- A linha “PADRÃO DO RECORTE” usa como denominador as combinações servidor × dia produtivo, sem calcular média simples dos percentuais individuais. Cada faixa informa recorrência, combinações, conclusões e servidores e abre um detalhamento pesquisável, ordenável, copiável e exportável.
+- Um clique no servidor abre a matriz diária com primeira e última conclusão, total, janela observada e pausas. As faixas abrem os processos correspondentes; o número de pausas reutiliza a janela de pausas já existente e preserva o histórico interno com “← Voltar”.
+- O mapa apresenta os indicadores Presença observada pela manhã, Presença observada à tarde, Dias com registros após 18h e Mediana da primeira conclusão. A leitura é descritiva: ausência de conclusões em uma faixa não comprova, isoladamente, ausência de trabalho.
+- No detalhamento das faixas de “Intervalos entre conclusões”, o indicador “Dias com pausas acima do limite” agora é claramente clicável e abre uma etapa intermediária com data, quantidade e tempo total de pausas, maior pausa, primeira e última conclusão e janela observada.
+- A ação “Ver pausas do dia” só fica ativa quando o dia realmente possui pausa superior ao limite atual; nos demais casos é exibido “Sem pausas”. O cálculo continua sendo exatamente o mesmo das visões Diária e Por servidor e reage ao limite configurado.
+- Foram preservados filtros, buscas, ordenações, exportações, responsividade, acesso por teclado e a navegação progressiva entre ficha do servidor, faixa de intervalo, dias com pausas e janela de pausas.
+
+NOVIDADES DA VERSÃO 6.0
+
+- Na ficha gerencial do servidor, as seis faixas de “Intervalos entre conclusões” agora são clicáveis. O detalhamento apresenta exatamente os intervalos que compõem a faixa, com quantidade, maior intervalo, mediana, dias envolvidos, dias com pausas, busca, ordenação e todas as informações disponíveis do registro seguinte.
+- Cada linha do detalhamento permite consultar o processo anterior, o processo seguinte e reutilizar a janela de pausas do respectivo servidor e dia. Todo o fluxo preserva o histórico interno do pop-up com “← Voltar”. A regra dos intervalos não foi alterada: continuam sendo comparadas conclusões consecutivas do mesmo servidor no mesmo dia.
+- A visão Mensal de “Acompanhamento de metas e jornada” ganhou a coluna ordenável “Pausas”, posicionada entre Turno predominante e Dias diferentes. O valor é a soma das pausas diárias já apuradas para o servidor no mês e no recorte, respeitando o limite atual. Um clique abre a relação por dia e, em seguida, a janela de pausas já existente.
+- O ícone de informação de “Limite para considerar pausa” foi alinhado horizontalmente ao título, recebeu área confortável para mouse, toque e teclado e passou a seguir o mesmo padrão visual dos demais ícones do Radar.
+- Estatísticas agora permite escolher entre “Período equivalente anterior”, “Período imediatamente anterior” e “Personalizado”. O período equivalente é o padrão e preserva a duração e os mesmos dias da semana; o imediatamente anterior usa o bloco adjacente de mesma duração; o personalizado aceita datas inicial e final definidas pelo gestor.
+- Todos os cartões, variações e comparativos do módulo Estatísticas utilizam o mesmo período comparativo selecionado. O período efetivo fica visível no painel e nas exportações, sem criação de percentuais artificiais quando a base anterior é zero.
+
+RECURSOS DA VERSÃO 5.9 MANTIDOS
+
+- O status atual de cada processo agora considera sua distribuição mais recente pela Data2. Assim, uma conclusão antiga não elimina uma pendência criada por redistribuição posterior; do mesmo modo, uma conclusão posterior encerra a pendência anterior.
+- Os cartões “Processos concluídos” e “Processos pendentes” da Visão geral, o resumo superior e seus detalhamentos utilizam a mesma regra centralizada de status atual. O histórico de linhas e as métricas de produção concluída continuam preservados.
+- Na identificação do registro mais recente, a Data2 tem prioridade. Em empate ou ausência, o Radar usa, nesta ordem, a Data de referência, a Data3 e a ordem original estável dos registros conciliados. Isso resolve o desempate sem apagar o histórico.
+- O módulo Origem dos cadastramentos ganhou a coluna ordenável e clicável “Pendentes”, posicionada entre Processos e Linhas, nas visões Cadastrador → servidor, Evolução diária e Por atividade.
+- A nova coluna conta processos distintos atualmente pendentes segundo a mesma regra oficial do Radar. Ela respeita filtros e busca, participa da linha TOTAL e abre exatamente os processos que compõem o número, mantendo o contexto e o histórico interno do pop-up com “← Voltar”.
+
+RECURSOS DA VERSÃO 5.8 MANTIDOS
+
+- A Visão geral ganhou “Entenda Data2 e Data3”, disponível por hover, clique ou toque, com as regras de distribuídos, concluídos, pendentes e dias produtivos. Na 5.9, esse texto também explica a regra da distribuição mais recente.
+- Todos os aprofundamentos em pop-ups passaram a usar um histórico interno reutilizável. O botão “← Voltar” retorna à tela imediatamente anterior sem fechar o pop-up e preserva buscas, filtros, ordenação, colunas e contexto mantidos naquela tela.
+- Incluído “Limpar filtros” no topo, ao lado de “Consultar processos”. Ele utiliza a mesma limpeza do painel lateral, fica atenuado quando não há filtro e restaura todo o painel ao estado geral quando acionado.
+- A visão “Por servidor” de Metas e jornada ganhou a coluna ordenável “Pausas”, calculada pela soma exata das pausas diárias do servidor no período e com o mesmo limite configurado. O total abre as pausas por dia; cada dia abre o detalhamento existente e utiliza o novo botão “← Voltar”.
+
+RECURSOS DA VERSÃO 5.7 MANTIDOS
+
+- A consulta de processos agora possui comandos para copiar, de uma só vez, os processos encontrados e os não encontrados.
+- As listas são copiadas com um número de processo por linha e mantêm a forma originalmente informada na consulta.
+- A confirmação informa quantos processos foram copiados, e os mesmos comandos permanecem disponíveis no resumo do histórico de vários processos.
+
+RECURSOS DA VERSÃO 5.6 MANTIDOS
+
+- Incluído em Estatísticas o cartão “Pendentes a partir da data-limite”, imediatamente após “Quantidade fora do prazo médio”. Ele conta somente as linhas que permaneciam pendentes na data final e possuem Data2 igual ou posterior à data-limite; cumpridos e não feitos não entram.
+- O novo cartão mostra linhas, processos distintos, comparação com o período anterior e tooltip completo. A data-limite fica incluída no novo grupo, enquanto o cartão de fora do prazo continua usando datas estritamente anteriores, evitando sobreposição ou lacunas.
+- Ao clicar no cartão, abre-se “Dinâmica das pendências a partir da data-limite”, com volume, processos distintos, média diária, pico, dias com pendências, gráfico diário e matriz clicável por atividade e data de distribuição.
+- Incluído “Consultar processos” no cabeçalho e no painel de filtros, abaixo do período de conclusão. Os dois acessos permanecem sincronizados.
+- A consulta aceita um ou vários números separados por vírgula, ponto e vírgula ou quebra de linha, reconhece números com ou sem pontuação, elimina repetições e informa encontrados e não encontrados.
+- “Ver histórico” ignora os filtros de período e apresenta toda a trajetória disponível nas bases: distribuições, conclusões, atividades, servidores, cadastradores, situação, documentos e origem.
+- “Aplicar ao painel” transforma a lista em filtro geral, combinando-a com os demais filtros. O cabeçalho, a lateral e o resumo de filtros ativos mostram a seleção e permitem limpá-la rapidamente.
+
+FUNCIONALIDADES DA VERSÃO 5.5
+
+- Os comparativos estatísticos agora tratam de forma gerencial os casos em que o período anterior era zero: “Atenção: surgiu no período” para aumentos desfavoráveis, “Novo volume no período” para aumentos favoráveis, “Zerado no período” quando um problema desaparece e “Permaneceu zerado” quando não há mudança. Não são exibidos percentuais artificiais.
+- A “Data-limite do prazo médio” passou para um marcador compacto ao lado do título do cartão. Um clique abre o seletor de data e a opção de restaurar o cálculo automático de sete dias, mantendo todos os cartões com altura uniforme.
+- Os cartões foram reorganizados para aproximar informações relacionadas. “Cumpridos no mesmo dia” agora aparece logo após “Não feitos”.
+- O indicador foi renomeado para “Relação entre cumpridos e distribuídos”, com o subtítulo “Equilíbrio do fluxo no período” e tooltip completo para resultados abaixo, iguais ou acima de 100%.
+- Os atalhos de atividade e o campo “Atividade analisada” agora permanecem sincronizados nos dois sentidos.
+- Incluído “Entenda os indicadores”, com explicação de Data2, Data3 e das regras de Quantidade distribuída, cumprida e pendente, esclarecendo por que esses conjuntos não precisam fechar como uma soma.
+- A Tabela analítica mantém Equipe, Servidor e Atividade como filtros rápidos fixos e ganhou “Mais filtros”, permitindo transformar qualquer outra coluna importada em filtro interdependente, pesquisável e com multiseleção.
+- A Tabela analítica ganhou “Colunas visíveis”, com atalhos para Essenciais, Todas e Restaurar padrão. Somente Ação permanece fixa. As preferências ficam salvas no navegador.
+- Busca, ordenação, filtros, imagens copiadas e exportações completas da Tabela analítica respeitam as colunas visíveis e a configuração atual.
+
+FUNCIONALIDADES DA VERSÃO 5.4
+
+- Incluído em Estatísticas o cartão “Quantidade fora do prazo médio”, imediatamente após “Pendente mais antigo”. O número principal mostra linhas pendentes fora do prazo e a informação complementar mostra processos distintos.
+- A regra utiliza Data2 estritamente anterior à “Data-limite do prazo médio”. A própria data-limite não entra no resultado. Automaticamente, a data-limite corresponde a sete dias antes da data final do período estatístico.
+- A data-limite pode ser alterada dentro do próprio cartão. Ao selecionar outra data, o painel recalcula o intervalo em dias e aplica a mesma distância ao período anterior, preservando uma comparação equivalente. O botão “Restaurar” retorna ao cálculo automático de sete dias.
+- O novo cartão possui explicação completa, comparação com valor anterior e variação percentual, além de popup com todas as linhas que formam o indicador.
+- Corrigidos os tooltips dos gráficos “Evolução no período” e “Evolução da origem”. As mensagens agora usam a camada flutuante do painel, reposicionam-se conforme o espaço disponível e não são mais cortadas pelo limite dos gráficos.
+- Ajustados alinhamento, tamanho, espaçamento e área de interação dos ícones de informação do bloco “Origem dos cadastramentos”, incluindo o ícone geral do quadro.
+
+FUNCIONALIDADES DA VERSÃO 5.3
+
+- Os comparativos dos cartões de Estatísticas agora mostram primeiro o valor numérico do período anterior e, em seguida, a variação. Quantidades exibem linhas, tempos exibem a duração anterior e indicadores percentuais usam diferença em pontos percentuais (p.p.).
+- Quando o período anterior possui valor zero, esse zero continua visível e a interface informa que a variação percentual não é calculável, evitando leituras ambíguas.
+- Incluído em Estatísticas o bloco “Origem dos cadastramentos”, logo após os indicadores principais, com Gestão, Autocadastramento, Outros e Não informado, mostrando linhas, percentuais e comparação com o período anterior.
+- A categoria Gestão também destaca cadastramentos do gestor para si próprio. A classificação segue as mesmas regras do painel Origem dos cadastramentos e respeita a lista de gestores configurada.
+- A composição proporcional e a evolução temporal de Gestão versus Autocadastramento acompanham o agrupamento diário, semanal ou mensal selecionado. Cartões, barras e pontos do gráfico abrem os respectivos registros em popup.
+- O novo bloco respeita a atividade e o período escolhidos em Estatísticas, além dos filtros gerais, e passa a integrar integralmente as imagens copiadas ou baixadas.
+- O cartão “Pendente mais antigo” foi reposicionado imediatamente após “Quantidade pendente”, aproximando as duas informações gerenciais relacionadas.
+
+FUNCIONALIDADES DA VERSÃO 5.2
+
+- Incluído o módulo “Estatísticas” imediatamente antes da Tabela analítica e também no Sumário lateral.
+- A medição principal usa linhas de atividade: Quantidade distribuída pela Data2, Quantidade cumprida pela Data3 e Quantidade pendente na posição histórica da data final escolhida. Processos distintos aparecem como informação complementar.
+- O módulo permite selecionar qualquer atividade, além dos atalhos para Urgências, Alvarás, Audiências — todas, Audiência cível e Audiência criminal.
+- O período estatístico é configurável dentro do módulo, com agrupamento diário, semanal ou mensal. O comparativo opcional usa automaticamente o período anterior de igual duração e informa quando não há base comparável.
+- Foram acrescentados indicadores clicáveis de distribuídos, cumpridos, pendentes, não feitos, relação cumpridos/distribuídos, processos distintos, repetições no dia, linhas adicionais, possíveis duplicações técnicas, tempos médio, mediano e máximo, cumprimentos no mesmo dia e pendente mais antigo.
+- Para Urgências, as faixas de cumprimento são até 2h, 2h–6h, 6h–12h, 12h–24h, 24h–48h e acima de 48h. As demais atividades recebem faixas em dias.
+- A evolução temporal apresenta distribuídos, cumpridos e pendentes ao final de cada intervalo. Todas as barras abrem as linhas correspondentes.
+- A tabela de participação dos servidores mostra volume cumprido, participação, mediana com amostra mínima de cinco linhas, pendências, pendente mais antigo e relação de execução.
+- A tabela de repetições por data diferencia linhas, processos distintos, processos repetidos, linhas adicionais e possíveis duplicações técnicas, com tooltips e detalhamento clicável.
+- Possíveis duplicações técnicas são apenas sinalizadas quando há coincidência forte entre os campos; as linhas continuam incluídas até conferência do gestor.
+- O módulo possui Copiar imagem e Baixar PNG, mantendo no relatório os períodos, a atividade, o agrupamento, o comparativo e os filtros gerais ativos.
+
+FUNCIONALIDADES DA VERSÃO 5.1
+
+- Corrigidos os tooltips dos cabeçalhos em “Acompanhamento de metas e jornada”. As mensagens agora são exibidas em uma camada flutuante acima da página, fora do contêiner com rolagem horizontal da tabela.
+- O posicionamento é calculado conforme a coluna: a mensagem fica centralizada, respeita as bordas da tela e passa para baixo do cabeçalho quando não houver espaço acima.
+- A correção vale para as quatro visões — Diária, Por servidor, Mensal e Por atividade — e também para o ícone de ajuda do limite de pausa.
+- Os tooltips continuam acessíveis por mouse e teclado, são fechados ao rolar, redimensionar a janela ou pressionar Esc e não alteram a ordenação das colunas.
+
+FUNCIONALIDADES DA VERSÃO 5.0
+
+- Em “Acompanhamento das distribuições”, a visão Por servidor ganhou a coluna “Pendente mais antigo”, entre Pendentes e Não feitos. Ela mostra Data2 com data e hora, permite ordenar do mais antigo ao mais recente e abre os processos correspondentes ao clicar.
+- O “Pendente mais antigo” ignora apenas o período de distribuição, evitando que um pendente antigo desapareça quando o gestor consulta distribuições recentes. Os demais filtros continuam respeitados. O rodapé TOTAL também mostra e detalha o pendente mais antigo do recorte.
+- O tooltip da nova coluna informa há quantos dias o processo está pendente e quantos processos compartilham o horário mais antigo. Quando houver empate, o popup apresenta todos.
+- Todas as colunas das quatro visões de “Acompanhamento de metas e jornada” receberam explicações acessíveis ao passar o mouse ou usar o teclado.
+- Acima da tabela de metas e jornada foi incluído um controle direto do limite de pausa, com opções de 15, 30 e 60 minutos e valor personalizado entre 1 e 240 minutos.
+- Intervalos iguais ou inferiores ao limite contam como continuidade da atividade; intervalos superiores contam como pausa. A escolha atualiza imediatamente cobertura operacional, atividade estimada, quantidade de pausas e todos os detalhamentos, permanecendo sincronizada com o popup de tempo de atividade.
+- Corrigido o indicador visual da coluna Situação, eliminando a bolinha indevida nos estados de meta atingida.
+- Corrigido o tooltip dos percentuais no “Perfil de atuação e atividades simultâneas”, que agora quebra linhas e exibe integralmente atividade, combinações, documentos e percentual.
+
+FINALIDADE
+
+Painel gerencial destinado aos coordenadores do NUPACI. Ele transforma as duas listas institucionais — ou seus CSVs locais — em indicadores, rankings, gráficos e detalhamentos navegáveis, usando o mesmo motor analítico independentemente da origem.
+
+COMO ABRIR
+
+1. Para a integração automática, use o Google Chrome com a extensão “Extensão RADAR Produtividade” instalada e uma sessão institucional Microsoft 365 autenticada.
+2. Abra o endereço oficial https://izidoronetto-coder.github.io/radar-produtividade-nupaci/ ou, para teste local, abra index.html com duplo clique depois de habilitar o acesso da extensão a URLs de arquivo.
+3. Clique em “Atualizar bases do Microsoft Lists”. No primeiro uso, a extensão fará a leitura completa de NUPACIProdutividade e ProditividadeDiaNUPACI; nas utilizações seguintes, o Radar pode abrir a cache válida e o botão “Atualizar agora” consulta somente as mudanças, salvo quando uma reconstrução completa for necessária.
+4. Se a extensão não estiver disponível, ou se preferir o procedimento manual, clique em “Carregar CSV manualmente” ou arraste um ou os dois arquivos CSV para a área indicada.
+5. Os dois CSVs podem ser escolhidos ao mesmo tempo. O painel reconhece cada base automaticamente pelo nome e pela estrutura. Também continua aceitando uma base isolada, com as limitações parciais já documentadas.
+6. Aguarde a conciliação e a montagem automática do painel. A origem ativa e, no modo Lists, a última sincronização bem-sucedida permanecem identificadas no painel.
+
+COMO USAR
+
+- A lateral esquerda possui as abas Sumário e Filtros. Use Sumário para navegar diretamente entre os módulos e Filtros para definir períodos, coordenadoria, equipe, servidor, atividade, sistema, feito, cadastrador e prioridade.
+- A lateral pode permanecer aberta, ser minimizada ou mostrar uma prévia temporária quando o cursor passa sobre Sumário ou Filtros. O estado escolhido fica salvo neste navegador.
+- Quando houver filtros ativos, o cabeçalho mostra a quantidade aplicada. Passe o mouse para consultar o resumo ou clique para remover um filtro individualmente ou limpar todos de uma vez.
+- O mesmo campo de carregamento aceita NUPACIProdutividade e ProditividadeDiaNUPACI juntos. Também é possível trabalhar com somente uma base; nesse caso, o acompanhamento das distribuições identifica claramente a visão parcial e não transforma informações indisponíveis em zero.
+- Os cartões de origem no início do painel informam arquivo reconhecido, quantidade de linhas, período e finalidade de cada base. Passe o mouse, clique ou use o teclado sobre o ícone de informação para consultar a conceituação.
+- O período de distribuição usa Data2 e o período de conclusão usa Data3. Quando os dois períodos estão preenchidos, o registro precisa atender simultaneamente aos dois intervalos.
+- Ao carregar somente NUPACIProdutividade, o painel inicia pelo menor e maior período de conclusão. Quando ProditividadeDiaNUPACI está presente, os períodos começam sem restrição para que pendentes e não feitos também sejam incluídos; cada grupo pode ser aplicado ou limpo separadamente.
+- Clique no cartão “Tempo de atividade estimado” para configurar o limite de continuidade. No popup, escolha um limite rápido de 5, 6, 7, 8, 9, 10, 15, 20, 30 ou 60 minutos. A opção “Personalizado” libera um campo numérico com setas para aumentar ou diminuir de 1 em 1 minuto (mínimo 1, máximo 240); confirme em “Aplicar parâmetro”. O mesmo parâmetro pode ser alterado diretamente acima da tabela de metas e jornada.
+- Clique no cartão “Intervalo médio entre conclusões” para comparar os servidores abaixo, dentro e acima da faixa média. A tolerância pode ser configurada em 10%, 15%, 20%, 25% ou em um percentual personalizado entre 1% e 100%.
+- Qualquer alteração de data ou opção dos filtros gerais atualiza o painel automaticamente. Não há botão Aplicar na lateral.
+- Os filtros são interdependentes: cada menu mostra apenas opções compatíveis com os demais filtros ativos e recalcula as quantidades entre parênteses. O próprio filtro é desconsiderado ao calcular suas opções, permitindo selecionar mais de um valor compatível.
+- Nos filtros de lista, pesquise, marque vários itens ou use “Selecionar todos” e “Limpar”.
+- Clique em cartões, barras, dias, nomes de servidores e números da matriz para abrir os registros que formam o indicador.
+- No gráfico diário, clique em um dia para abrir o ranking daquele dia; depois clique em um servidor para chegar aos respectivos processos.
+- Na ficha do servidor, escolha um dia para ver somente os processos produzidos naquela data.
+- Nas listas de processos, pesquise, ordene pelas colunas e copie um processo ou todos de uma vez.
+- Todos os popups com listas de processos possuem, por padrão, filtros rápidos de Coordenadoria, Servidor, Atividade, Prioridade e Cadastrador. Eles permitem pesquisa, multiseleção, seleção total e limpeza, mostram a quantidade de processos entre parênteses e interagem entre si.
+- Use “Mais filtros” para transformar qualquer outra coluna existente no CSV em filtro rápido. A seleção fica salva no navegador e pode ser aplicada em todos os popups; “Restaurar padrão” retorna aos cinco filtros permanentes.
+- Use “Colunas visíveis” nos popups de processos para escolher quais informações aparecem na tabela. Os atalhos “Essenciais”, “Todas” e “Limpar” atualizam a visualização imediatamente. A escolha fica salva no navegador e é reutilizada em todos os popups.
+- Por padrão, aparecem Processo, Servidor, Concluído, Intervalo, Atividade, Documentos, Prioridade e Cadastrador. A coluna Ação permanece fixa para preservar o botão Copiar.
+- Quando a tabela possuir mais colunas do que a largura do popup, use a barra horizontal flutuante na parte inferior. Ela permanece visível durante a rolagem vertical e se movimenta em sincronia com a tabela.
+- Na tabela analítica, Equipe, Servidor e Atividade permanecem como filtros rápidos fixos. Em “Mais filtros”, qualquer outra coluna importada pode ser acrescentada com pesquisa, multiseleção, contagens e interação entre os filtros.
+- Em “Colunas visíveis”, escolha as informações apresentadas na tabela analítica. Use Essenciais, Todas ou Restaurar padrão; apenas a coluna Ação permanece fixa. A configuração é preservada no navegador e também vale para as imagens geradas da tabela.
+- Em “Acompanhamento de metas e jornada”, alterne entre as visões Diária, Por servidor, Mensal e Por atividade. Pesquise por servidor ou atividade, ordene qualquer coluna e clique nos números para abrir dias, processos, duplicidades, múltiplas atividades, pausas e regras de turno.
+- Em “Estatísticas”, escolha a atividade e o período próprios do relatório. Os filtros gerais de coordenadoria, equipe, servidor, atividade, sistema, feito, cadastrador e prioridade continuam sendo respeitados; as datas do módulo determinam o período estatístico e permitem calcular corretamente o período anterior.
+- No cartão “Quantidade fora do prazo médio”, clique na data para alterar a “Data-limite do prazo médio”. Somente Data2 anterior à data escolhida entra no resultado. “Restaurar” retorna à data automática de sete dias antes do período final.
+- “Audiências — todas” reúne Audiência cível e Audiência criminal. Os dois tipos também permanecem disponíveis separadamente.
+- Passe o mouse ou use o teclado nos ícones de informação do módulo Estatísticas para consultar as regras. Clique em cartões, barras, faixas, servidores e números das tabelas para abrir exatamente as linhas correspondentes.
+- Use “Copiar imagem” no Ranking detalhado, Servidor × atividade, Perfil de atuação e atividades simultâneas, Distribuição institucional, Origem dos cadastramentos, Acompanhamento de metas e jornada, Estatísticas, Tabela analítica ou em qualquer popup. Escolha copiar para a área de transferência ou baixar o PNG. A opção “Área exibida” reproduz o recorte atual; “Tabela completa” expande a tabela e inclui todo o resultado filtrado. A imagem mantém filtros, pesquisa, classificação, visão e colunas selecionadas. O módulo Estatísticas também possui um botão direto “Baixar PNG”.
+- O PNG recebe um cabeçalho próprio para relatório, com nome do painel, períodos selecionados, filtros ativos, classificação ou visão atual e data de geração. Botões, campos de edição, paginação e outros controles operacionais não aparecem na imagem.
+- Use “Navegação do painel”, na lateral esquerda, para ir diretamente à Visão geral, Evolução das distribuições e conclusões, Ranking detalhado, Servidor × atividade, Perfil de atuação, Ritmo de conclusão, Distribuição institucional, Origem dos cadastramentos, Acompanhamento das distribuições, Metas e jornada, Estatísticas ou Tabela analítica. A seção atualmente visível fica destacada automaticamente.
+- A navegação pode ser recolhida sem alterar os filtros. Quando toda a barra lateral é minimizada, os oito atalhos continuam disponíveis em formato compacto. Em telas pequenas, use o botão flutuante “Seções”.
+- O botão ↑, no canto inferior direito, volta ao topo.
+
+REGRAS DOS INDICADORES
+
+Processos distribuídos
+Quantidade de números de processo distintos com Data2 preenchida no recorte. Representa processos distribuídos por um gestor ou cadastrados pelo próprio servidor.
+
+Processos concluídos
+Quantidade de números de processo distintos cuja distribuição mais recente representa conclusão própria: Data3 preenchida, Feito igual a Sim e FeitoOutro vazio. FeitoOutro válido é resolução operacional separada e não entra como produtividade do destinatário. Se o mesmo número estiver em mais de uma linha, o status atual é definido pela distribuição mais recente, sem apagar o histórico.
+
+Processos pendentes
+Quantidade de números de processo distintos cuja distribuição mais recente possui Data3 vazia e Feito igual a Não. Quando um processo possui mais de uma distribuição, seu status atual considera a distribuição mais recente. Uma conclusão anterior não elimina uma pendência gerada por redistribuição posterior.
+
+Desempate do status atual
+A Data2 é a referência principal para localizar a distribuição mais recente. Em empate ou ausência de Data2, o Radar compara a Data de referência, depois a Data3 e, persistindo o empate, preserva a ordem original estável dos registros conciliados. Nenhuma linha histórica é excluída por esse cálculo.
+
+Quantidade fora do prazo médio
+Em Estatísticas, contabiliza as linhas que permaneciam pendentes na data final selecionada e possuem Data2 estritamente anterior à “Data-limite do prazo médio”. A própria data-limite não entra. O padrão automático é sete dias antes da data final: com término em 21/09/2026, a data-limite é 14/09/2026 e entram apenas registros anteriores a 14/09/2026. Ao escolher outra data, a distância em dias é repetida no período anterior para preservar a equivalência do comparativo.
+
+Documentos produzidos
+Soma da coluna Quantidade somente dos registros concluídos. Campos vazios e valores não numéricos são tratados como zero. A métrica permanece separada da quantidade de processos.
+
+Intervalo entre conclusões
+Para cada servidor, os processos concluídos são ordenados pela Data3 dentro de cada dia. O intervalo é a diferença entre a conclusão atual e a conclusão imediatamente anterior do mesmo servidor no mesmo dia. O primeiro processo de cada dia aparece com “—” e não entra na média. Processos registrados no mesmo minuto apresentam intervalo de 0min.
+
+As colunas DATA e Data2 continuam visíveis como referência e distribuição, mas não participam do cálculo do intervalo. O indicador representa a cadência dos registros de conclusão na Data3 e não deve ser interpretado como tempo efetivamente trabalhado em cada processo.
+
+Média e mediana
+A média soma os intervalos válidos e divide pela quantidade de processos com intervalo calculável. A mediana mostra o ponto central da cadência e é menos afetada por pausas excepcionalmente longas.
+
+Comparação dos intervalos por servidor
+O popup do intervalo médio calcula a média individual de cada servidor e a compara com a média geral do recorte. A faixa padrão admite 20% para baixo ou para cima e pode ser configurada. Os servidores são classificados como abaixo, dentro ou acima dessa faixa. O popup também mostra mediana, diferença percentual, intervalos calculáveis, processos, documentos e dias, com acesso à ficha do servidor e aos respectivos processos. Servidores sem ao menos um intervalo calculável ficam fora das três faixas e são informados separadamente. A classificação descreve a cadência dos registros e não qualifica automaticamente o desempenho.
+
+Tempo de atividade estimado
+Para cada servidor e dia, a janela observada vai da primeira à última conclusão. Dentro dessa janela, o painel soma somente os intervalos entre conclusões iguais ou inferiores ao limite configurado; intervalos maiores são tratados como pausas. O cartão principal mostra a média estimada por servidor/dia, evitando que o indicador cresça apenas pela seleção de mais dias. Clique nele para abrir o detalhamento por servidor e data, com primeira e última conclusão, janela, pausas e processos.
+
+O popup preserva quatro perspectivas: média por servidor/dia, mediana por servidor/dia, média coletiva diária e total acumulado no período. A média coletiva é expressa em horas-servidor: soma o tempo estimado de todos os servidores e divide pela quantidade de dias com ao menos uma combinação servidor/dia calculável.
+
+Na coluna Pausas, os números maiores que zero são clicáveis. O detalhamento mostra o horário inicial, o horário final, a duração e os processos anterior e seguinte de cada pausa. A linha do tempo usa azul para as conclusões registradas e amarelo para os períodos classificados como pausa. Tanto a lista quanto o gráfico são recalculados automaticamente conforme o limite de continuidade configurado.
+
+No popup de tempo de atividade, use “Buscar servidor pelo nome” para localizar um servidor escrevendo o nome completo ou apenas uma parte dele. Com o campo vazio, todos os registros permanecem visíveis. Clique em qualquer cabeçalho da tabela para ordenar de forma crescente ou decrescente por servidor, dia, primeira ou última conclusão, janela, atividade estimada, pausas ou processos. A seta indica a ordem ativa.
+
+Esse indicador é uma estimativa de atividade observável nos registros de conclusão. Ele não substitui controle de ponto e não mede tarefas realizadas fora do sistema. O parâmetro escolhido fica salvo localmente no navegador.
+
+Dias produtivos
+Quantidade de datas distintas de conclusão (Data3) com produção. É uma leitura de frequência produtiva; não representa controle formal de ponto ou frequência funcional.
+
+Feito, compensação e demais booleanos
+True/Verdadeiro/Sim são exibidos como “Sim”. False/Falso/Não são exibidos como “Não”. Data3 preenchida com Feito igual a Sim identifica conclusão produtiva somente quando FeitoOutro está vazio. Com FeitoOutro válido, identifica resolução operacional por terceiro. Data3 vazia com Feito igual a Não identifica pendência. Combinações inconsistentes são mantidas para auditoria e não recebem classificação produtiva ou temporal silenciosa.
+
+Cadastrador
+O filtro e os popups leem a coluna Cadastrador do CSV, mantendo compatibilidade com exportações antigas que utilizem o cabeçalho Cadastrado. Valores vazios aparecem como “Não informado”.
+
+Observação e prioridade
+Os popups de processos permitem exibir Observação, Prioridade e Cadastrador. A pesquisa também encontra termos presentes nesses campos, e os cabeçalhos visíveis permitem ordenar os registros. Quando o mesmo processo aparece em mais de uma linha, os valores distintos desses campos são preservados no registro consolidado.
+
+Colunas dinâmicas nos popups
+O seletor “Colunas visíveis” reconhece todas as colunas existentes no CSV importado, inclusive cabeçalhos que ainda não façam parte do modelo padrão do painel. O campo calculado Intervalo também permanece disponível. Assim, colunas novas adicionadas em futuras exportações aparecem automaticamente como opções, sem eliminar a rolagem horizontal quando muitas delas forem ativadas.
+
+Compensação
+A informação continua sendo lida do CSV para manter a compatibilidade com a base, mas não aparece nos filtros gerais nem na tabela analítica.
+
+Datas
+DATA é a data de referência para cumprimento; Data2 é o momento da distribuição ou do cadastro; Data3 é o momento da conclusão. Exportações com AM/PM são interpretadas no padrão mês/dia/ano. Datas sem AM/PM são interpretadas preferencialmente no padrão brasileiro dia/mês/ano. A evolução, o ritmo, as pausas e a atividade usam Data3.
+
+ACOMPANHAMENTO DE METAS E JORNADA
+
+Meta equivalente
+O cálculo usa processos distintos concluídos na Data3, agrupados por servidor, dia e atividade. Para cada atividade configurada, divide a quantidade de processos distintos pela meta diária. Quando o servidor trabalha em mais de uma atividade, soma as proporções. O resultado pode ultrapassar 100%. A média do período considera apenas os dias com produção em ao menos uma atividade que possua meta.
+
+Unidades dos cartões gerenciais
+“Servidor/dias com meta atingida” conta combinações de servidor e data, e não dias do calendário. Assim, três servidores com produção em uma mesma data formam três combinações servidor/dia. “Datas produtivas no período” apresenta separadamente a quantidade real de datas distintas da Data3. “Cobertura média por servidor/dia” calcula a média das janelas observadas dessas combinações. “Turno predominante estimado” usa servidores como denominador. Os cartões de padrão diferente e inconclusivo também declaram explicitamente que contabilizam combinações servidor/dia.
+
+Metas diárias
+Urgência 35; Análise 35; Baixa 35; Certificação de prazo 60; Encaminhamento 10; Audiência cível 18; Audiência criminal 15; SAE/ALVARÁ 15; BNMP/Guias 12; SEEU 35; SAPRE/TRF5 10; Saneamento 140.
+
+Atividades sem meta
+Atividades não reconhecidas não entram no percentual. O painel apresenta separadamente os processos e documentos sem meta configurada e permite abrir o detalhamento.
+
+Documentos
+A meta utiliza processos distintos. A coluna Documentos soma Quantidade nos registros concluídos e permanece visível separadamente em todas as análises.
+
+Duplicidades
+Quando o mesmo processo aparece mais de uma vez para o mesmo servidor, dia e atividade, conta uma única vez na meta. O painel informa quantos números estão duplicados, quantas linhas excedentes existem e permite abrir as linhas correspondentes.
+
+Múltiplas atividades
+Quando o mesmo processo aparece em atividades diferentes para o mesmo servidor e dia, conta uma vez em cada atividade registrada. O painel sinaliza o processo como múltipla atividade e permite conferir todas as linhas.
+
+Cobertura observada
+A cobertura divide a janela entre a primeira e a última conclusão por 7 horas. Valores superiores mostram 100% e o tempo excedente. Esse indicador descreve registros observados e não comprova formalmente o cumprimento da jornada.
+
+Turno predominante estimado
+Os turnos de referência são 08h–15h e 11h–18h. Cada dia precisa ter pelo menos dois horários distintos e janela mínima de 1 hora. O painel compara a sobreposição da janela com os dois turnos. Empate produz resultado inconclusivo. Para existir turno predominante, um dos padrões precisa representar pelo menos 60% dos dias classificáveis do servidor.
+
+Os números de dias diferentes e dias inconclusivos são clicáveis. Os popups mostram data, primeira e última conclusão, janela, turno estimado, motivo, processos e acesso ao detalhamento diário.
+
+Concentração dos registros
+O detalhamento diário informa conclusões no minuto de maior concentração, percentual concentrado, maior bloco em até 5 minutos, horários distintos e intervalos de 0min. Esses dados funcionam como sinais gerenciais e não classificam automaticamente a conduta do servidor.
+
+FUNCIONALIDADES DA VERSÃO 4.8
+
+- Nova lateral organizada em duas abas integradas: Sumário e Filtros.
+- Modos aberto, minimizado e prévia flutuante ao passar o cursor sobre cada aba, sem deslocar o conteúdo do painel.
+- Destaque automático da seção atual no Sumário e contador de filtros ativos na aba Filtros.
+- Indicador “Filtros ativos” no cabeçalho, com resumo dos valores aplicados, remoção individual e ação “Limpar todos”.
+- Textos esclarecidos para “registros após conciliação” e “registros no recorte atual”, acompanhados de explicação sobre linhas carregadas, conciliação e filtros.
+- Navegação e controles adaptados para mouse, teclado e telas menores, com fechamento por clique externo e tecla Esc.
+
+FUNCIONALIDADES DA VERSÃO 4.7
+
+- Todos os valores das linhas e do rodapé TOTAL em “Acompanhamento das distribuições” agora são clicáveis e abrem o detalhamento específico de distribuídos, feitos, pendentes, não feitos, execução, incluídos pelo servidor e linhas.
+- O detalhamento da coluna Linhas preserva ocorrências repetidas; as demais categorias respeitam as combinações distintas de processo, servidor, atividade e data usadas nos indicadores.
+- Todos os popups de processos receberam a ação “Exportar XLSX”, respeitando a pesquisa, os filtros rápidos, a ordenação e as colunas visíveis no momento da exportação.
+- O arquivo XLSX é gerado localmente com as abas “Processos” e “Contexto”; a segunda registra bases carregadas, períodos, filtros, busca, ordenação e data de geração.
+
+- Indicador “Feitos da gestão” renomeado para “Distribuídos pela gestão e feitos”, deixando explícito que os processos foram distribuídos pela gestão e concluídos pelo servidor.
+- Ícones de informação dos cartões de “Acompanhamento das distribuições” corrigidos e centralizados, preservando os tooltips acessíveis por mouse, toque e teclado.
+
+- Importação local por seleção ou arrastar e soltar.
+- Seleção múltipla no campo de carregamento, permitindo importar NUPACIProdutividade e ProditividadeDiaNUPACI simultaneamente.
+- Reconhecimento automático das duas bases pelos nomes fixos e pelas colunas características, com bloqueio de arquivos desconhecidos ou duas bases do mesmo tipo.
+- Cartões de confirmação das fontes, com linhas, período, situação de carregamento e tooltips conceituais acessíveis por mouse, toque e teclado.
+- Conciliação local das conclusões coincidentes por processo, servidor, atividade e minuto da Data3, evitando dupla contagem e complementando campos vazios com a outra fonte.
+- Compatibilidade com carregamento de uma única base, mantendo o painel operacional e sinalizando indicadores indisponíveis como visão parcial.
+- Novo módulo “Acompanhamento das distribuições”, posicionado depois de “Origem dos cadastramentos” e incluído na navegação lateral.
+- Indicadores de distribuídos pela gestão, feitos, pendentes, não feitos, taxa de execução, produção incluída pelo servidor e divergências entre as bases.
+- Visões Por servidor, Por atividade, Por data e Por cadastrador, com busca, ordenação, totais, barras de execução e detalhamento clicável dos processos.
+- Situação da ProditividadeDiaNUPACI definida pela combinação Feito e Nao-feito; incompatibilidades com Data3 são sinalizadas para conferência.
+- Coluna Nao-feito acrescentada à tabela analítica e disponibilizada nos popups e no seletor de filtros adicionais quando existir na base.
+- Identidade atualizada para “RADAR de Produtividade e Frequência NUPACI”, com o monograma “RN” e o subtítulo “Monitoramento de produção, jornada, eficiência, equipes e execução de expedientes.”.
+- Validação das colunas essenciais e mensagem de erro estrutural.
+- Filtros automáticos, sem botão Aplicar, com atualização imediata dos indicadores.
+- Períodos independentes de distribuição (Data2) e conclusão (Data3), combinados quando ambos estão ativos e com limpeza individual.
+- Seleção automática do período inicial: conclusão quando houver Data3; distribuição quando toda a Data3 estiver vazia.
+- Filtros facetados e interdependentes, com ocultação das opções incompatíveis e contagens recalculadas.
+- Filtro Cadastrador vinculado à coluna Cadastrador, com compatibilidade para o antigo cabeçalho Cadastrado; compensação removida dos filtros gerais.
+- Filtros rápidos de Equipe, Servidor e Atividade na tabela analítica, com seleção múltipla, pesquisa, contagens e compatibilidade em cascata.
+- Coluna Compensação removida da tabela analítica.
+- KPIs separados de processos distribuídos, concluídos e pendentes, além de documentos, servidores, dias produtivos, médias e intervalos entre conclusões.
+- KPI de tempo de atividade estimado apresentado como média por servidor/dia, com detalhamento da mediana, média coletiva diária, total acumulado e limite aplicado.
+- Comparativo gerencial do intervalo médio por servidor, com faixas abaixo, dentro e acima da média geral, tolerância configurável, contagens e detalhamento clicável.
+- Busca textual por servidor e ordenação crescente ou decrescente em todas as colunas do detalhamento de tempo de atividade.
+- Novo módulo “Acompanhamento de metas e jornada”, posicionado antes da tabela analítica e integrado aos filtros gerais.
+- Visões Diária, Por servidor, Mensal e Por atividade, com busca, ordenação e detalhamentos clicáveis.
+- Cálculo proporcional da meta diária por atividade, permitindo combinar várias atividades e ultrapassar 100%.
+- Metas diárias para as 12 atividades informadas e tratamento separado das atividades sem meta configurada.
+- Turno predominante estimado por sobreposição com 08h–15h e 11h–18h, exigindo janela mínima de 1 hora e predominância mínima de 60%.
+- Popups dos dias com padrão diferente e dos dias sem informação suficiente ou com resultado inconclusivo.
+- Cobertura observada da jornada de 7 horas, preservada como indicador gerencial e não como controle formal de ponto.
+- Alertas clicáveis de processos duplicados, linhas excedentes e processos com múltiplas atividades.
+- Indicadores de concentração no mesmo minuto e no maior bloco de até 5 minutos.
+- Detalhamento clicável das pausas, com início, fim, duração, processos limítrofes e linha do tempo parametrizada pelo limite de continuidade.
+- Na linha do tempo das pausas, o cursor sobre cada conclusão mostra horário, número do processo e a quantidade total de documentos correspondente entre parênteses.
+- Limite de continuidade parametrizável por opções rápidas ou valor personalizado com setas de incremento.
+- Configuração do limite de continuidade centralizada no popup “Tempo de atividade estimado”, sem o bloco redundante na lateral de filtros gerais.
+- Ranking geral alternável entre processos e documentos, com Top 5/10/20/Todos.
+- Abertura da ficha gerencial pelo ranking protegida contra registros sem Data3; a produção diária considera somente conclusões válidas.
+- Ranking detalhado ordenável por todas as colunas.
+- Ranking por atividade por meio dos filtros e da matriz Servidor × Atividade.
+- Matriz Servidor × Atividade com pesquisa instantânea por nome, contador de servidores visíveis e ordenação crescente ou decrescente em Servidor, Total e todas as atividades; a abertura padrão usa Total do maior para o menor.
+- Gráfico de evolução diária alternável entre processos e documentos.
+- Valores diários sempre visíveis acima das barras do gráfico de evolução, alternando automaticamente entre processos e documentos sem remover o tooltip detalhado.
+- Drill-down Dia → Servidor → Processos.
+- Distribuição por faixas de intervalo, equipe, coordenadoria e sistema.
+- Quadro de distribuição por atividade, integrado aos filtros gerais e com acesso aos processos de cada categoria.
+- Ficha gerencial do servidor com resumo, produção diária, atividade, sistema, ritmo de conclusão e processos.
+- Tabela analítica pesquisável, ordenável e paginada.
+- Colunas DATA, Data2 e Data3 apresentadas respectivamente como Referência, Distribuição e Conclusão.
+- Popups responsivos com busca, ordenação e cópia de processos.
+- Seletor dinâmico “Colunas visíveis” em todos os popups de processos, reconhecendo automaticamente todas as colunas do CSV e mantendo a coluna Ação fixa.
+- Visualização essencial padrão com Processo, Servidor, Concluído, Intervalo, Atividade, Documentos, Prioridade e Cadastrador.
+- Atalhos para exibir as colunas essenciais, exibir todas ou limpar a seleção, com atualização imediata e preferência salva localmente.
+- Barra horizontal flutuante e sempre acessível na parte inferior dos popups de processos, sincronizada com a rolagem original da tabela e exibida somente quando houver colunas fora da área visível.
+- Colunas Observação, Prioridade e Cadastrador nos popups de processos, integradas à pesquisa e à ordenação.
+- Filtros rápidos padrão de Coordenadoria, Servidor, Atividade, Prioridade e Cadastrador em todos os popups de processos, com contagens, multiseleção, pesquisa, compatibilidade em cascata e limpeza.
+- Seletor “Mais filtros” para acrescentar como filtro rápido qualquer coluna existente na base, inclusive colunas novas que venham no CSV.
+- Preferência dos filtros rápidos adicionais salva localmente e reutilizada nos demais popups, com ações para aplicar a configuração e restaurar os cinco filtros padrão.
+- Identificação visual e textual da prioridade na tabela, sem depender somente de cor.
+- Exportação local em PNG dos principais painéis e de todos os popups, preservando o estado atual de filtros, pesquisas, ordenações, visualizações e colunas visíveis.
+- Escolha entre “Área exibida” e “Tabela completa”; tabelas analíticas muito extensas são divididas automaticamente em imagens numeradas para manter a legibilidade.
+- Cabeçalho gerencial incorporado ao PNG com título, arquivo-base, períodos, filtros ativos, contexto da visualização e data de geração.
+- Controles interativos são omitidos da imagem exportada, deixando o material pronto para inclusão em relatórios.
+- Revisão dos denominadores do acompanhamento de metas e jornada, com separação explícita entre datas do calendário, combinações servidor/dia e quantidade de servidores.
+- Cartão específico de datas produtivas no período e notas explicativas em cada indicador de metas, cobertura e turno.
+- Indicador principal de atingimento alterado para “Servidores com média da meta atingida no período”, comparando a média individual de cada servidor com 100% e eliminando o antigo total de jornadas do cartão gerencial.
+- Quando o recorte possui somente uma data produtiva, o cartão muda para “Servidores que atingiram a meta” e compara diretamente os servidores daquele dia.
+- Novo cartão complementar de servidores que não atingiram a meta, garantindo que os dois grupos completem o mesmo total comparável tanto no recorte diário quanto no período.
+- Cartões de meta atingida e não atingida inteiramente clicáveis, com popups gerenciais pesquisáveis e ordenáveis.
+- Resumos dos grupos com atingimento médio, processos, documentos, cobertura, dias produtivos, dias com meta alcançada, atividades, pausas, turno e acesso à ficha completa do servidor.
+- Textos explicativos do indicador atualizados automaticamente para deixar claro o denominador utilizado em cada aba.
+- Novo painel “Origem dos cadastramentos”, posicionado logo após “Distribuição institucional” e integrado aos filtros gerais.
+- Classificação de cada linha em Gestão, Autocadastramento, Outros ou Não informado. Gestores que cadastram para si permanecem em Gestão e recebem o indicador específico “Gestor para si próprio”.
+- Percentuais de origem calculados pelas linhas de cadastramento, acompanhados de processos distintos e documentos para permitir as três leituras gerenciais sem ocultar redistribuições.
+- Rankings e consultas alternáveis por Cadastrador, Cadastrador → Servidor, evolução diária pela Data2 e Atividade, todos com busca, ordenação e detalhamento dos registros.
+- Alertas clicáveis de distribuições repetidas, processos com múltiplas atividades e processos redistribuídos entre servidores ou datas.
+- Editor local “Gerenciar gestores” com pesquisa, inclusão, remoção, restauração dos 23 nomes originais e recálculo imediato do painel.
+- Lista de gestores preservada no navegador. A comparação ignora maiúsculas e acentos e reconhece abreviações quando o início dos nomes coincide.
+- Ícones de informação e tooltips explicativos nos oito cartões do painel “Origem dos cadastramentos”, incluindo as regras de múltiplas atividades, redistribuição e linhas extras.
+- Tooltips acessíveis pelo cursor e pelo teclado, mantendo o clique integral dos cartões para abrir seus detalhamentos.
+- Linha TOTAL adicionada ao rodapé das quatro visualizações de “Origem dos cadastramentos”: Por cadastrador, Cadastrador → servidor, Evolução diária e Por atividade.
+- Totalização recalculada pelos filtros gerais, pela busca e pela visualização escolhida. Processos, servidores e atividades são contados de forma distinta; linhas, documentos e categorias de origem são somados.
+- Rodapé totalizador destacado e fixo na parte inferior da tabela durante a rolagem.
+- Cada valor da linha TOTAL é clicável e abre o popup correspondente, preservando busca, filtros rápidos, escolha de colunas, cópia de processos e exportação de imagem.
+- Busca e opções Diária, Por servidor, Mensal e Por atividade reposicionadas imediatamente acima da tabela de metas, deixando explícito que esses controles atuam sobre a listagem.
+- Ação principal de exportação alterada para “Copiar imagem”, com confirmação para colagem direta em relatórios.
+- Opção secundária “Baixar PNG” preservada no diálogo de exportação. Quando o navegador bloqueia a cópia de imagem, o painel baixa automaticamente o PNG e informa o usuário.
+- Tabelas completas que precisam ser divididas em várias imagens continuam sendo baixadas em partes, pois a área de transferência comporta somente uma imagem por vez.
+- Sumário lateral com nove atalhos para as principais seções do painel, incluindo “Origem dos cadastramentos”, e rolagem suave até o destino.
+- Destaque automático da seção atualmente visível durante a rolagem.
+- Navegação compacta preservada quando a barra lateral é minimizada, independente do recolhimento dos filtros.
+- Botão flutuante “Seções” no celular, com menu responsivo e fechamento após a escolha do destino.
+- Tooltips gerenciais nos principais indicadores.
+- Sidebar sticky e minimizável, responsividade e botão voltar ao topo.
+
+PRIVACIDADE E FUNCIONAMENTO LOCAL
+
+O processamento analítico ocorre localmente no navegador e o index.html não envia conteúdo das bases ao GitHub, analytics, telemetria ou servidores de terceiros.
+
+No modo CSV, os arquivos são lidos e processados somente no navegador e não são transmitidos.
+
+No modo Microsoft Lists, a extensão autorizada consulta exclusivamente a infraestrutura Microsoft/SharePoint necessária à leitura das duas listas, usando a sessão institucional do próprio navegador. Os registros ficam em runtime e na cache IndexedDB local da extensão. Nenhuma credencial é incorporada ao HTML e o módulo do Radar é somente leitura.
+
+BASE DE VALIDAÇÃO
+
+A versão 4.7 foi validada com NUPACIProdutividade (20).csv, com 5.150 linhas, e ProditividadeDiaNUPACI (12).csv, com 3.762 linhas. A conciliação produziu 6.430 registros sem repetir as conclusões coincidentes. No acompanhamento das distribuições foram identificadas 3.640 combinações distintas de processo, servidor, atividade e data de referência distribuídas pela gestão: 2.593 feitas, 1.051 pendentes e nenhuma marcada como não feita, resultando em taxa de execução de 71,24%. Também foram identificadas 2.638 combinações concluídas presentes somente em NUPACIProdutividade e 119 combinações divergentes para conferência. Foram testados o carregamento conjunto, NUPACIProdutividade isoladamente e ProditividadeDiaNUPACI isoladamente, além das visões completa e parcial, reconhecimento das fontes, indicadores, tabela gerencial, novo texto do indicador, alinhamento dos ícones de informação, popups de todas as células numéricas e totais, geração e abertura do XLSX exportado e ausência de erros de execução no navegador.
+
+PREPARAÇÃO PARA EVOLUÇÕES
+
+O processamento foi separado da visualização e expõe internamente uma camada de leitura e métricas. Isso permite evoluir para:
+
+- comparação entre coletas e registro persistente de relativizações gerenciais.
