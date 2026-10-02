@@ -704,3 +704,4 @@ PREPARAÇÃO PARA EVOLUÇÕES
 O processamento foi separado da visualização e expõe internamente uma camada de leitura e métricas. Isso permite evoluir para:
 
 - comparação entre coletas e registro persistente de relativizações gerenciais.
+Validação do fluxo em nuvem realizada com sucesso.
