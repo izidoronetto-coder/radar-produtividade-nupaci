@@ -91,13 +91,13 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><div class="brand-mark">RN</div><div><h1>RADAR de Produtividade e Frequência NUPACI <span class="version-badge">v7.6</span><span id="headerFilterWrap" class="header-filter-wrap hidden"><button id="headerFilterButton" class="header-filter-button" type="button" aria-expanded="false" aria-controls="headerFilterPop"><span>Filtros ativos:</span> <strong id="headerFilterCount">0</strong></button><span id="headerFilterPop" class="header-filter-pop hidden" role="dialog" aria-label="Filtros ativos"><span class="header-filter-head"><strong>Filtros aplicados</strong><button id="headerClearFilters" class="header-clear-all" type="button">Limpar todos</button></span><span id="headerFilterList" class="header-filter-list"></span></span></span></h1><p>Monitoramento de produção, jornada, eficiência, equipes e execução de expedientes.</p></div></div>
+    <div class="brand"><div class="brand-mark">RN</div><div><h1>RADAR de Produtividade e Frequência NUPACI <span class="version-badge">v7.7</span><span id="headerFilterWrap" class="header-filter-wrap hidden"><button id="headerFilterButton" class="header-filter-button" type="button" aria-expanded="false" aria-controls="headerFilterPop"><span>Filtros ativos:</span> <strong id="headerFilterCount">0</strong></button><span id="headerFilterPop" class="header-filter-pop hidden" role="dialog" aria-label="Filtros ativos"><span class="header-filter-head"><strong>Filtros aplicados</strong><button id="headerClearFilters" class="header-clear-all" type="button">Limpar todos</button></span><span id="headerFilterList" class="header-filter-list"></span></span></span></h1><p>Monitoramento de produção, jornada, eficiência, equipes e execução de expedientes.</p></div></div>
     <div class="top-actions"><button id="headerProcessQuery" class="btn small header-process-query hidden" type="button" title="Consultar um ou vários processos">⌕ <span class="process-query-label">Consultar processos</span><span id="headerProcessCount" class="process-query-count hidden">0</span></button><button id="headerClearAllFilters" class="btn small header-clear-button hidden" type="button" disabled title="Nenhum filtro ativo">× <span>Limpar filtros</span></button><div id="fileStatus" class="file-status hidden"><strong></strong><span></span></div><div id="headerSyncProgressV75" class="header-sync-progress-v75 hidden" role="progressbar" aria-label="Progresso da atualização do Microsoft Lists"><div class="header-sync-progress-copy-v75"><strong id="headerSyncProgressLabelV75">Atualizando…</strong><small id="headerSyncProgressMetaV75">Preparando</small></div><span class="header-sync-progress-track-v75"><i id="headerSyncProgressFillV75"></i></span></div><button id="headerSyncV75" class="btn ghost hidden" type="button">↻ <span>Atualizar agora</span></button><button id="changeFileBtn" class="btn ghost hidden" type="button">↥ <span>Carregar CSV</span></button></div>
   </header>
 
   <section id="uploadScreen" class="upload-screen">
     <div class="upload-card">
-      <div class="upload-emblem">↻</div><h2>Atualizar dados do NUPACI</h2><div class="version-pill">VERSÃO 7.6</div>
+      <div class="upload-emblem">↻</div><h2>Atualizar dados do NUPACI</h2><div class="version-pill">VERSÃO 7.7</div>
       <p id="privacyTextV75">Use a integração autorizada com o Microsoft Lists ou carregue os arquivos CSV manualmente.</p>
       <section id="listsEntryV75" class="lists-entry-v75" aria-labelledby="listsTitleV75"><div class="lists-entry-head-v75"><div><strong id="listsTitleV75">Microsoft Lists</strong><small>Leitura direta das duas listas institucionais por meio da extensão autorizada.</small></div><span id="integrationStateV75" class="integration-state-v75">Verificando extensão…</span></div><p id="integrationDetailV75" class="integration-detail-v75">Aguarde enquanto o RADAR verifica se a integração está disponível neste navegador.</p><div id="integrationProgressV75" class="integration-progress-v75 hidden" role="progressbar" aria-label="Atualização das bases em andamento"><span></span></div><div class="lists-actions-v75"><button id="syncListsV75" class="btn primary" type="button" disabled>Atualizar bases do Microsoft Lists</button><button id="useCacheV75" class="btn hidden" type="button">Abrir dados da última sincronização</button><button id="cancelSyncV75" class="btn hidden" type="button">Cancelar</button></div></section>
       <div class="source-divider-v75"><span>Carregamento manual</span></div>
@@ -522,7 +522,7 @@
     function excelColumn(index){let value=index+1,label='';while(value){value--;label=String.fromCharCode(65+value%26)+label;value=Math.floor(value/26)}return label}
     function xlsxCell(value,address,style=0){if(value instanceof Date&&!isNaN(value))return`<c r="${address}" s="2"><v>${excelSerial(value)}</v></c>`;if(typeof value==='number'&&Number.isFinite(value))return`<c r="${address}"${style?` s="${style}"`:''}><v>${value}</v></c>`;const text=String(value??'');return`<c r="${address}" t="inlineStr"${style?` s="${style}"`:''}><is><t xml:space="preserve">${xmlEscape(text)}</t></is></c>`}
     function worksheetXml(headers,rows){const widths=headers.map((header,index)=>Math.min(44,Math.max(11,String(header).length+2,...rows.slice(0,300).map(row=>String(row[index]??'').length+2)))),last=excelColumn(headers.length-1),headerXml=headers.map((value,index)=>xlsxCell(value,`${excelColumn(index)}1`,1)).join(''),rowsXml=rows.map((row,rowIndex)=>`<row r="${rowIndex+2}">${row.map((value,columnIndex)=>xlsxCell(value,`${excelColumn(columnIndex)}${rowIndex+2}`)).join('')}</row>`).join('');return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:${last}${rows.length+1}"/><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${widths.map((width,index)=>`<col min="${index+1}" max="${index+1}" width="${width}" customWidth="1"/>`).join('')}</cols><sheetData><row r="1">${headerXml}</row>${rowsXml}</sheetData><autoFilter ref="A1:${last}${rows.length+1}"/></worksheet>`}
-    function createXlsxBlob(processHeaders,processRows,contextRows){const created=new Date().toISOString(),files=[['[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`],['_rels/.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`],['docProps/app.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>RADAR NUPACI</Application></Properties>`],['docProps/core.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator>RADAR NUPACI</dc:creator><dc:title>Processos exportados</dc:title><dcterms:created xsi:type="dcterms:W3CDTF">${created}</dcterms:created></cp:coreProperties>`],['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Processos" sheetId="1" r:id="rId1"/><sheet name="Contexto" sheetId="2" r:id="rId2"/></sheets></workbook>`],['xl/_rels/workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],['xl/styles.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy hh:mm"/></numFmts><fonts count="2"><font><sz val="10"/><name val="Arial"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="10"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B1F33"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],['xl/worksheets/sheet1.xml',worksheetXml(processHeaders,processRows)],['xl/worksheets/sheet2.xml',worksheetXml(['Informação','Valor'],contextRows)]];return new Blob([zipBytes(files)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+    function createXlsxBlob(processHeaders,processRows,contextRows,secondSheetName='Contexto'){const created=new Date().toISOString(),files=[['[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`],['_rels/.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`],['docProps/app.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>RADAR NUPACI</Application></Properties>`],['docProps/core.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator>RADAR NUPACI</dc:creator><dc:title>Processos exportados</dc:title><dcterms:created xsi:type="dcterms:W3CDTF">${created}</dcterms:created></cp:coreProperties>`],['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Processos" sheetId="1" r:id="rId1"/><sheet name="${xmlEscape(secondSheetName)}" sheetId="2" r:id="rId2"/></sheets></workbook>`],['xl/_rels/workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],['xl/styles.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy hh:mm"/></numFmts><fonts count="2"><font><sz val="10"/><name val="Arial"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="10"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B1F33"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],['xl/worksheets/sheet1.xml',worksheetXml(processHeaders,processRows)],['xl/worksheets/sheet2.xml',worksheetXml(['Informação','Valor'],contextRows)]];return new Blob([zipBytes(files)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
     function exportProcessXlsx(rows,columns,title,context=[]){if(!rows.length){toast('Não há processos exibidos para exportar.');return}const headers=columns.map(column=>column.label),data=rows.map(row=>columns.map(column=>{const value=column.value(row);if(column.key==='duration')return fmtDuration(value);return value})),contextRows=[['Relatório',title],['Registros exportados',rows.length],...context.map(item=>{const separator=item.indexOf(':');return separator>0?[item.slice(0,separator),item.slice(separator+1).trim()]:['Contexto',item]})],blob=createXlsxBlob(headers,data,contextRows),stamp=new Date().toISOString().slice(0,10),filename=`radar-nupaci-${exportSlug(title)}-${stamp}.xlsx`;downloadBlob(blob,filename);toast(`${rows.length} registros exportados para XLSX.`)}
     function openProcessModal(rows,title,options={}){
       const procs=options.preserveRows?[...rows]:uniqueProcesses(rows);state.modalSearch='';state.modalSort={key:'date3',dir:1};
@@ -552,7 +552,7 @@
       state.sourceColumns.filter(column=>!column.fieldKey).forEach(source=>modalColumns.push({key:source.key,label:source.label,value:r=>rawColumnValue(r,source),html:r=>esc(rawColumnValue(r,source))}));
       const filterableColumns=modalColumns.filter(column=>!column.computed),filterColumnByKey=new Map(filterableColumns.map(column=>[column.key,column])),availableFilterKeys=filterableColumns.map(column=>column.key),visibleFilterKeys=restoreModalFilterKeys(availableFilterKeys),optionalFilterColumns=filterableColumns.filter(column=>!modalFixedFilterKeys.includes(column.key)),modalFilterDefs=[...modalFixedFilterKeys.filter(key=>filterColumnByKey.has(key)).map(key=>[key,filterColumnByKey.get(key).label]),...optionalFilterColumns.filter(column=>visibleFilterKeys.has(column.key)).map(column=>[column.key,column.label])],modalFilters=Object.fromEntries(availableFilterKeys.map(key=>[key,new Set]));
       const filterValues=(r,key)=>{const sources=r.sourceRows||[r],rawSource=state.sourceColumns.find(source=>source.key===key),values=sources.map(source=>{if(rawSource&&!rawSource.fieldKey)return String(source.rawValues?.[rawSource.key]??source.raw?.[rawSource.index]??'').trim();const value=source[key];if(value instanceof Date)return fmtDate(value);if(key==='quantity')return fmtNum(value);return String(value??'').trim()}).filter(Boolean);return[...new Set(values.length?values:['Não informado'])]};
-      const availableColumnKeys=modalColumns.map(column=>column.key),visibleColumnKeys=restoreModalColumns(availableColumnKeys),columnOptions=modalColumns.map(column=>`<label class="filter-option column-option ${modalEssentialColumns.includes(column.key)?'essential-column':''}" data-search="${esc(norm(column.label))}"><input type="checkbox" value="${esc(column.key)}" ${visibleColumnKeys.has(column.key)?'checked':''}><span>${esc(column.label)}</span></label>`).join('');
+      const availableColumnKeys=modalColumns.map(column=>column.key),visibleColumnKeys=options.specificV77?new Set([...['process','server','coord','activity','date','date2','date3','quantity','registrar','observation','thirdPartyType'],...state.sourceColumns.filter(column=>['documentosespecificos','orgaojulgado','feitooutro'].includes(norm(column.label).replace(/[^a-z0-9]/g,''))).map(column=>column.key)].filter(key=>availableColumnKeys.includes(key))):restoreModalColumns(availableColumnKeys),columnOptions=modalColumns.map(column=>`<label class="filter-option column-option ${modalEssentialColumns.includes(column.key)?'essential-column':''}" data-search="${esc(norm(column.label))}"><input type="checkbox" value="${esc(column.key)}" ${visibleColumnKeys.has(column.key)?'checked':''}><span>${esc(column.label)}</span></label>`).join('');
       const filterHtml=modalFilterDefs.map(([key,label])=>{const values=[...new Set(procs.flatMap(r=>filterValues(r,key)))].sort((a,b)=>a.localeCompare(b,'pt-BR'));return`<div class="analytic-filter-block modal-filter-block"><label>${label}</label><button class="filter-trigger modal-filter-trigger" type="button" data-modal-filter="${key}"><span>Todos</span><b>⌄</b></button><div class="filter-pop modal-filter-pop hidden" data-modal-pop="${key}"><input type="search" placeholder="Pesquisar ${esc(label.toLowerCase())}"><div class="filter-links"><button class="link-btn select-all" type="button">Selecionar todos</button><button class="link-btn clear-all" type="button">Limpar</button></div><div class="filter-options">${values.map(v=>`<label class="filter-option" data-search="${esc(norm(v))}" data-compatible="1"><input type="checkbox" value="${esc(v)}"><span>${esc(v)}</span><span class="count">(0)</span></label>`).join('')}</div></div></div>`}).join('');
       const pickerHtml=`<div class="column-picker-block"><button id="modalColumnTrigger" class="btn small column-picker-trigger" type="button" aria-haspopup="true" aria-expanded="false">Colunas visíveis <span id="modalColumnCount" class="column-count"></span>⌄</button><div id="modalColumnPicker" class="filter-pop column-picker-pop hidden"><p class="column-picker-title">Colunas visíveis</p><p class="column-picker-help">A seleção vale para todos os popups e fica salva neste navegador.</p><input id="modalColumnSearch" type="search" placeholder="Buscar coluna"><div class="filter-links"><button id="showEssentialColumns" class="link-btn" type="button">Essenciais</button><button id="showAllColumns" class="link-btn" type="button">Todas</button><button id="clearVisibleColumns" class="link-btn" type="button">Limpar</button></div><div class="filter-options">${columnOptions}</div></div></div>`;
       const optionalFilterOptions=optionalFilterColumns.map(column=>`<label class="filter-option more-filter-option" data-search="${esc(norm(column.label))}"><input type="checkbox" value="${esc(column.key)}" ${visibleFilterKeys.has(column.key)?'checked':''}><span>${esc(column.label)}</span></label>`).join(''),selectedOptionalFilters=optionalFilterColumns.filter(column=>visibleFilterKeys.has(column.key)).length,moreFiltersHtml=`<div class="filter-picker-block"><button id="modalMoreFiltersTrigger" class="btn small filter-picker-trigger" type="button" aria-haspopup="true" aria-expanded="false">Mais filtros <span class="filter-count">(${selectedOptionalFilters})</span>⌄</button><div id="modalMoreFiltersPicker" class="filter-pop column-picker-pop hidden"><p class="column-picker-title">Mais filtros rápidos</p><p class="column-picker-help">Os cinco filtros padrão permanecem visíveis. Os adicionais escolhidos ficam salvos neste navegador.</p><input id="modalMoreFiltersSearch" type="search" placeholder="Buscar coluna"><div class="filter-links"><button id="selectAllMoreFilters" class="link-btn" type="button">Selecionar todos</button><button id="restoreDefaultModalFilters" class="link-btn" type="button">Restaurar padrão</button></div><div class="filter-options">${optionalFilterOptions||'<div class="manager-empty">Não há outras colunas disponíveis.</div>'}</div><div class="modal-actions" style="margin:10px 0 0"><button id="applyMoreModalFilters" class="btn primary small" type="button">Aplicar filtros visíveis</button></div></div></div>`;
@@ -1462,6 +1462,208 @@ $('#rankLimit').onchange=e=>{state.rankLimit=+e.target.value;renderRankBars()};$
     const getPerformanceV76Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV76Base(),version:'7.6'});
     $('.version-badge').textContent='v7.6';$('.version-pill').textContent='VERSÃO 7.6';document.title='RADAR de Produtividade e Frequência NUPACI · v7.6';
     window.RadarNUPACI.classifyCompletion=classifyCompletion;window.RadarNUPACI.isOwnCompletion=isOwnCompletion;window.RadarNUPACI.isThirdPartyCompletion=isThirdPartyCompletion;window.RadarNUPACI.isOperationallyResolved=isOperationallyResolved;window.RadarNUPACI.reconcileSources=reconcileSources;window.RadarNUPACI.normalizeListRow=normalizeListRowV75;window.RadarNUPACI.operationalLatestDate=operationalLatestDateV69;window.RadarNUPACI.version='7.6';detectIntegrationV75();
+
+  /* ===================== VERSÃO 7.7 · DOCUMENTOS ESPECÍFICOS ===================== */
+  const specificTypesV77={
+    sae:{label:'SAE/Alvará',types:['Físico','SAE']},
+    bnmp:{label:'BNMP',types:['Mandado','Contramandado','Guia','MDP']},
+    sapre:{label:'SAPRE/TRF5',types:['ROPV','Precatório']}
+  };
+  function specificActivityV77(activity){const value=norm(activity);if(value.includes('sae')&&value.includes('alvara'))return'sae';if(value.includes('bnmp'))return'bnmp';if(value.includes('sapre')||value.includes('trf5'))return'sapre';return null}
+  const specificColumnNameV77=value=>norm(value).replace(/[^a-z0-9]/g,'');
+  function specificFieldV77(row,columns,wanted){
+    const column=(columns||[]).find(item=>specificColumnNameV77(item.label)===wanted||specificColumnNameV77(item.key.replace(/^raw:/,'').replace(/:\d+$/,''))===wanted);
+    if(column)return String(row.rawValues?.[column.key]??row[column.fieldKey]??'').trim();
+    const key=Object.keys(row.rawValues||{}).find(item=>specificColumnNameV77(item.replace(/^raw:/,'').replace(/:\d+$/,''))===wanted);
+    return key?String(row.rawValues[key]??'').trim():'';
+  }
+  function parseSpecificV77(raw,activity){
+    const key=specificActivityV77(activity),types=specificTypesV77[key]?.types||[],counts=Object.fromEntries(types.map(type=>[type,0])),invalid=[];
+    for(const segment of String(raw||'').split(';')){
+      const value=segment.trim();if(!value)continue;
+      const match=value.match(/^(\d+)\s+(.+)$/u),name=match?.[2]?.trim(),type=types.find(item=>norm(item)===norm(name));
+      if(!match||!type){invalid.push(value);continue}
+      const quantity=Number(match[1]);if(!Number.isSafeInteger(quantity)){invalid.push(value);continue}
+      if(quantity>0)counts[type]+=quantity;
+    }
+    return{counts,total:Object.values(counts).reduce((sum,value)=>sum+value,0),invalid};
+  }
+  function normalizeSpecificV77(row,columns){
+    row.specificRawV77=specificFieldV77(row,columns,'documentosespecificos');
+    row.judgingBodyV77=specificFieldV77(row,columns,'orgaojulgado');
+    row.specificV77=parseSpecificV77(row.specificRawV77,row.activity);
+    return row;
+  }
+  const parseCSVV77Base=parseCSV;
+  parseCSV=function(text,options={}){const rows=parseCSVV77Base(text,options);rows.forEach(row=>normalizeSpecificV77(row,rows.sourceColumns));return rows};
+  const normalizeListRowV77Base=normalizeListRowV75;
+  normalizeListRowV75=function(wire,sourceType,index,pool,columns){const row=normalizeListRowV77Base(wire,sourceType,index,pool);return row?normalizeSpecificV77(row,columns):null};
+  // A leitura paginada já fornece sourceColumns no status. A chave raw é estável
+  // para os títulos oficiais, e a função acima também aceita metadados quando enviados.
+  const reconcileSourcesV77Base=reconcileSources;
+  reconcileSources=function(sources){
+    const rows=reconcileSourcesV77Base(sources);
+    for(const row of rows){
+      const linked=row.linkedRows||[];
+      const primary=linked.find(item=>item.sourceType==='productivity'&&item.specificRawV77)||
+        linked.find(item=>item.specificRawV77)||linked[0]||row;
+      const organ=linked.find(item=>item.sourceType==='productivity'&&item.judgingBodyV77)||
+        linked.find(item=>item.judgingBodyV77)||primary;
+      row.specificRawV77=primary.specificRawV77||'';
+      row.judgingBodyV77=organ.judgingBodyV77||'';
+      row.specificV77=primary.specificV77||parseSpecificV77(row.specificRawV77,row.activity);
+      for(const [source,wanted] of [[primary,'documentosespecificos'],[organ,'orgaojulgado']]){
+        const rawKey=Object.keys(source.rawValues||{}).find(key=>specificColumnNameV77(key.replace(/^raw:/,'').replace(/:\d+$/,''))===wanted);
+        if(rawKey)row.rawValues[rawKey]=source.rawValues[rawKey];
+      }
+    }
+    return rows;
+  };
+  const specificTipV77='Documentos específicos produzidos: soma das quantidades registradas em DocumentosEspecificos apenas nas conclusões próprias válidas pela Data3. SAE/Alvará: Físico e SAE; BNMP: Mandado, Contramandado, Guia e MDP; SAPRE/TRF5: ROPV e Precatório. É uma medida especializada e independente da coluna geral Quantidade; não some automaticamente os dois indicadores. FeitoOutro não gera produtividade específica para o destinatário. Campo vazio não é erro; um processo pode gerar vários documentos.';
+  function specificModelV77(rows){
+    const entries=[],invalid=[];
+    for(const row of rows){
+      if(!isOwnCompletion(row))continue;
+      const key=specificActivityV77(row.activity),parsed=row.specificV77||parseSpecificV77(row.specificRawV77,row.activity);
+      if(parsed.invalid.length)invalid.push(row);
+      if(!key)continue;
+      for(const [type,quantity] of Object.entries(parsed.counts))if(quantity>0)
+        entries.push({row,key,type,quantity,organ:row.judgingBodyV77||'Órgão não informado'});
+    }
+    return{entries,total:entries.reduce((sum,item)=>sum+item.quantity,0),invalid};
+  }
+  const renderStatisticsV77Base=renderStatistics;
+  renderStatistics=function(){
+    const result=renderStatisticsV77Base(),data=state._statistics,grid=$('#statisticsKpis');if(!data||!grid||statisticsPeriod().start>statisticsPeriod().end)return result;
+    const key=state.statisticsActivity.startsWith('activity:')?specificActivityV77(state.statisticsActivity.slice(9)):null,
+      applicable=state.statisticsActivity==='all'||!!key,
+      current=specificModelV77(data.current.completed),previous=specificModelV77(data.previous.completed),
+      cardHost=document.createElement('div');
+    cardHost.innerHTML=statisticsCard('specificDocuments','Documentos específicos produzidos',
+      applicable?fmtNum(current.total):'Não se aplica',
+      applicable?`${fmtNum(new Set(current.entries.map(item=>processKey(item.row))).size)} processos distintos · tipos por atividade`:'Atividade sem controle específico',
+      specificTipV77,applicable?current.total:null,applicable?previous.total:null,{compare:applicable});
+    const card=cardHost.firstElementChild;
+    card.querySelector('.stat-delta,.stat-comparison')?.remove();
+    if(applicable)card.insertAdjacentHTML('beforeend',statisticsComparison(current.total,previous.total,value=>`${fmtNum(value)} documentos específicos`));
+    const general=grid.querySelector('[data-statistics-kpi="documentsProduced"]');
+    grid.insertBefore(card,general?.nextSibling||grid.firstChild);
+    card.disabled=!applicable;
+    card.onclick=()=>openSpecificV77(current.entries,data,current.invalid);
+    data.specificDocumentsV77={...current,previous:previous.total,applicable};
+  };
+  function specificScopeV77(entries,activity,type,organ){
+    return entries.filter(item=>(!activity||item.key===activity)&&(!type||item.type===type)&&(!organ||item.organ===organ));
+  }
+  function specificSummaryV77(entries){
+    const count=entries.reduce((sum,item)=>sum+item.quantity,0),processes=new Set(entries.map(item=>processKey(item.row))).size;
+    return`${fmtNum(count)} documentos específicos · ${fmtNum(processes)} processos distintos`;
+  }
+  function specificContextV77(data,entries,extra=[]){
+    const filters=filterDefs.flatMap(([key,label])=>state.filters[key]?.size?[`${label}: ${exportValueList(state.filters[key])}`]:[]);
+    return[
+      ['Atividade analisada',statisticsActivityLabel()],
+      ['Período',`${fmtDate(data.start,false)} a ${fmtDate(data.end,false)}`],
+      ['Filtros gerais',filters.join(' · ')||'Nenhum'],
+      ['Busca e recorte local',extra.join(' · ')||'Todos'],
+      ['Documentos específicos',entries.reduce((sum,item)=>sum+item.quantity,0)],
+      ['Processos distintos',new Set(entries.map(item=>processKey(item.row))).size],
+      ...Object.entries(specificTypesV77).flatMap(([key,group])=>group.types.map(type=>[
+        `${group.label} · ${type}`,specificScopeV77(entries,key,type).reduce((sum,item)=>sum+item.quantity,0)
+      ])),
+      ...[...new Set(entries.filter(item=>item.key!=='sae').map(item=>`${item.key}\u0000${item.organ}`))].map(id=>{
+        const [key,organ]=id.split('\u0000');return[`${specificTypesV77[key].label} · ${organ}`,
+          specificScopeV77(entries,key,null,organ).reduce((sum,item)=>sum+item.quantity,0)]
+      })
+    ];
+  }
+  function specificXlsxV77(entries,data,extra=[]){
+    const rows=[...new Set(entries.map(item=>item.row))],byRow=new Map;
+    entries.forEach(item=>byRow.set(item.row,(byRow.get(item.row)||0)+item.quantity));
+    const headers=['Processo','Servidor','Coordenadoria','Atividade','Data','Data2','Data3','DocumentosEspecificos','OrgaoJulgado','Documentos específicos no recorte','Quantidade','Cadastrador','Observacao','FeitoOutro'],
+      values=rows.map(row=>[row.process,row.server,row.coord,row.activity,row.date,row.date2,row.date3,
+        row.specificRawV77,row.judgingBodyV77,byRow.get(row),row.quantity,row.registrar,row.observation,row.otherDoneRaw]);
+    const extras=state.sourceColumns.filter(column=>!column.fieldKey&&!['documentosespecificos','orgaojulgado'].includes(specificColumnNameV77(column.label)));
+    headers.push(...extras.map(column=>column.label));
+    values.forEach((line,index)=>extras.forEach(column=>line.push(String(rows[index].rawValues?.[column.key]??''))));
+    const blob=createXlsxBlob(headers,values,specificContextV77(data,entries,extra),'Resumo');
+    downloadBlob(blob,`radar-nupaci-documentos-especificos-${new Date().toISOString().slice(0,10)}.xlsx`);
+    toast(`${rows.length} registros exportados para XLSX.`);
+  }
+  function openSpecificDrillV77(entries,title){
+    const rows=[...new Set(entries.map(item=>item.row))];
+    openProcessModal(rows,title,{preserveRows:true,summaryLabel:'registros',specificV77:true});
+    const modal=$('#modalLayer .modal');
+    modal?.querySelector('.modal-head p')?.insertAdjacentText('beforeend',` · ${specificSummaryV77(entries)}; um processo pode gerar mais de um documento específico.`);
+
+  }
+  function openSpecificV77(entries,data,invalid){
+    const title='Detalhamento dos documentos específicos produzidos';
+    const body=`<section class="specific-v77">
+      <p class="goal-method">Documentos específicos são independentes de Quantidade. Um processo pode gerar mais de um documento. FeitoOutro não é produção do destinatário.</p>
+      <div class="registration-context-kpis" id="specificTotalsV77"></div>
+      <p><strong>Atividade:</strong> ${esc(statisticsActivityLabel())} · <strong>Período:</strong> ${fmtDate(data.start,false)} a ${fmtDate(data.end,false)}</p>
+      <p><strong>Filtros:</strong> ${esc(filterDefs.flatMap(([key,label])=>state.filters[key]?.size?[`${label}: ${exportValueList(state.filters[key])}`]:[]).join(' · ')||'Nenhum')}</p>
+      <div class="modal-actions export-control"><input id="specificSearchV77" class="search" type="search" placeholder="Buscar processo, servidor, órgão ou tipo" aria-label="Buscar documentos específicos">
+      <button id="specificXlsxV77" class="btn small" type="button">Exportar XLSX</button></div>
+      <div id="specificCompositionV77"></div><div id="specificMatrixV77"></div><div id="specificAuditV77"></div></section>`;
+    openModal(title,specificSummaryV77(entries),body);
+    const modal=$('#modalLayer .modal');modal.classList.add('specific-modal-v77');
+    let query='',sort={key:'organ',dir:1},visible=entries;
+    const matches=item=>!query||norm([item.row.process,item.row.server,item.row.coord,item.row.activity,item.row.registrar,item.type,item.organ,item.row.specificRawV77].join(' ')).includes(query);
+    const total=list=>list.reduce((sum,item)=>sum+item.quantity,0);
+    const button=(list,label)=>`<button class="cell-btn" type="button" data-specific-drill="${register(list,label)}">${fmtNum(total(list))}</button>`;
+    let drills=[];
+    function register(list,label){drills.push({list,label});return drills.length-1}
+    function render(){
+      drills=[];visible=entries.filter(matches);
+      $('#specificTotalsV77').innerHTML=`<div class="mini-kpi"><span>Documentos específicos</span><strong>${fmtNum(total(visible))}</strong></div><div class="mini-kpi"><span>Processos distintos</span><strong>${fmtNum(new Set(visible.map(item=>processKey(item.row))).size)}</strong></div><div class="mini-kpi"><span>Registros</span><strong>${fmtNum(new Set(visible.map(item=>item.row)).size)}</strong></div>`;
+      const active=state.statisticsActivity==='all'?Object.keys(specificTypesV77):Object.keys(specificTypesV77).filter(key=>visible.some(item=>item.key===key)||specificActivityV77(statisticsActivityLabel())===key);
+      $('#specificCompositionV77').innerHTML=`<h3>Composição por atividade e tipo</h3>${active.map(key=>{
+        const group=specificTypesV77[key],subset=specificScopeV77(visible,key);
+        return`<div class="table-wrap"><table><thead><tr><th>${esc(group.label)}</th>${group.types.map(type=>`<th>${esc(type)}</th>`).join('')}<th>Total</th></tr></thead><tbody><tr><td>${esc(group.label)}</td>${group.types.map(type=>`<td>${button(specificScopeV77(subset,null,type),`${group.label} · ${type}`)}</td>`).join('')}<td>${button(subset,group.label+' · total')}</td></tr></tbody></table></div>`
+      }).join('')||'<p>Sem documentos específicos no recorte.</p>'}`;
+      $('#specificMatrixV77').innerHTML=active.filter(key=>key!=='sae').map(key=>{
+        const group=specificTypesV77[key],items=specificScopeV77(visible,key),organs=[...new Set(items.map(item=>item.organ))].sort((a,b)=>a.localeCompare(b,'pt-BR')),
+          sums=organs.map(organ=>({organ,items:specificScopeV77(items,null,null,organ)}));
+        sums.sort((a,b)=>sort.key==='total'?(total(a.items)-total(b.items))*sort.dir:(sort.key==='organ'?a.organ.localeCompare(b.organ,'pt-BR'):total(specificScopeV77(a.items,null,sort.key))-total(specificScopeV77(b.items,null,sort.key)))*sort.dir);
+        return`<h3>${esc(group.label)} · documentos por órgão julgador</h3><div class="table-wrap"><table><thead><tr><th><button type="button" class="link-btn export-control" data-specific-sort="organ">Órgão julgador</button></th>${group.types.map(type=>`<th><button type="button" class="link-btn export-control" data-specific-sort="${esc(type)}">${esc(type)}</button></th>`).join('')}<th><button type="button" class="link-btn export-control" data-specific-sort="total">Total</button></th></tr></thead><tbody>${sums.map(({organ,items:subset})=>`<tr><td>${button(subset,group.label+' · '+organ)} <span>${esc(organ)}</span></td>${group.types.map(type=>`<td>${button(specificScopeV77(subset,null,type),`${group.label} · ${organ} · ${type}`)}</td>`).join('')}<td>${button(subset,`${group.label} · ${organ} · total`)}</td></tr>`).join('')||`<tr><td colspan="${group.types.length+2}">Sem documentos específicos.</td></tr>`}<tr><th>Total</th>${group.types.map(type=>`<th>${button(specificScopeV77(items,null,type),`${group.label} · ${type}`)}</th>`).join('')}<th>${button(items,group.label+' · total')}</th></tr></tbody></table></div>`
+      }).join('');
+      const visibleInvalid=invalid.filter(row=>!query||norm([row.process,row.server,row.activity,row.specificRawV77,row.judgingBodyV77].join(' ')).includes(query));
+      $('#specificAuditV77').innerHTML=visibleInvalid.length?`<p><button class="btn small export-control" type="button" id="specificInvalidV77">Conferir ${visibleInvalid.length} registro(s) com trecho não interpretável</button></p>`:'';
+      $('#modalLayer .specific-modal-v77 [data-specific-drill]').forEach(el=>el.onclick=()=>{const item=drills[+el.dataset.specificDrill];openSpecificDrillV77(item.list,item.label)});
+      $('#modalLayer .specific-modal-v77 [data-specific-sort]').forEach(el=>el.onclick=()=>{const key=el.dataset.specificSort;sort={key,dir:sort.key===key?-sort.dir:1};render()});
+      const audit=$('#specificInvalidV77');if(audit)audit.onclick=()=>openProcessModal(visibleInvalid,'DocumentosEspecificos · trechos não interpretáveis',{preserveRows:true,summaryLabel:'registros'});
+      $('#specificXlsxV77').onclick=()=>specificXlsxV77(visible,data,[`Busca: ${query||'sem busca'}`,`Ordenação: ${sort.key} ${sort.dir===1?'crescente':'decrescente'}`]);
+    }
+    $('#specificSearchV77').oninput=event=>{query=norm(event.target.value);render()};
+    render();
+  }
+  const exportContextV77Base=exportContext;
+  exportContext=function(title,target,partLabel=''){
+    const meta=exportContextV77Base(title,target,partLabel);
+    if(target.classList?.contains('specific-modal-v77')&&state._statistics){
+      meta.splice(Math.max(0,meta.length-1),0,`Atividade: ${statisticsActivityLabel()}`,
+        `Período estatístico: ${fmtDate(state._statistics.start,false)} a ${fmtDate(state._statistics.end,false)}`,
+        `Busca: ${$('#specificSearchV77')?.value||'sem busca'}`,
+        `Total de documentos específicos: ${target.querySelector('#specificTotalsV77 strong')?.textContent||0}`);
+    }
+    return meta;
+  };
+  sourceRulesV70.statisticsSection={...sourceRulesV70.statisticsSection,
+    purpose:'DocumentosEspecificos mede quantidades especializadas em conclusões próprias, independentemente de Quantidade; OrgaoJulgado contextualiza BNMP e SAPRE/TRF5. SAE/Alvará não tem análise por órgão nesta versão.',
+    compat:'CSV e Microsoft Lists usam os mesmos registros normalizados; FeitoOutro não gera produtividade específica. Campo vazio não é automaticamente erro e um processo pode gerar vários documentos específicos.'};
+  const getStateV77Base=window.RadarNUPACI.getState;
+  window.RadarNUPACI.getState=()=>({...getStateV77Base(),version:'7.7',specificDocuments:state._statistics?.specificDocumentsV77?.total||0});
+  const getPerformanceV77Base=window.RadarNUPACI.getPerformance;
+  window.RadarNUPACI.getPerformance=()=>({...getPerformanceV77Base(),version:'7.7'});
+  $('.version-badge').textContent='v7.7';$('.version-pill').textContent='VERSÃO 7.7';
+  document.title='RADAR de Produtividade e Frequência NUPACI · v7.7';
+  window.RadarNUPACI.version='7.7';
+  window.RadarNUPACI.reconcileSources=reconcileSources;
+  window.RadarNUPACI.normalizeListRow=normalizeListRowV75;
+  window.RadarNUPACI.parseSpecificDocuments=parseSpecificV77;
+
     window.PainelNUPACI=window.RadarNUPACI;
   })();
   </script>
