@@ -1874,7 +1874,7 @@ function renderOperationalTableV79(){
   const table=$('#operationalTableV69 table'),visible=state._operationalVisibleV69||[];
   if(!table||!visible.length)return;
   const head=table.tHead?.rows[0],last=head?.querySelector('[data-operational-sort-v69="last"]');
-  if(!last)return;
+  if(!last||head.querySelector('[data-operational-sort-v69="firstV79"]'))return;
   function column(key,label,tip){
     const th=document.createElement('th');
     th.className='sortable has-tip';
@@ -2060,7 +2060,7 @@ function exportContextV79(title,target,partLabel=''){
   const openOperationalCriteriaV79Base=openOperationalCriteriaV69;openOperationalCriteriaV69=openOperationalCriteriaV79;$('#operationalCriteriaV69').onclick=openOperationalCriteriaV69;
   const openOperationalRulesV79Base=openOperationalRulesV69;openOperationalRulesV69=openOperationalRulesV79;$('#operationalRulesV69').onclick=openOperationalRulesV69;
   const exportContextV79Base=exportContext;exportContext=exportContextV79;
-  sourceRulesV70.dailyOperationalSection={...sourceRulesV70.dailyOperationalSection,purpose:'A Data3 das conclusões próprias identifica primeira e última conclusão, horário da meta equivalente e intervalos do tempo líquido. FeitoOutro permanece contexto operacional separado.',compat:'CSV e Microsoft Lists usam a mesma normalização. Processos distintos acumulados alcançam a meta equivalente de atividades disponíveis; intervalos superiores ao limite vigente são pausas observadas.'};
+  sourceRulesV70.dailyOperationalSection={...sourceRulesV70.dailyOperationalSection,purpose:sourceRulesV70.dailyOperationalSection.purpose+' A Data3 das conclusões próprias identifica primeira e última conclusão, horário da meta equivalente e intervalos do tempo líquido. FeitoOutro permanece contexto operacional separado.',compat:sourceRulesV70.dailyOperationalSection.compat+' CSV e Microsoft Lists usam a mesma normalização. Processos distintos acumulados alcançam a meta equivalente de atividades disponíveis; intervalos superiores ao limite vigente são pausas observadas.'};
   const getStateV79Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>{const base=getStateV79Base(),snap=state._operationalV69,byServer=new Map((snap?.items||[]).map(item=>[item.server,item.current]));return{...base,version:'7.9',dailyOperational:base.dailyOperational&&snap?{...base.dailyOperational,pauseLimit:state.activityThreshold,servers:base.dailyOperational.servers.map(server=>{const current=byServer.get(server.server),model=current?operationalTimelineV79(current):null;return{...server,first:model?.first?.toISOString()||null,goalReached:model?.reached?.toISOString()||null,last:model?.last?.toISOString()||null,netMs:model?.active??null}})}:base.dailyOperational}};
   const getPerformanceV79Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV79Base(),version:'7.9'});
   window.RadarNUPACI.version='7.9';$('.version-badge').textContent='v7.9';$('.version-pill').textContent='VERSÃO 7.9';document.title='RADAR de Produtividade e Frequência NUPACI · v7.9';
