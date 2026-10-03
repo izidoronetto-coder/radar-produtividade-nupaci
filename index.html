@@ -846,7 +846,47 @@ $('#rankLimit').onchange=e=>{state.rankLimit=+e.target.value;renderRankBars()};$
     function sectionTopV65(id){const target=$('#'+id);return target?Math.max(0,Math.round(scrollY+target.getBoundingClientRect().top-navigationOffsetV65())):0}
     function renderDirtyThroughV65(id){const targetIndex=sectionDefs.indexOf(id);if(targetIndex<0)return;sectionDefs.slice(0,targetIndex+1).forEach(sectionId=>{if(state._v65DirtySections?.has(sectionId))renderSectionV65(sectionId,false)})}
     function finishNavigationV65(token){if(!sectionNavLockV65||sectionNavLockV65.token!==token)return;const id=sectionNavLockV65.id;sectionNavLockV65=null;$$('[data-section-target]').forEach(button=>button.classList.remove('navigation-pending'));updateSectionNavActive();if(state._v65DirtySections?.size)scheduleDeferredSectionsV65(renderGenerationV65);setSectionNavActive(id)}
-    function navigateSectionV65(id,topOverride=null){const target=$('#'+id);if(!target)return;const token=++sectionNavTokenV65;setSectionNavActive(id);$$('[data-section-target]').forEach(button=>button.classList.toggle('navigation-pending',button.dataset.sectionTarget===id));closeMobileSectionNav();renderDirtyThroughV65(id);const top=topOverride==null?sectionTopV65(id):topOverride;sectionNavLockV65={id,token,top,started:performance.now()};const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;window.scrollTo({top,behavior:reduced?'auto':'smooth'});let stable=0,last=scrollY;const watch=()=>{if(!sectionNavLockV65||sectionNavLockV65.token!==token)return;const current=scrollY,distance=Math.abs(current-top);stable=Math.abs(current-last)<.5?stable+1:0;last=current;if(distance<=2&&stable>=2||performance.now()-sectionNavLockV65.started>1800){finishNavigationV65(token);return}requestAnimationFrame(watch)};requestAnimationFrame(watch)}
+    function navigateSectionV65(id,topOverride=null){
+      const target=$('#'+id);if(!target)return;
+      const token=++sectionNavTokenV65;
+      setSectionNavActive(id);
+      $$('[data-section-target]').forEach(button=>button.classList.toggle('navigation-pending',button.dataset.sectionTarget===id));
+      closeMobileSectionNav();
+      renderDirtyThroughV65(id);
+      const destination=()=>Math.min(
+        topOverride==null?sectionTopV65(id):topOverride,
+        Math.max(0,document.documentElement.scrollHeight-innerHeight)
+      );
+      const top=destination(),started=performance.now();
+      sectionNavLockV65={id,token,top,started};
+      const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // Saltos longos evitam renderizar, durante a rolagem, seções ainda pendentes entre origem e destino.
+      window.scrollTo({top,behavior:!reduced&&Math.abs(top-scrollY)<=innerHeight*1.5?'smooth':'instant'});
+      let stable=0,last=scrollY;
+      const watch=()=>{
+        const lock=sectionNavLockV65;
+        if(!lock||lock.token!==token)return;
+        // Uma seção carregada sob demanda pode deslocar o destino mesmo depois do clique.
+        const nextTop=destination();
+        if(Math.abs(nextTop-lock.top)>2){
+          lock.top=nextTop;
+          stable=0;
+          window.scrollTo({top:nextTop,behavior:'instant'});
+        }
+        const current=scrollY;
+        stable=Math.abs(current-last)<.5?stable+1:0;
+        last=current;
+        if(Math.abs(current-lock.top)<=2&&stable>=2&&performance.now()-started>=350){
+          finishNavigationV65(token);return;
+        }
+        if(performance.now()-started>3000){
+          window.scrollTo({top:destination(),behavior:'instant'});
+          finishNavigationV65(token);return;
+        }
+        requestAnimationFrame(watch);
+      };
+      requestAnimationFrame(watch);
+    }
     $$('[data-section-target]').forEach(button=>button.onclick=()=>navigateSectionV65(button.dataset.sectionTarget));
     $('#backTop').onclick=()=>navigateSectionV65('overview',0);
 
