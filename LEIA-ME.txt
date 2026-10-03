@@ -15,6 +15,13 @@ NOVIDADES DA VERSÃO 7.7 — DOCUMENTOS ESPECÍFICOS E ÓRGÃO JULGADOR
 - OrgaoJulgado e DocumentosEspecificos são reconhecidos entre os campos dinâmicos do CSV e do Microsoft Lists, inclusive em “Colunas visíveis”, “Mais filtros”, pesquisa e exportações. A extensão já lê colunas adicionais leves pelos metadados reais (Title, InternalName e TypeAsString), sem exigir alteração na sua branch main.
 - Bases antigas sem uma ou ambas as colunas continuam funcionando; ausência de valor não é tratada automaticamente como erro. As funcionalidades aprovadas da v7.6 permanecem preservadas.
 
+VERIFICAÇÃO DA VERSÃO 7.7 NESTA BRANCH
+
+- A sintaxe do script incorporado ao index.html foi validada.
+- Casos sintéticos passaram para parsing simples e composto, zero, campo vazio, tipos por atividade, órgão preenchido/vazio, pendência, FeitoOutro, soma de documentos, processo distinto e preservação de trecho inválido para auditoria.
+- A mesma fotografia sintética foi introduzida pelos adaptadores CSV e Microsoft Lists e resultou em texto bruto, órgão e total normalizado idênticos. A regra de comparação com base anterior zero foi conferida no mecanismo preexistente.
+- A seleção dinâmica das colunas pela extensão foi conferida no código. O teste com a sessão institucional real, a inspeção visual dos popups, a geração efetiva de PNG/XLSX no navegador e a regressão interativa de todos os módulos ainda dependem de homologação no ambiente autorizado. A branch não foi mesclada à main.
+
 NOVIDADES DA VERSÃO 7.6 — ADEQUAÇÃO TRANSVERSAL À COLUNA FeitoOutro
 
 - Ajuste de manutenção da entrega: o card “Feitos por terceiros” e o título “Processos concluídos pelo servidor” passaram a reutilizar exatamente a estrutura visual dos demais cards da Visão geral, mantendo tooltip, teclado e clique sem quebra do conteúdo.
