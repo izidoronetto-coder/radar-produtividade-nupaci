@@ -1,5 +1,26 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 7.6
+Versão 7.7
+
+NOVIDADES DA VERSÃO 7.7 — DOCUMENTOS ESPECÍFICOS E ÓRGÃO JULGADOR
+
+- O módulo Estatísticas ganhou “Documentos específicos produzidos” imediatamente após “Documentos produzidos”. A soma vem das quantidades positivas de DocumentosEspecificos em conclusões próprias válidas pela Data3; não conta linhas, processos nem campos preenchidos.
+- SAE/Alvará usa Físico e SAE; BNMP usa Mandado, Contramandado, Guia e MDP; SAPRE/TRF5 usa ROPV e Precatório. Todas as atividades somam as três famílias, com composição separada no detalhamento. Atividade sem essa medição mostra “Não se aplica”; atividade suportada sem produção no recorte mostra 0.
+- O texto separado por ponto e vírgula é interpretado uma vez na entrada normalizada, com tolerância a espaços, acentuação e quantidades zero. O valor bruto é preservado; trechos inesperados não geram quantidades artificiais e ficam disponíveis para conferência no detalhamento.
+- DocumentosEspecificos é medida independente da coluna geral Quantidade. Os dois indicadores não são somados. Um processo pode gerar mais de um documento específico, de modo que o número de documentos e o de processos distintos podem diferir.
+- FeitoOutro continua sendo resolução operacional, sem atribuição de documentos específicos como produtividade do servidor destinatário. O cálculo usa a classificação central de conclusão própria da v7.6 e conserva a conciliação segura das duas fontes.
+- O card segue o período local de Estatísticas, os filtros produtivos já existentes e o mesmo mecanismo de comparação: período equivalente anterior, imediatamente anterior ou personalizado, inclusive o tratamento de base anterior zero.
+- O card abre “Detalhamento dos documentos específicos produzidos”, com busca, composição por atividade e tipo, totais clicáveis e matrizes de Órgão julgador × tipo para BNMP e SAPRE/TRF5. As células, totais por órgão e totais por tipo aprofundam até os registros correspondentes, mantendo o histórico “← Voltar”, pesquisa, ordenação, filtros rápidos e colunas dinâmicas.
+- SAE/Alvará apresenta Físico e SAE sem inferir órgão. Para BNMP e SAPRE/TRF5, um documento válido com OrgaoJulgado vazio permanece no total e aparece em “Órgão não informado”. Pendência com órgão vazio e nenhum documento produzido não cria essa categoria. Órgão preenchido sem documento também não cria produção.
+- O popup principal reutiliza “Copiar imagem” e oferece “Exportar XLSX” com abas Processos e Resumo. O XLSX registra atividade, período, filtros, totais, tipos, órgãos e registros do recorte. Os aprofundamentos preservam as exportações de imagem e XLSX existentes.
+- OrgaoJulgado e DocumentosEspecificos são reconhecidos entre os campos dinâmicos do CSV e do Microsoft Lists, inclusive em “Colunas visíveis”, “Mais filtros”, pesquisa e exportações. A extensão já lê colunas adicionais leves pelos metadados reais (Title, InternalName e TypeAsString), sem exigir alteração na sua branch main.
+- Bases antigas sem uma ou ambas as colunas continuam funcionando; ausência de valor não é tratada automaticamente como erro. As funcionalidades aprovadas da v7.6 permanecem preservadas.
+
+VERIFICAÇÃO DA VERSÃO 7.7 NESTA BRANCH
+
+- A sintaxe do script incorporado ao index.html foi validada.
+- Casos sintéticos passaram para parsing simples e composto, zero, campo vazio, tipos por atividade, órgão preenchido/vazio, pendência, FeitoOutro, soma de documentos, processo distinto e preservação de trecho inválido para auditoria.
+- A mesma fotografia sintética foi introduzida pelos adaptadores CSV e Microsoft Lists e resultou em texto bruto, órgão e total normalizado idênticos. A regra de comparação com base anterior zero foi conferida no mecanismo preexistente.
+- A seleção dinâmica das colunas pela extensão foi conferida no código. O teste com a sessão institucional real, a inspeção visual dos popups, a geração efetiva de PNG/XLSX no navegador e a regressão interativa de todos os módulos ainda dependem de homologação no ambiente autorizado. A branch não foi mesclada à main.
 
 NOVIDADES DA VERSÃO 7.6 — ADEQUAÇÃO TRANSVERSAL À COLUNA FeitoOutro
 
