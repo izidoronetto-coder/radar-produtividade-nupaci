@@ -1,5 +1,37 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 7.6
+Versão 7.8
+
+NOVIDADES DA VERSÃO 7.8 — JORNADA E PAUSAS
+
+- A ficha principal do servidor ganhou o botão direto “Jornada e pausas”, antes dos aprofundamentos de produção. O caminho anterior por Intervalos entre conclusões permanece disponível.
+- O novo acesso abre o modal preexistente de pausas para o dia de produção mais recente no recorte e permite escolher outros dias do mesmo servidor. Cada dia mantém sua própria primeira/última conclusão, janela observada, tempo líquido estimado, pausas, total em pausas, maior pausa, gráfico e listagem; dias diferentes não são unidos num gráfico contínuo.
+- “Tempo líquido estimado” usa diretamente activityBreakdown(...).active, o mesmo cálculo de Atividade estimada: soma apenas intervalos consecutivos do mesmo servidor e dia iguais ou inferiores ao limite configurado. Não é medição direta de trabalho nem controle de ponto. Janela observada continua independente do limite.
+- Os cinco indicadores aparecem juntos no topo: Janela observada, Tempo líquido estimado, Pausas, Tempo total em pausas e Maior pausa, com explicações acessíveis. Uma conclusão isolada exibe “—” para janela, tempo líquido e maior pausa; pausas e tempo em pausas são zero.
+- O limite da pausa pode ser alterado dentro de Jornada e pausas pelas opções já existentes ou por valor personalizado inteiro entre 1 e 240 minutos. O mesmo parâmetro e as mesmas chaves de preferência locais são usados por Metas e jornada, Tempo de atividade estimado e os detalhamentos. Não há botão Aplicar para esse limite nas três interfaces.
+- A entrada personalizada válida atualiza automaticamente após 300 ms sem nova digitação. Campo temporariamente vazio, fracionário ou fora de 1 a 240 não substitui o último valor válido. A mudança atualiza a visão e invalida o cache derivado de Metas e jornada, sem redesenhar todos os painéis.
+- A linha do tempo já existente conserva conclusões azuis e pausas amarelas; a listagem e as observações dos processos anterior e seguinte permanecem. Na visão direta, o número ou a faixa de uma pausa abre seu detalhe, com acesso aos processos. O histórico “← Voltar”, fechamento, imagem do modal e exportação XLSX dos processos continuam no mecanismo existente.
+- Os registros de Data3 descrevem a cadência observada. A ausência de conclusão ou uma pausa longa não comprovam, isoladamente, ausência de trabalho. A integração Microsoft Lists, o CSV, FeitoOutro, os documentos específicos da v7.7 e os demais módulos não tiveram regras analíticas alteradas.
+
+NOVIDADES DA VERSÃO 7.7 — DOCUMENTOS ESPECÍFICOS E ÓRGÃO JULGADOR
+
+- O módulo Estatísticas ganhou “Documentos específicos produzidos” imediatamente após “Documentos produzidos”. A soma vem das quantidades positivas de DocumentosEspecificos em conclusões próprias válidas pela Data3; não conta linhas, processos nem campos preenchidos.
+- SAE/Alvará usa Físico e SAE; BNMP usa Mandado, Contramandado, Guia e MDP; SAPRE/TRF5 usa ROPV e Precatório. Todas as atividades somam as três famílias, com composição separada no detalhamento. Atividade sem essa medição mostra “Não se aplica”; atividade suportada sem produção no recorte mostra 0.
+- O texto separado por ponto e vírgula é interpretado uma vez na entrada normalizada, com tolerância a espaços, acentuação e quantidades zero. O valor bruto é preservado; trechos inesperados não geram quantidades artificiais e ficam disponíveis para conferência no detalhamento.
+- DocumentosEspecificos é medida independente da coluna geral Quantidade. Os dois indicadores não são somados. Um processo pode gerar mais de um documento específico, de modo que o número de documentos e o de processos distintos podem diferir.
+- FeitoOutro continua sendo resolução operacional, sem atribuição de documentos específicos como produtividade do servidor destinatário. O cálculo usa a classificação central de conclusão própria da v7.6 e conserva a conciliação segura das duas fontes.
+- O card segue o período local de Estatísticas, os filtros produtivos já existentes e o mesmo mecanismo de comparação: período equivalente anterior, imediatamente anterior ou personalizado, inclusive o tratamento de base anterior zero.
+- O card abre “Detalhamento dos documentos específicos produzidos”, com busca, composição por atividade e tipo, totais clicáveis e matrizes de Órgão julgador × tipo para BNMP e SAPRE/TRF5. As células, totais por órgão e totais por tipo aprofundam até os registros correspondentes, mantendo o histórico “← Voltar”, pesquisa, ordenação, filtros rápidos e colunas dinâmicas.
+- SAE/Alvará apresenta Físico e SAE sem inferir órgão. Para BNMP e SAPRE/TRF5, um documento válido com OrgaoJulgado vazio permanece no total e aparece em “Órgão não informado”. Pendência com órgão vazio e nenhum documento produzido não cria essa categoria. Órgão preenchido sem documento também não cria produção.
+- O popup principal reutiliza “Copiar imagem” e oferece “Exportar XLSX” com abas Processos e Resumo. O XLSX registra atividade, período, filtros, totais, tipos, órgãos e registros do recorte. Os aprofundamentos preservam as exportações de imagem e XLSX existentes.
+- OrgaoJulgado e DocumentosEspecificos são reconhecidos entre os campos dinâmicos do CSV e do Microsoft Lists, inclusive em “Colunas visíveis”, “Mais filtros”, pesquisa e exportações. A extensão já lê colunas adicionais leves pelos metadados reais (Title, InternalName e TypeAsString), sem exigir alteração na sua branch main.
+- Bases antigas sem uma ou ambas as colunas continuam funcionando; ausência de valor não é tratada automaticamente como erro. As funcionalidades aprovadas da v7.6 permanecem preservadas.
+
+VERIFICAÇÃO DA VERSÃO 7.7 NESTA BRANCH
+
+- A sintaxe do script incorporado ao index.html foi validada.
+- Casos sintéticos passaram para parsing simples e composto, zero, campo vazio, tipos por atividade, órgão preenchido/vazio, pendência, FeitoOutro, soma de documentos, processo distinto e preservação de trecho inválido para auditoria.
+- A mesma fotografia sintética foi introduzida pelos adaptadores CSV e Microsoft Lists e resultou em texto bruto, órgão e total normalizado idênticos. A regra de comparação com base anterior zero foi conferida no mecanismo preexistente.
+- A seleção dinâmica das colunas pela extensão foi conferida no código. O teste com a sessão institucional real, a inspeção visual dos popups, a geração efetiva de PNG/XLSX no navegador e a regressão interativa de todos os módulos ainda dependem de homologação no ambiente autorizado. A branch não foi mesclada à main.
 
 NOVIDADES DA VERSÃO 7.6 — ADEQUAÇÃO TRANSVERSAL À COLUNA FeitoOutro
 
