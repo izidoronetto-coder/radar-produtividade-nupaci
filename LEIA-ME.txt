@@ -3,6 +3,8 @@ Versão 7.9
 
 NOVIDADES DA VERSÃO 7.9 — HORÁRIOS, META E TEMPO LÍQUIDO NO ACOMPANHAMENTO DIÁRIO
 
+- Ajuste de usabilidade: os tooltips dos cards e cabeçalhos do Acompanhamento Diário usam a camada flutuante já existente, fora da tabela com rolagem; o ícone de informação também responde ao clique/toque sem acionar a ordenação ou os filtros.
+- O limite de pausa vigente aparece junto à data analisada. Em “Configurar critérios”, a escolha do limite fica no início da janela e continua sincronizada com Jornada e pausas e Metas e jornada.
 - A tabela de Acompanhamento Diário de Atividade e Perfil Operacional apresenta Primeira conclusão, Meta atingida às, Última conclusão e Tempo líquido, após Perfil histórico e Dias críticos. Os horários são da Data3 das conclusões próprias válidas no dia; FeitoOutro continua como contexto operacional separado.
 - Primeira e última conclusão usam os horários extremos das conclusões próprias do servidor. Meta atingida às marca a primeira conclusão em que a quantidade acumulada de processos distintos concluídos alcança a meta esperada equivalente já calculada a partir da composição das atividades disponíveis. Produção posterior continua visível. Sem meta válida, sem avaliação possível ou sem atingimento, o horário aparece como “—”.
 - O Tempo líquido reutiliza activityBreakdown(...).active: soma dos intervalos entre conclusões próprias consecutivas do mesmo servidor no dia que não ultrapassam o limite de pausa. A janela observada corresponde à diferença entre primeira e última conclusão; intervalos estritamente superiores ao limite são pausas observadas. Com uma única conclusão, o tempo líquido é “—”, sem inventar duração.
