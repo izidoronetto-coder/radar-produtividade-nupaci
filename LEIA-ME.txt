@@ -1,6 +1,12 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
 Versão 8.2
 
+OTIMIZAÇÃO DE DESEMPENHO — ESTATÍSTICAS (VERSÃO 8.2)
+
+- A verificação de quais linhas do recorte pertencem à base carregada em Origem dos cadastramentos, também utilizada por Estatísticas, passou a usar consulta por conjunto em vez de busca linear repetida. A fotografia do status atual reutiliza diretamente os registros normalizados e a cache existente de currentStatusSnapshot, sem recriar cópias enriquecidas apenas para essa classificação.
+- Não foram alterados fórmulas, períodos, filtros, resultados, comparativos, drilldowns, exportações nem a classificação de FeitoOutro. CSV e Microsoft Lists continuam no mesmo caminho analítico; a extensão não foi modificada.
+- Ensaio local reproduzível com 12.000 registros sintéticos e 90 dias: abertura de Estatísticas de 5,53 s para 1,29 s; troca de atividade de 4,67 s para 0,37 s; troca de período de 3,44 s para 0,30 s; comparativo desligado/ligado de 3,37/3,34 s para 0,28/0,30 s. Os tempos incluem renderização em DOM de teste e variam com equipamento e volume. Os modelos dos mesmos seis recortes permaneceram idênticos antes/depois.
+
 NOVIDADES DA VERSÃO 8.2 — TEMPO DE EXECUÇÃO COMO COMPARATIVO GERENCIAL
 
 - O painel existente Tempo de Execução e Comparativo foi reorganizado em três níveis: recorte local, comparação consolidada e aprofundamento. A fórmula permanece Tempo de execução = Data3 − Data2, usando somente conclusões próprias válidas. FeitoOutro continua fora do tempo produtivo individual.
