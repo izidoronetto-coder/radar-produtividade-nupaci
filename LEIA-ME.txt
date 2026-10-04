@@ -1,5 +1,23 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.1
+Versão 8.2
+
+NOVIDADES DA VERSÃO 8.2 — TEMPO DE EXECUÇÃO COMO COMPARATIVO GERENCIAL
+
+- O painel existente Tempo de Execução e Comparativo foi reorganizado em três níveis: recorte local, comparação consolidada e aprofundamento. A fórmula permanece Tempo de execução = Data3 − Data2, usando somente conclusões próprias válidas. FeitoOutro continua fora do tempo produtivo individual.
+- Base temporal define apenas quais casos entram no recorte. Conclusão — Data3, opção padrão, seleciona as conclusões próprias do período mesmo quando a distribuição ocorreu antes. Distribuição — Data2 seleciona as distribuições do período e calcula o tempo completo apenas das que já possuem conclusão própria em Data3.
+- O período local possui Data inicial, Data final, Hoje, Últimos 7 dias, Últimos 30 dias, Este mês, Mês anterior, Período personalizado e Usar período do Radar. Alterar esse recorte utiliza a base normalizada já carregada e não aciona nova sincronização do Microsoft Lists.
+- Atividade e Servidor são filtros locais fixos. + Mais filtros permite acrescentar Prioridade, Coordenadoria, Equipe, Sistema e Cadastrador. As opções são lidas dinamicamente da base, admitem busca, multisseleção, Selecionar todos e Limpar, apresentam contagens contextuais e reutilizam a cascata existente sem alterar os filtros gerais.
+- Analisar por permite comparar o mesmo universo por Servidor, Atividade, Prioridade, Equipe ou Coordenadoria. Uma dimensão pode permanecer filtrada e também ser usada no agrupamento, permitindo, por exemplo, comparar servidores dentro de uma prioridade ou coordenadorias dentro de uma atividade.
+- A tela principal passa a destacar Processos analisados, Tempo típico, Tempo médio, Menor tempo e Maior tempo. Tempo típico é a mediana do intervalo Data2 → Data3 e recebe maior hierarquia porque sofre menos influência de casos extremos; média, mínimo e máximo permanecem disponíveis e explicados.
+- A tabela comparativa única apresenta quantidade, mediana, média, mínimo, máximo e seis faixas sem lacunas: até 4h; acima de 4h até 8h; acima de 8h até 24h; acima de 24h até 2 dias; acima de 2 até 5 dias; e acima de 5 dias. Cada faixa informa quantidade e percentual dentro do grupo e abre exatamente suas ocorrências.
+- A identidade aprovada do painel foi preservada: processo distinto dentro de cada dia de Data2. Repetições do mesmo processo no mesmo dia de distribuição são deduplicadas; uma nova distribuição em outro dia continua representando outra ocorrência operacional.
+- Grupos com menos de cinco ocorrências recebem o aviso Amostra pequena, sem ocultação da média ou da mediana. A indicação pede cautela e não transforma o tamanho da amostra em julgamento automático.
+- No modo Distribuição — Data2, processos que ainda permanecem pendentes são informados separadamente e podem ser abertos para auditoria. Eles não entram na média, mediana, mínimo, máximo nem nas faixas e não são tratados como tempo zero.
+- A comparação oferece Sem comparação, Período equivalente anterior, Período imediatamente anterior e Personalizado. O período comparativo usa a mesma Base temporal ativa. A tabela mostra diferença absoluta e variação percentual somente quando a base anterior permite o cálculo; valor anterior zero não produz percentual artificial.
+- Clique na linha abre o aprofundamento do grupo com quantidade, mediana, média, extremos, comparação, faixas, composição por atividades e servidores, busca, filtros, ordenação, cópia, XLSX, imagem e acesso aos registros. O histórico ← Voltar preserva o recorte e o contexto de navegação.
+- Copiar imagem registra o painel, os controles, o resumo do recorte, os cards e a tabela visível. Exportar XLSX cria Comparação e Contexto com período, Base temporal, filtros, dimensão, comparação, fórmula e limitações interpretativas.
+- Datas inválidas, Data3 anterior à Data2 e combinações inconsistentes continuam excluídas da métrica e auditáveis. O painel mede tempo decorrido, não tempo efetivamente trabalhado, dedicação, presença funcional ou complexidade. Microsoft Lists e CSV alimentam a mesma normalização; a extensão não foi alterada.
+- A branch backup-pre-v8.2 preserva o commit publicado da v8.1 antes desta entrega. A atualização da main utiliza avanço normal, sem force push, reescrita de histórico, exclusão de branches ou alteração do GitHub Pages.
 
 NOVIDADES DA VERSÃO 8.1 — EXPLICABILIDADE, RECORTES LOCAIS E JORNADA CANÔNICA
 
