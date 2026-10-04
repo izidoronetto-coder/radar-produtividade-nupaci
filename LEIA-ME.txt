@@ -1,5 +1,46 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.0
+Versão 8.1
+
+NOVIDADES DA VERSÃO 8.1 — EXPLICABILIDADE, RECORTES LOCAIS E JORNADA CANÔNICA
+
+TEMPO DE ATIVIDADE ESTIMADO
+- Os seis cards possuem explicações próprias: Média servidor/dia, Mediana servidor/dia, Média coletiva/dia, Total no período, Janela média e Blocos de continuidade. As explicações distinguem tempo líquido estimado, janela e horas-servidor, sem apresentar os registros como controle formal de jornada.
+- Blocos de continuidade substitui o título Blocos produtivos. Intervalos consecutivos dentro do limite mantêm o bloco; um intervalo estritamente superior inicia outro. A média de blocos usa todas as combinações servidor/dia com ao menos uma conclusão própria válida, incluindo dias com uma única conclusão.
+- Período de conclusão (Data3), Servidor e Atividade são filtros locais fixos. O período aceita data única ou intervalo e pode ser ampliado sobre a base já normalizada, sem sincronizar novamente o Microsoft Lists. Os filtros categóricos gerais e o período de distribuição herdados continuam respeitados. Usar período do Radar restaura o período de conclusão herdado.
+- Servidor e Atividade possuem busca, checkboxes, multisseleção, Selecionar todos e Limpar. + Mais filtros permite Coordenadoria, Equipe, Prioridade, Cadastrador e Sistema; cada filtro adicional pode ser removido sem apagar os demais.
+- A cascata reutiliza o componente existente: opções e contagens de processos distintos consideram os demais filtros locais. Todos os cards e a tabela são recalculados. Limpar filtros remove as seleções locais e extras e restaura o período herdado, sem alterar o dashboard.
+- O resumo do recorte acompanha a análise e a imagem. O histórico ← Voltar conserva período, seleções, busca dos filtros e ordenação; se o limite global de continuidade mudar no aprofundamento, os indicadores são atualizados ao retornar.
+
+VISÃO GERAL
+- Concluídos pelo servidor, Resolvidos por terceiros e Pendentes descrevem a posição operacional atual, utilizando currentStatusSnapshot e a distribuição mais recente. Uma conclusão histórica não elimina pendência criada por redistribuição posterior.
+- Os três percentuais usam o universo de processos distintos do card Processos distribuídos como denominador. Não há ajuste artificial para que somem 100%: outros estados podem compor o universo. Sem distribuídos, o percentual não é calculável.
+- Taxa de resolução operacional usa a união deduplicada dos processos atualmente resolvidos pelo destinatário e por terceiros, dividida pelos processos distribuídos. Mede resolução do acervo; FeitoOutro não se torna produtividade própria.
+- Média diária de processos/servidor: conta processos distintos em cada combinação servidor × dia de Data3 com conclusão própria e calcula a média dessas combinações. Média diária de documentos/servidor usa a soma de Quantidade de cada combinação. Dias sem conclusão não são incluídos automaticamente como zero. Exemplo: 120 processos em 6 combinações resultam em 20, não em 120 dividido apenas pelos servidores.
+- Média de documentos por conclusão: soma de Quantidade das conclusões próprias dividida pelas ocorrências produtivas normalizadas após a conciliação oficial. A identidade é o id do registro conciliado, que já representa o pareamento seguro entre as fontes. Não usa processo distinto nem uniqueCompletionEvents, cujo agrupamento temporal pode reunir ocorrências diferentes do mesmo processo no dia. Exemplo: 6 documentos em 3 ocorrências de 2 processos resultam em 2 documentos/conclusão.
+- Servidores com conclusão própria e Dias com produção registrada deixam explícito o universo produtivo. Documentos produzidos continua somando somente Quantidade, sem FeitoOutro e sem somar DocumentosEspecificos. Intervalo médio observado e Mediana do intervalo mantêm as fórmulas anteriores e receberam explicações gerenciais.
+
+JORNADA E PAUSAS
+- A experiência visual da antiga Linha do tempo da atividade diária (openOperationalTimelineV79) tornou-se a base da Jornada e pausas canônica. openJourneyPanelV78 coordena os controles, a origem dos dados e a composição; o renderer existente foi preservado internamente como renderJourneyTimelineV81. Não foi criado outro motor temporal.
+- A mesma experiência reúne servidor, data, coordenadoria, equipe, meta esperada, produção própria, Produção do dia, documentos gerais e específicos, resoluções por terceiros, primeira/meta/última conclusão, janela, tempo líquido estimado, pausas, gráfico, sequência cronológica e tabela de pausas com observações.
+- Dia analisado permanece sempre disponível e atualiza integralmente o popup. O seletor diferencia registros de conclusão dos processos distintos do card. Dias contendo apenas resoluções por terceiros não recebem horários ou duração produtiva artificial.
+- A linha do tempo conserva conclusões, pausas e o marcador da primeira meta atingida. A seção Conclusões próprias em ordem cronológica mantém processo, atividade, documentos, intervalo, produção acumulada e percentual da meta, inclusive conclusões posteriores ao atingimento.
+- O parâmetro de continuidade, activityBreakdown, a meta equivalente, a classificação FeitoOutro e o parser de DocumentosEspecificos são reutilizados. A deduplicação temporal anterior permanece; não deve ser confundida com a identidade de ocorrência adotada exclusivamente na média de documentos por conclusão.
+- Primeira e última conclusão possuem a mesma hierarquia visual neutra. O marco da meta tem diferenciação discreta e legenda. Produção do dia e Resoluções por terceiros foram compactados; documentos gerais e específicos continuam independentes. Não se aplica e 0 preservam seus significados.
+- A auditoria encontrou 12 chamadas a openPausePanel além da definição original: 10 entradas analíticas e 2 usos como renderer. As entradas de Metas, Intervalos, Concentração, Acompanhamento Diário e Ficha histórica usam o adaptador canônico; a nova tabela de Tempo de atividade chama a Jornada diretamente. O renderer interno de pausas foi preservado como renderPauseBaseV81, e a composição antiga de Jornada foi substituída. O detalhe de uma pausa específica permanece como aprofundamento.
+- Os universos normalizados de origem acompanham o servidor/dia, inclusive em datas históricas e nos filtros locais do Tempo de atividade. O retorno mantém o contexto do popup anterior. Ver processos do dia e os drilldowns de terceiros reutilizam o popup analítico existente, sem modificar sua implementação.
+- Copiar imagem e XLSX continuam no exportador existente. O XLSX da Jornada mantém Resumo e Eventos. A captura de imagem da Jornada, Ficha histórica e Tempo de atividade passou a incluir também os estilos adicionados dinamicamente pelas versões recentes, preservando grades, gráfico e legibilidade.
+- Ausência de conclusões ou intervalos longos não comprovam ausência de trabalho. A análise não observa atividades que não geraram conclusão e não cria julgamento automático sobre o servidor.
+
+FICHA HISTÓRICA E NAVEGAÇÃO
+- Situação da data analisada, Histórico recente e Perfil produtivo continuam separados. A grade se reorganiza conforme a largura; textos longos quebram linha, os blocos se empilham e o scroll necessário a gráficos/tabelas fica dentro desses componentes.
+- Jornada e pausas substitui o rótulo Pausas na ficha e abre o mesmo servidor na data analisada, com o universo histórico de origem. Os demais indicadores e drilldowns permanecem.
+- Navegação: inclusão do Mapa de concentração produtiva no Sumário, entre Metas e jornada e Acompanhamento Diário de Atividade e Perfil Operacional. O painel existente utiliza o mesmo mecanismo de posicionamento e destaque ativo dos demais itens, incluindo navegação compacta e móvel.
+
+VALIDAÇÃO E CONTINUIDADE
+- Validados os exemplos matemáticos de médias diárias, dia sem conclusão, documentos por ocorrência, percentuais operacionais, FeitoOutro e redistribuição. Validados filtros locais, cascata, limite, retorno dos modais e entradas da Jornada por Metas, Concentração, Intervalos, ficha e Acompanhamento Diário.
+- Validada a equivalência de uma fotografia sintética via CSV e via normalizeListRowV75/inputGateway. A extensão não foi modificada. Essa simulação não substitui a conferência com sessão institucional autenticada no SharePoint.
+- A branch backup-pre-v8.1 preserva o commit anterior a esta entrega. A atualização utiliza avanço normal da main, sem force push, exclusão de branches ou alteração do GitHub Pages.
+
 
 NOVIDADES DA VERSÃO 8.0 — JORNADA, PRODUÇÃO DO DIA E RESOLUÇÕES POR TERCEIROS
 

@@ -253,7 +253,7 @@
     function overlapMs(start,end,startHour,endHour){if(!start||!end)return 0;const a=new Date(start),b=new Date(start);a.setHours(startHour,0,0,0);b.setHours(endHour,0,0,0);return Math.max(0,Math.min(+end,+b)-Math.max(+start,+a))}
     function estimateShift(first,last,distinctTimes){const window=first&&last?Math.max(0,last-first):null,earlyOverlap=overlapMs(first,last,8,15),lateOverlap=overlapMs(first,last,11,18),outside=!!(first&&last&&(first.getHours()<8||last.getHours()>=18));if(distinctTimes<2)return{code:'insufficient',label:'Registros insuficientes',reason:'Apenas um horário de conclusão',earlyOverlap,lateOverlap,outside};if(window<3600000)return{code:'insufficient',label:'Registros insuficientes',reason:'Janela observada inferior a 1 hora',earlyOverlap,lateOverlap,outside};if(earlyOverlap===lateOverlap)return{code:'inconclusive',label:'Turno inconclusivo',reason:'Compatibilidade igual com os dois turnos',earlyOverlap,lateOverlap,outside};return earlyOverlap>lateOverlap?{code:'early',label:'08h–15h',reason:'Maior sobreposição com o turno 08h–15h',earlyOverlap,lateOverlap,outside}:{code:'late',label:'11h–18h',reason:'Maior sobreposição com o turno 11h–18h',earlyOverlap,lateOverlap,outside}}
     function goalDailyBreakdown(rows){
-      const completed=rows.filter(isCompleted),timeByKey=new Map(activityBreakdown(completed).detail.map(x=>[`${x.server}\u0000${x.day}`,x])),groups=new Map;
+      const completed=rows.filter(isCompleted),timeByKey=new Map(activityBreakdown(rows).detail.map(x=>[`${x.server}\u0000${x.day}`,x])),groups=new Map;
       completed.forEach(r=>{const day=isoDay(r.date3),key=`${r.server}\u0000${day}`;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r)});
       return[...groups].map(([key,rs])=>{
         const [server,day]=key.split('\u0000'),activityGroups=new Map,duplicateGroups=new Map,processActivities=new Map;
@@ -593,16 +593,6 @@
       $('#intervalToleranceSelect').onchange=e=>$('#intervalCustomToleranceWrap').classList.toggle('hidden',e.target.value!=='custom');$('#applyIntervalTolerance').onclick=()=>{const mode=$('#intervalToleranceSelect').value;setIntervalPreference(mode,$('#intervalCustomTolerance').value);openIntervalAnalysis(true);toast(`Faixa média atualizada para ±${state.intervalTolerance}%`)};$$('[data-interval-band]').forEach(b=>b.onclick=()=>{activeBand=b.dataset.intervalBand;$$('[data-interval-band]').forEach(x=>x.classList.toggle('active',x===b));renderIntervalTable()});renderIntervalTable()
     }
     function activityOptions(selected){return[['5','5 minutos'],['6','6 minutos'],['7','7 minutos'],['8','8 minutos'],['9','9 minutos'],['10','10 minutos'],['15','15 minutos'],['20','20 minutos'],['30','30 minutos'],['60','60 minutos'],['custom','Personalizado']].map(([v,l])=>`<option value="${v}" ${v===selected?'selected':''}>${l}</option>`).join('')}
-    function openActivityPanel(replaceCurrent=false,viewState=null){
-      const a=activityBreakdown(state.filtered),custom=state.activityMode==='custom',columns=[['server','Servidor',false],['day','Dia',false],['first','Primeira conclusão',false],['last','Última conclusão',false],['window','Janela',true],['active','Atividade estimada',true],['pauses','Pausas',true],['processes','Processos',true]];
-      let activitySearch=viewState?.search||'',activitySort=viewState?.sort||{key:'day',dir:1};
-      openModal('Tempo de atividade estimado',`Limite de continuidade: ${a.threshold}min · intervalos superiores são tratados como pausa`,`<div class="activity-modal-config"><div class="field"><label for="modalActivityThreshold">Limite de continuidade</label><select id="modalActivityThreshold">${activityOptions(state.activityMode)}</select></div><div id="modalCustomThresholdWrap" class="field ${custom?'':'hidden'}"><label for="modalCustomThreshold">Minutos personalizados</label><input id="modalCustomThreshold" type="number" min="1" max="240" step="1" value="${a.threshold}"></div><span id="modalPauseFeedbackV78" class="pause-feedback-v78" role="status"></span></div><div class="server-kpis">${[['Média servidor/dia',fmtDuration(a.avgActive)],['Mediana servidor/dia',fmtDuration(a.medianActive)],['Média coletiva/dia',fmtHours(a.avgCollectiveDay)],['Total no período',a.calculableGroups?fmtHours(a.totalActive):'—'],['Janela média',fmtDuration(a.avgWindow)],['Blocos produtivos',fmtNum(a.blocks)]].map(([l,v])=>`<div class="mini-kpi"><span>${l}</span><strong>${v}</strong></div>`).join('')}</div><p class="activity-note">O indicador principal é a média por combinação servidor/dia calculável. A média coletiva por dia representa horas-servidor: soma a atividade de todos os servidores e divide pelos ${a.calculableDays} dia${a.calculableDays===1?'':'s'} com cálculo possível. A janela vai da primeira à última conclusão de cada servidor no dia. O tempo estimado soma apenas os intervalos iguais ou inferiores a ${a.threshold} minutos; ${a.pauses} intervalo${a.pauses===1?'':'s'} acima desse limite ${a.pauses===1?'foi tratado':'foram tratados'} como pausa. Clique no número de pausas para ver os horários.</p><div class="activity-table-toolbar"><input id="activityServerSearch" class="search" type="search" placeholder="Buscar servidor pelo nome" aria-label="Buscar servidor pelo nome" value="${esc(activitySearch)}"><span id="activityResultCount" class="activity-result-count"></span></div><div class="table-wrap"><table><thead id="activityTableHead"></thead><tbody id="activityTableBody"></tbody></table></div>`,false,{replaceCurrent});
-      const renderActivityTable=()=>{const q=norm(activitySearch),rows=a.detail.filter(x=>!q||norm(x.server).includes(q));rows.sort((x,y)=>{let A=x[activitySort.key],B=y[activitySort.key];if(A==null&&B==null)return x.server.localeCompare(y.server,'pt-BR');if(A==null)return 1;if(B==null)return-1;if(A instanceof Date)A=+A;if(B instanceof Date)B=+B;const compared=typeof A==='string'?A.localeCompare(B,'pt-BR'):A-B;return compared*activitySort.dir||x.server.localeCompare(y.server,'pt-BR')});$('#activityResultCount').textContent=`${rows.length} de ${a.detail.length} registros`;$('#activityTableHead').innerHTML=`<tr>${columns.map(([key,label,numeric])=>`<th class="sortable ${numeric?'num':''}" tabindex="0" role="button" data-activity-sort="${key}" aria-sort="${activitySort.key===key?(activitySort.dir===1?'ascending':'descending'):'none'}">${label}${activitySort.key===key?(activitySort.dir===1?' ↑':' ↓'):''}</th>`).join('')}</tr>`;$('#activityTableBody').innerHTML=rows.length?rows.map(x=>{const i=a.detail.indexOf(x);return`<tr><td><button class="name-btn" data-activity-server="${esc(x.server)}">${esc(x.server)}</button></td><td>${fmtDate(new Date(x.day+'T12:00:00'),false)}</td><td>${fmtDate(x.first)}</td><td>${fmtDate(x.last)}</td><td class="num">${fmtDuration(x.window)}</td><td class="num">${fmtDuration(x.active)}</td><td class="num">${x.pauses?`<button class="cell-btn" data-activity-pauses="${i}" title="Ver início, fim e duração das pausas">${x.pauses}</button>`:'0'}</td><td class="num"><button class="cell-btn" data-activity-day="${x.day}" data-activity-day-server="${esc(x.server)}">${x.processes}</button></td></tr>`}).join(''):`<tr><td colspan="8" class="empty">Nenhum servidor corresponde à busca.</td></tr>`;$$('[data-activity-sort]').forEach(h=>{const sort=()=>{activitySort={key:h.dataset.activitySort,dir:activitySort.key===h.dataset.activitySort?-activitySort.dir:1};renderActivityTable()};h.onclick=sort;h.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sort()}}});$$('[data-activity-server]').forEach(b=>b.onclick=()=>openServer(b.dataset.activityServer));$$('[data-activity-pauses]').forEach(b=>b.onclick=()=>openPausePanel(a.detail[Number(b.dataset.activityPauses)]));$$('[data-activity-day]').forEach(b=>b.onclick=()=>openProcessModal(state.filtered.filter(r=>isCompleted(r)&&r.server===b.dataset.activityDayServer&&isoDay(r.date3)===b.dataset.activityDay),`${b.dataset.activityDayServer} · ${fmtDate(new Date(b.dataset.activityDay+'T12:00:00'),false)}`))};
-      $('#modalActivityThreshold').onchange=e=>{const mode=e.target.value;$('#modalCustomThresholdWrap').classList.toggle('hidden',mode!=='custom');if(mode==='custom'){$('#modalCustomThreshold').focus();return}applyPauseLimitV78(mode,mode,()=>openActivityPanel(true,{search:activitySearch,sort:activitySort}))};
-      bindPauseCustomV78($('#modalCustomThreshold'),$('#modalPauseFeedbackV78'),value=>applyPauseLimitV78('custom',value,()=>openActivityPanel(true,{search:activitySearch,sort:activitySort})))
-      $('#activityServerSearch').oninput=e=>{activitySearch=e.target.value;renderActivityTable()};
-      renderActivityTable()
-    }
     function openPausePanel(detail,options={}){
       if(!detail?.events?.length)return;
       const minutes=d=>d.getHours()*60+d.getMinutes()+d.getSeconds()/60,start=Math.min(360,Math.floor(Math.min(...detail.events.map(e=>minutes(e.date3)))/60)*60),end=Math.max(1200,Math.ceil(Math.max(...detail.events.map(e=>minutes(e.date3)))/60)*60),span=Math.max(60,end-start),position=d=>Math.max(0,Math.min(100,(minutes(d)-start)/span*100)),step=span<=840?60:120,labels=[];
@@ -627,7 +617,7 @@
     function imageFromUrl(url){return new Promise((resolve,reject)=>{const image=new Image;image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('Falha ao renderizar a imagem'));image.src=url})}
     function canvasBlob(canvas){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Falha ao criar PNG')),'image/png'))}
     function downloadBlob(blob,name){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
-    async function createExportPng(target,title,mode,analyticRows=null,partLabel=''){const prepared=prepareExportClone(target,mode,analyticRows),stage=document.createElement('div'),snapshot=document.createElement('div'),style=document.createElement('style');stage.style.cssText=`position:fixed;left:-100000px;top:0;width:${prepared.width}px;z-index:-1;background:#fff`;snapshot.className=`export-snapshot ${mode==='complete'?'complete':''}`;snapshot.setAttribute('xmlns','http://www.w3.org/1999/xhtml');style.textContent=document.querySelector('style').textContent;snapshot.appendChild(style);snapshot.appendChild(exportHeader(title,target,partLabel));snapshot.appendChild(prepared.clone);stage.appendChild(snapshot);document.body.appendChild(stage);await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));let width=Math.ceil(snapshot.scrollWidth),height=Math.ceil(snapshot.scrollHeight);if(width>30000||height>30000){stage.remove();throw new Error('Conteúdo excede o limite da imagem')}const xml=new XMLSerializer().serializeToString(snapshot),svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><foreignObject width="100%" height="100%">${xml}</foreignObject></svg>`,svgUrl=`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;try{const image=await imageFromUrl(svgUrl),maxSide=16000,maxPixels=9e7,scale=Math.min(1.6,maxSide/width,maxSide/height,Math.sqrt(maxPixels/(width*height))),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));const context=canvas.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.scale(scale,scale);context.drawImage(image,0,0,width,height);return await canvasBlob(canvas)}finally{stage.remove()}}
+    async function createExportPng(target,title,mode,analyticRows=null,partLabel=''){const prepared=prepareExportClone(target,mode,analyticRows),stage=document.createElement('div'),snapshot=document.createElement('div'),style=document.createElement('style');stage.style.cssText=`position:fixed;left:-100000px;top:0;width:${prepared.width}px;z-index:-1;background:#fff`;snapshot.className=`export-snapshot ${mode==='complete'?'complete':''}`;snapshot.setAttribute('xmlns','http://www.w3.org/1999/xhtml');style.textContent=target.matches('.journey-canonical-v81,.historical-sheet-v81,.activity-modal-v81')?[...document.head.querySelectorAll('style')].map(s=>s.textContent).join('\n'):document.querySelector('style').textContent;snapshot.appendChild(style);snapshot.appendChild(exportHeader(title,target,partLabel));snapshot.appendChild(prepared.clone);stage.appendChild(snapshot);document.body.appendChild(stage);await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));let width=Math.ceil(snapshot.scrollWidth),height=Math.ceil(snapshot.scrollHeight);if(width>30000||height>30000){stage.remove();throw new Error('Conteúdo excede o limite da imagem')}const xml=new XMLSerializer().serializeToString(snapshot),svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><foreignObject width="100%" height="100%">${xml}</foreignObject></svg>`,svgUrl=`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;try{const image=await imageFromUrl(svgUrl),maxSide=16000,maxPixels=9e7,scale=Math.min(1.6,maxSide/width,maxSide/height,Math.sqrt(maxPixels/(width*height))),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));const context=canvas.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.scale(scale,scale);context.drawImage(image,0,0,width,height);return await canvasBlob(canvas)}finally{stage.remove()}}
     async function copyImageBlob(blob){if(!navigator.clipboard?.write||typeof ClipboardItem==='undefined')throw new Error('Área de transferência de imagens indisponível');await navigator.clipboard.write([new ClipboardItem({'image/png':blob})])}
     async function deliverExportPng(blob,filename,action){if(action==='download'){downloadBlob(blob,filename);return'download'}try{await copyImageBlob(blob);return'copy'}catch(error){console.warn('Cópia de imagem indisponível; usando download.',error);downloadBlob(blob,filename);return'fallback'}}
     async function exportTargetPng(target,title,mode,action='copy'){toast(action==='copy'?'Preparando imagem para copiar…':'Gerando PNG…');const stamp=new Date().toISOString().slice(0,10),base=`radar-nupaci-${exportSlug(title)}-${stamp}`,analyticComplete=mode==='complete'&&target.id==='analyticSection',analyticRows=analyticComplete?(state._analyticVisible||[]):null;if(analyticComplete&&analyticRows.length>120){const pages=Math.ceil(analyticRows.length/120);for(let page=0;page<pages;page++){const chunk=analyticRows.slice(page*120,(page+1)*120),number=String(page+1).padStart(2,'0'),blob=await createExportPng(target,title,mode,chunk,`Parte ${page+1} de ${pages}`);downloadBlob(blob,`${base}-parte-${number}.png`);await new Promise(resolve=>setTimeout(resolve,120))}toast(`${pages} imagens foram baixadas porque a tabela completa possui várias partes`);return}const blob=await createExportPng(target,title,mode,analyticRows),result=await deliverExportPng(blob,`${base}.png`,action);toast(result==='copy'?'Imagem copiada. Cole-a no seu relatório.':result==='fallback'?'A cópia foi bloqueada; o PNG foi baixado.':'Imagem PNG baixada.')}
@@ -642,7 +632,7 @@
     let sectionNavFrame=0;function scheduleSectionNavUpdate(){if(sectionNavFrame)return;sectionNavFrame=requestAnimationFrame(()=>{sectionNavFrame=0;updateSectionNavActive()})}
     async function copyText(text,msg='Processo copiado'){try{await navigator.clipboard.writeText(text)}catch{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}toast(msg)}
     let toastTimer;function toast(msg){clearTimeout(toastTimer);$('#toast').textContent=msg;$('#toast').classList.remove('hidden');toastTimer=setTimeout(()=>$('#toast').classList.add('hidden'),2200)}
-    let goalFloatingTip=null,goalFloatingTrigger=null,goalFloatingPinned=false;const goalFloatingSelector='.overview-data-help,.goal-section th.has-tip,.goal-pause-copy .has-tip,.statistics-section th.has-tip,.statistics-kpi[data-tip],.statistics-origin-card[data-tip],.statistics-origin-head>.has-tip,.statistics-chart-group[data-tip],.statistics-origin-trend-group[data-tip],.statistics-deadline-help[data-tip],.daily-operational-section .has-tip[data-tip],.journey-modal-v78 .has-tip[data-tip]';
+    let goalFloatingTip=null,goalFloatingTrigger=null,goalFloatingPinned=false;const goalFloatingSelector='.overview-data-help,.goal-section th.has-tip,.goal-pause-copy .has-tip,.statistics-section th.has-tip,.statistics-kpi[data-tip],.statistics-origin-card[data-tip],.statistics-origin-head>.has-tip,.statistics-chart-group[data-tip],.statistics-origin-trend-group[data-tip],.statistics-deadline-help[data-tip],.daily-operational-section .has-tip[data-tip],.journey-modal-v78 .has-tip[data-tip],.activity-modal-v81 .has-tip[data-tip],#kpiGrid .has-tip[data-tip]';
     function ensureGoalFloatingTip(){if(goalFloatingTip)return goalFloatingTip;goalFloatingTip=document.createElement('div');goalFloatingTip.id='goalFloatingTooltip';goalFloatingTip.className='goal-floating-tooltip';goalFloatingTip.setAttribute('role','tooltip');goalFloatingTip.setAttribute('aria-hidden','true');document.body.appendChild(goalFloatingTip);return goalFloatingTip}
     function showGoalFloatingTip(trigger){const message=trigger?.dataset.tip;if(!message)return;const tip=ensureGoalFloatingTip();if(goalFloatingTrigger&&goalFloatingTrigger!==trigger)goalFloatingTrigger.removeAttribute('aria-describedby');goalFloatingTrigger=trigger;trigger.setAttribute('aria-describedby',tip.id);tip.textContent=message;tip.classList.toggle('long',trigger.classList.contains('overview-data-help'));tip.style.left='0px';tip.style.top='0px';tip.classList.add('visible');tip.setAttribute('aria-hidden','false');const rect=trigger.getBoundingClientRect(),box=tip.getBoundingClientRect(),margin=12,gap=9;let left=rect.left+rect.width/2-box.width/2,top=rect.top-box.height-gap;left=Math.max(margin,Math.min(left,innerWidth-box.width-margin));if(top<margin)top=Math.min(innerHeight-box.height-margin,rect.bottom+gap);tip.style.left=`${Math.round(left)}px`;tip.style.top=`${Math.round(top)}px`}
     function hideGoalFloatingTip(force=false){if(!goalFloatingTip)return;if(!force&&(goalFloatingPinned||(goalFloatingTrigger&&(goalFloatingTrigger.matches(':hover')||document.activeElement===goalFloatingTrigger))))return;goalFloatingTrigger?.removeAttribute('aria-describedby');goalFloatingTrigger=null;goalFloatingTip.classList.remove('visible','long');goalFloatingTip.setAttribute('aria-hidden','true')}
@@ -1763,53 +1753,6 @@ $('#rankLimit').onchange=e=>{state.rankLimit=+e.target.value;renderRankBars()};$
     $('#journeyPreviousProcessV78').onclick=()=>openProcessModal([pause.fromEvent],`${title} · Processo anterior`,{preserveRows:true});
     $('#journeyNextProcessV78').onclick=()=>openProcessModal([pause.toEvent],`${title} · Processo seguinte`,{preserveRows:true});
   }
-  function openJourneyPanelV78(name,rows,selectedDay=null,replaceCurrent=false){
-    const days=activityBreakdown(rows).detail.filter(item=>item.server===name).sort((a,b)=>b.day.localeCompare(a.day));
-    if(!days.length){
-      openModal(`Jornada e pausas · ${name}`,journeyPeriodV78(),'<p class="goal-method">Sem conclusão própria com Data3 neste recorte; não há jornada observável para calcular.</p>',false,{replaceCurrent});
-      return;
-    }
-    const detail=days.find(item=>item.day===selectedDay)||days[0];
-    // O modal original mantém gráfico, faixas, listagem, observações e exportação de imagem.
-    openPausePanel(detail,{replaceCurrent});
-    const modal=$('#modalLayer .modal');
-    modal.classList.add('journey-modal-v78');
-    modal.dataset.journeyServer=name;
-    modal.dataset.journeyDay=detail.day;
-    modal.dataset.journeyThreshold=String(state.activityThreshold);
-    modal.querySelector('.modal-head h2').textContent=`Jornada e pausas · ${name}`;
-    modal.querySelector('.modal-head p').textContent=`${fmtDate(new Date(detail.day+'T12:00:00'),false)} · ${journeyPeriodV78()} · limite ${state.activityThreshold}min`;
-    modal.querySelector('.modal-export-btn').onclick=()=>openExportDialog(modal,`Jornada e pausas · ${name}`);
-    const toolbar=document.createElement('div');
-    toolbar.className='journey-toolbar-v78 export-control';
-    toolbar.innerHTML=`<label for="journeyDayV78">Dia analisado<select id="journeyDayV78" aria-label="Escolher dia da jornada">${days.map(item=>`<option value="${item.day}" ${item.day===detail.day?'selected':''}>${fmtDate(new Date(item.day+'T12:00:00'),false)} · ${item.processes} ${item.processes===1?'conclusão':'conclusões'}</option>`).join('')}</select></label>
-      <label for="journeyLimitV78">Considerar pausa a partir de<select id="journeyLimitV78">${activityOptions(state.activityMode)}</select></label>
-      <label id="journeyCustomWrapV78" class="${state.activityMode==='custom'?'':'hidden'}" for="journeyCustomV78">Minutos personalizados<input id="journeyCustomV78" class="journey-custom-v78" type="number" min="1" max="240" step="1" value="${state.activityThreshold}"></label>
-      <span id="journeyPauseFeedbackV78" class="pause-feedback-v78" role="status"></span>
-      <button id="journeyProcessesV78" class="btn small" type="button">Ver processos do dia</button>`;
-    const kpis=modal.querySelector('.server-kpis');
-    kpis.before(toolbar);
-    const note=document.createElement('p');
-    note.className='journey-context-v78';
-    const filters=filterDefs.flatMap(([key,label])=>state.filters[key]?.size?[`${label}: ${exportValueList(state.filters[key])}`]:[]);
-    note.textContent=`${fmtTime(detail.first)} a ${fmtTime(detail.last)} · ${detail.processes} ${detail.processes===1?'conclusão':'conclusões'} · ${filters.join(' · ')||'sem filtros categóricos adicionais'}. Os indicadores usam os horários de conclusão na Data3; ausência de registros ou intervalos longos não comprovam, isoladamente, ausência de trabalho.`;
-    kpis.after(note);
-    $('#journeyDayV78').onchange=e=>openJourneyPanelV78(name,rows,e.target.value);
-    $('#journeyLimitV78').onchange=e=>{
-      const mode=e.target.value;
-      $('#journeyCustomWrapV78').classList.toggle('hidden',mode!=='custom');
-      if(mode==='custom'){$('#journeyCustomV78').focus();return}
-      applyPauseLimitV78(mode,mode,()=>openJourneyPanelV78(name,rows,detail.day,true));
-    };
-    bindPauseCustomV78($('#journeyCustomV78'),$('#journeyPauseFeedbackV78'),value=>applyPauseLimitV78('custom',value,()=>openJourneyPanelV78(name,rows,detail.day,true)));
-    $('#journeyProcessesV78').onclick=()=>openProcessModal(rows.filter(row=>isCompleted(row)&&isoDay(row.date3)===detail.day),`${name} · ${fmtDate(new Date(detail.day+'T12:00:00'),false)}`,{preserveRows:true});
-    modal.querySelectorAll('.pause-band').forEach((button,index)=>button.onclick=()=>openJourneyPauseDetailV78(detail,detail.pauseDetails[index]));
-    modal.querySelectorAll('.pause-table-extended tbody tr').forEach((row,index)=>{
-      if(!detail.pauseDetails[index])return;
-      row.cells[0].innerHTML=`<button class="cell-btn" type="button" aria-label="Abrir pausa ${index+1}" title="Abrir detalhe da pausa ${index+1}">${index+1}</button>`;
-      row.cells[0].querySelector('button').onclick=()=>openJourneyPauseDetailV78(detail,detail.pauseDetails[index]);
-    });
-  }
   const goBackModalV78Base=goBackModal;
   goBackModal=function(){
     const previous=modalHistory.at(-1),staleJourney=previous?.classList.contains('journey-modal-v78')&&Number(previous.dataset.journeyThreshold)!==state.activityThreshold;
@@ -1978,8 +1921,7 @@ function exportOperationalTimelineV79(item,day,timeline){
 
 function openOperationalTimelineV79(item,day,focusIndex=-1,options={}){
   const timeline=operationalTimelineV79(day);
-  if(!timeline.entries.length)return;
-  openPausePanel(day.activityDetail,options);
+  if(!options.renderedV81)renderPauseBaseV81(day.activityDetail,options);
   const modal=$('#modalLayer .modal');
   if(!modal)return;
   modal.classList.add('operational-timeline-modal-v79');
@@ -2163,7 +2105,7 @@ function exportContextV79(title,target,partLabel=''){
   function journeyHelpV80(){
     return '<details class="journey-help-v80"><summary>ⓘ Entenda as regras desta jornada</summary><p>Produção do dia conta processos distintos com conclusão própria válida, soma Quantidade em documentos gerais e apresenta, separadamente, DocumentosEspecificos já normalizados. SAE/Alvará: Físico e SAE; BNMP: Mandado, Contramandado, Guia e MDP; SAPRE/TRF5: ROPV e Precatório. Sem atividade aplicável: Não se aplica. Com atividade aplicável sem documento específico: 0. As duas métricas de documentos são independentes.</p><p>Resoluções por terceiros mostram processos distintos com Data3 no dia, classificados como Outro servidor ou Gabinete; valores não reconhecidos continuam auditáveis. Não entram na produtividade própria, meta, documentos ou cálculos temporais do destinatário.</p><p>Primeira e última conclusão são as extremidades de Data3 própria; Meta atingida às é o primeiro evento que alcança a meta esperada equivalente conforme a regra existente. A janela é o intervalo entre primeira e última conclusão. Tempo líquido estimado soma os intervalos dentro do limite vigente; acima dele são pausas observadas.</p><p>Horários e pausas descrevem registros observados: intervalos longos e ausência de conclusão não comprovam ausência de trabalho e não constituem controle formal de jornada.</p></details>';
   }
-  function journeyEnhanceV80(modal,name,rows,day,detail){
+  function journeyEnhanceV80(modal,name,rows,day,detail,suppliedTimeline=null){
     const model=journeyDailyModelV80(name,rows,day),kpis=modal.querySelector('.server-kpis');
     if(!kpis)return;
     modal.classList.add('journey-summary-v80');
@@ -2199,7 +2141,7 @@ function exportContextV79(title,target,partLabel=''){
       goalFloatingPinned=!pinned;
       if(pinned)hideGoalFloatingTip(true);else showGoalFloatingTip(trigger);
     },true);
-    const timeline=journeyMetaTimelineV80(name,day,detail),strip=document.createElement('section');
+    const timeline=suppliedTimeline||journeyMetaTimelineV80(name,day,detail),strip=document.createElement('section');
     strip.className='journey-milestones-v80';
     strip.setAttribute('aria-label','Marcos temporais das conclusões próprias');
     const milestones=[
@@ -2252,49 +2194,6 @@ function exportContextV79(title,target,partLabel=''){
   }
 
 
-  function journeyThirdOnlyV80(name,rows,day,replaceCurrent=false){
-    const date=day||[...new Set(rows.filter(isThirdPartyCompletion).map(row=>isoDay(row.date3)).filter(Boolean))].sort().at(-1);
-    if(!date)return false;
-    const ownDays=new Map,thirdDays=new Set;
-    rows.forEach(row=>{
-      if(!row.date3)return;
-      const key=isoDay(row.date3);
-      if(isOwnCompletion(row))ownDays.set(key,(ownDays.get(key)||0)+1);
-      if(isThirdPartyCompletion(row))thirdDays.add(key);
-    });
-    const days=[...new Set([...ownDays.keys(),...thirdDays])].sort().reverse();
-    openModal('Jornada e pausas · '+name,fmtDate(new Date(date+'T12:00:00'),false)+' · '+journeyPeriodV78()+' · limite '+state.activityThreshold+'min',
-      '<div class="journey-toolbar-v78 export-control"><label for="journeyDayV78">Dia analisado<select id="journeyDayV78">'+days.map(item=>'<option value="'+item+'" '+(item===date?'selected':'')+'>'+fmtDate(new Date(item+'T12:00:00'),false)+' · '+(ownDays.get(item)||0)+' conclusões'+(thirdDays.has(item)&&!ownDays.has(item)?' · terceiros':'')+'</option>').join('')+'</select></label><label for="journeyLimitV78">Considerar pausa a partir de<select id="journeyLimitV78">'+activityOptions(state.activityMode)+'</select></label><label id="journeyCustomWrapV78" class="'+(state.activityMode==='custom'?'':'hidden')+'" for="journeyCustomV78">Minutos personalizados<input id="journeyCustomV78" class="journey-custom-v78" type="number" min="1" max="240" step="1" value="'+state.activityThreshold+'"></label><span id="journeyPauseFeedbackV78" class="pause-feedback-v78" role="status"></span><button id="journeyProcessesV78" class="btn small" type="button">Ver processos do dia</button></div><div class="server-kpis"></div><p class="journey-context-v78"></p><p class="goal-method">Nenhuma conclusão própria com Data3 nesta data. Não há janela, tempo líquido ou pausas produtivas a estimar. Resoluções por terceiros aparecem separadamente como contexto operacional.</p>',false,{replaceCurrent});
-    const modal=$('#modalLayer .modal');
-    modal.classList.add('journey-modal-v78');
-    modal.dataset.journeyServer=name;
-    modal.dataset.journeyDay=date;
-    modal.dataset.journeyThreshold=String(state.activityThreshold);
-    modal.querySelector('.modal-export-btn').onclick=()=>openExportDialog(modal,'Jornada e pausas · '+name);
-    journeyEnhanceV80(modal,name,rows,date,null);
-    modal.querySelector('#journeyDayV78').onchange=event=>openJourneyPanelV78(name,rows,event.target.value);
-    modal.querySelector('#journeyLimitV78').onchange=event=>{
-      const mode=event.target.value;
-      modal.querySelector('#journeyCustomWrapV78').classList.toggle('hidden',mode!=='custom');
-      if(mode==='custom'){modal.querySelector('#journeyCustomV78').focus();return}
-      applyPauseLimitV78(mode,mode,()=>openJourneyPanelV78(name,rows,date,true));
-    };
-    bindPauseCustomV78(modal.querySelector('#journeyCustomV78'),modal.querySelector('#journeyPauseFeedbackV78'),value=>applyPauseLimitV78('custom',value,()=>openJourneyPanelV78(name,rows,date,true)));
-    modal.querySelector('#journeyProcessesV78').onclick=()=>openProcessModal([],name+' · '+fmtDate(new Date(date+'T12:00:00'),false),{preserveRows:true});
-    return true;
-  }
-  const openJourneyPanelV80Base=openJourneyPanelV78;
-  openJourneyPanelV78=function(name,rows,selectedDay=null,replaceCurrent=false){
-    const ownDays=activityBreakdown(rows).detail.filter(item=>item.server===name);
-    if((selectedDay&&!ownDays.some(item=>item.day===selectedDay))||!ownDays.length){
-      if(journeyThirdOnlyV80(name,rows,selectedDay,replaceCurrent))return;
-    }
-    openJourneyPanelV80Base(name,rows,selectedDay,replaceCurrent);
-    const modal=$('#modalLayer .modal');
-    if(!modal?.classList.contains('journey-modal-v78'))return;
-    const day=modal.dataset.journeyDay,detail=ownDays.find(item=>item.day===day);
-    if(detail)journeyEnhanceV80(modal,name,rows,day,detail);
-  };
   const exportContextV80Base=exportContext;
   exportContext=function(title,target,partLabel=''){
     const lines=exportContextV80Base(title,target,partLabel);
@@ -2315,6 +2214,189 @@ function exportContextV79(title,target,partLabel=''){
   const getStateV80Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>({...getStateV80Base(),version:'8.0'});
   const getPerformanceV80Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV80Base(),version:'8.0'});
   $('.version-badge').textContent='v8.0';$('.version-pill').textContent='VERSÃO 8.0';document.title='RADAR de Produtividade e Frequência NUPACI · v8.0';
+
+  /* v8.1 — métricas explicáveis, recorte local e uma única jornada diária. */
+  const overviewCacheV81=new WeakMap;
+  function overviewMeasuresV81(rows){
+    if(overviewCacheV81.has(rows))return overviewCacheV81.get(rows);
+    const days=new Map,events=new Set;let documents=0;
+    for(const row of rows){
+      if(!isOwnCompletion(row))continue;
+      const key=row.server+'\u0000'+isoDay(row.date3);
+      if(!days.has(key))days.set(key,{processes:new Set,documents:0});
+      const day=days.get(key);day.processes.add(processKey(row));day.documents+=row.quantity;documents+=row.quantity;
+      // id é a identidade do registro normalizado DEPOIS da conciliação entre fontes.
+      // Ocorrências produtivas diferentes, inclusive no mesmo minuto, continuam distintas.
+      events.add(row.id??row);
+    }
+    const current=currentStatusSnapshot(rows),distributed=new Set(rows.filter(row=>row.date2).map(processKey));
+    const resolved=new Set([...current.completedKeys,...current.thirdPartyKeys]);
+    const result={combinations:days.size,completionEvents:events.size,documents,
+      avgProcesses:days.size?[...days.values()].reduce((sum,day)=>sum+day.processes.size,0)/days.size:null,
+      avgDocuments:days.size?documents/days.size:null,documentsPerCompletion:events.size?documents/events.size:null,
+      distributed:distributed.size,ownShare:distributed.size?current.completedKeys.size/distributed.size:null,
+      thirdShare:distributed.size?current.thirdPartyKeys.size/distributed.size:null,
+      pendingShare:distributed.size?current.pendingKeys.size/distributed.size:null,
+      resolution:distributed.size?resolved.size/distributed.size:null,current};
+    overviewCacheV81.set(rows,result);return result;
+  }
+  const operationalUniverseTipV81='O denominador é o mesmo universo de processos distintos de Processos distribuídos, com Data2 no recorte. A posição atual respeita a distribuição mais recente. Outros estados válidos podem fazer próprios, terceiros e pendentes somarem menos de 100%. Sem distribuídos, o percentual não é calculável.';
+  const renderKPIsV81Base=renderKPIs;
+  renderKPIs=function(){
+    renderKPIsV81Base();const grid=$('#kpiGrid'),o=overviewMeasuresV81(state.filtered);
+    const update=(card,label,sub,tip,value=null)=>{if(!card)return;const title=card.querySelector('.label');title.innerHTML=esc(label)+' <span class="info" aria-hidden="true">i</span>';title.dataset.tip=tip;card.querySelector('.sub').textContent=sub;if(value!==null)card.querySelector('.value').textContent=value};
+    update(grid.querySelector('[data-kpi="distributed"]'),'Processos distribuídos','processos distintos distribuídos no recorte','Processos distintos com distribuição na Data2 dentro do recorte aplicado. Um processo conta uma vez, mesmo com várias distribuições.');
+    update(grid.querySelector('[data-kpi="processes"]'),'Concluídos pelo servidor — posição atual',fmtPct(o.ownShare)+' do universo operacional',tips.processes+' '+operationalUniverseTipV81);
+    const third=grid.querySelector('.third-party-v76'),other=o.current.thirdPartyRows.filter(r=>r.thirdPartyCode==='other-server').length,cabinet=o.current.thirdPartyRows.filter(r=>r.thirdPartyCode==='cabinet').length;
+    update(third,'Resolvidos por terceiros',fmtPct(o.thirdShare)+' do universo operacional · '+other+' Outro servidor · '+cabinet+' Gabinete',thirdPartyTipV76+' '+operationalUniverseTipV81);
+    update(grid.querySelector('[data-kpi="pending"]'),'Processos pendentes — posição atual',fmtPct(o.pendingShare)+' do universo operacional',tips.pending+' '+operationalUniverseTipV81);
+    const rate=document.createElement('div');rate.innerHTML=kpi('Taxa de resolução operacional',fmtPct(o.resolution),fmtPct(o.ownShare)+' pelo servidor · '+fmtPct(o.thirdShare)+' por terceiros','Percentual dos processos distribuídos atualmente resolvidos pelo destinatário, outro servidor ou Gabinete. Usa a união dos processos resolvidos, sem duplicação. Resoluções por terceiros retiram a pendência operacional, mas não são produtividade individual. Mede resolução do acervo. '+operationalUniverseTipV81,'resolutionV81');
+    const rateCard=rate.firstElementChild;grid.querySelector('[data-kpi="pending"]').after(rateCard);rateCard.onclick=()=>openProcessModal(o.current.operationalResolvedRows,'Resolução operacional · posição atual',{preserveRows:true});rateCard.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();rateCard.click()}};
+    update(grid.querySelector('[data-kpi="documents"]'),'Documentos produzidos','produção própria registrada no recorte','Soma de Quantidade nas conclusões próprias válidas. Um processo pode produzir vários documentos. FeitoOutro não entra. DocumentosEspecificos é uma medida independente.');
+    update(grid.querySelector('[data-kpi="servers"]'),'Servidores com conclusão própria','ao menos uma conclusão própria no recorte','Servidores com ao menos uma conclusão própria válida no recorte. Resoluções por terceiros não entram.');
+    update(grid.querySelector('[data-kpi="days"]'),'Dias com produção registrada','datas com conclusão própria na Data3','Datas distintas com ao menos uma conclusão própria válida na Data3. Não representa dias trabalhados por servidor nem frequência formal.');
+    const cards=[...grid.querySelectorAll('.kpi')];
+    update(cards.find(c=>c.querySelector('.label')?.textContent.includes('Média de processos/servidor')),'Média diária de processos/servidor',fmtNum(o.combinations)+' combinações servidor/dia','Em cada servidor/dia com conclusão própria, conta processos distintos e calcula a média dessas combinações. Dias sem conclusão não entram automaticamente como zero. Não é o acumulado dividido apenas pelos servidores.',o.avgProcesses===null?'—':fmtNum(o.avgProcesses));
+    update(cards.find(c=>c.querySelector('.label')?.textContent.includes('Média de documentos/servidor')),'Média diária de documentos/servidor',fmtNum(o.combinations)+' combinações servidor/dia','Soma Quantidade em cada servidor/dia com conclusão própria e calcula a média dessas combinações. Dias sem conclusão não entram automaticamente como zero. FeitoOutro não entra.',o.avgDocuments===null?'—':fmtNum(o.avgDocuments));
+    update(cards.find(c=>c.querySelector('.label')?.textContent.includes('Documentos por processo')),'Média de documentos por conclusão',fmtNum(o.completionEvents)+' eventos produtivos conciliados','Soma de Quantidade dividida pelas ocorrências próprias distintas já conciliadas entre as fontes. Usa a identidade do registro normalizado, preservando conclusões diferentes do mesmo processo. Não usa processos distintos nem o agrupamento temporal processo/dia. Documentos específicos não entram.',o.documentsPerCompletion===null?'—':fmtNum(o.documentsPerCompletion));
+    update(grid.querySelector('[data-kpi="avgTime"]'),'Intervalo médio observado','intervalos próprios no mesmo servidor/dia','Média dos intervalos entre conclusões próprias consecutivas do mesmo servidor no mesmo dia. Pausas longas influenciam fortemente a média; interprete junto à mediana e ao Tempo de atividade estimado.');
+    const medianCard=cards.find(c=>c.querySelector('.label')?.textContent.includes('Mediana do intervalo'));
+    update(medianCard,'Mediana do intervalo','valor central dos intervalos observados','Valor central dos intervalos consecutivos observados. Metade fica abaixo ou igual e metade acima ou igual. Sofre menos influência de pausas muito longas que a média.');
+  };
+
+  const activityTipsV81={
+    mean:'Média do tempo líquido estimado das combinações servidor/dia calculáveis, somando apenas intervalos entre conclusões dentro do limite de continuidade. Não representa jornada formal nem todo o tempo efetivamente trabalhado: atividades sem conclusão registrada não são observadas.',
+    median:'Valor central dos tempos líquidos estimados por servidor/dia calculável: metade apresenta valor igual ou inferior e metade igual ou superior. Sofre menos influência de valores excepcionalmente altos ou baixos que a média.',
+    collective:'Soma do tempo líquido estimado de todos os servidores, dividida pelos dias com cálculo possível. Representa horas-servidor observadas e pode ultrapassar 24 horas, pois soma a atividade de várias pessoas.',
+    total:'Soma dos tempos líquidos estimados de todas as combinações servidor/dia do recorte. É volume acumulado de horas-servidor observadas, não duração cronológica do período.',
+    window:'Média do intervalo entre primeira e última conclusão própria de cada servidor/dia calculável. Inclui continuidade e pausas; não corresponde ao tempo líquido estimado.',
+    blocks:'Sequências de conclusões do mesmo servidor no mesmo dia com intervalos consecutivos dentro do limite. Um intervalo superior inicia outro bloco. Indica agrupamento temporal, não processos, horas trabalhadas ou jornadas. A média divide pelos pares servidor/dia com ao menos uma conclusão própria, inclusive pares com apenas uma conclusão.'
+  };
+  function activityLocalContextV81(){
+    const inherited={start:$('#completionStart').value,end:$('#completionEnd').value};
+    const ds=$('#distributionStart').value,de=$('#distributionEnd').value;
+    const base=categoricalRowsV74().filter(row=>(!ds||row.date2&&isoDay(row.date2)>=ds)&&(!de||row.date2&&isoDay(row.date2)<=de));
+    return{base,inherited,start:inherited.start,end:inherited.end,mode:inherited.start&&inherited.start===inherited.end?'day':'range',selections:{server:new Set,activity:new Set},extras:[],sort:{key:'day',dir:1}};
+  }
+  function openActivityPanel(replaceCurrent=false,viewState=null){
+    const context=viewState?.base?viewState:activityLocalContextV81();
+    openModal('Tempo de atividade estimado','Recorte local por Data3 · limite global de continuidade',`<div class="activity-local-v81 export-control"><div class="activity-period-v81"><label>Período de conclusão<select id="activityPeriodModeV81"><option value="day">Data única</option><option value="range">Intervalo</option></select></label><label>Data inicial<input id="activityStartV81" type="date"></label><label id="activityEndWrapV81">Data final<input id="activityEndV81" type="date"></label><button id="activityUseRadarV81" class="btn small" type="button">Usar período do Radar</button><button id="activityClearV81" class="btn small" type="button">Limpar filtros</button></div><div id="activityFiltersV81"></div></div><p id="activityScopeV81" class="goal-method"></p><div class="activity-modal-config export-control"><div class="field"><label for="modalActivityThreshold">Limite de continuidade</label><select id="modalActivityThreshold">${activityOptions(state.activityMode)}</select></div><div id="modalCustomThresholdWrap" class="field ${state.activityMode==='custom'?'':'hidden'}"><label for="modalCustomThreshold">Minutos personalizados</label><input id="modalCustomThreshold" type="number" min="1" max="240" step="1" value="${state.activityThreshold}"></div><span id="modalPauseFeedbackV78" class="pause-feedback-v78" role="status"></span></div><div id="activityKpisV81" class="server-kpis"></div><p class="activity-note">A análise usa conclusões próprias. Atividades sem conclusão registrada não são observadas e os tempos não constituem controle formal de jornada. As contagens dos filtros representam processos distintos compatíveis.</p><div class="activity-table-toolbar"><span id="activityResultCount" class="activity-result-count"></span></div><div class="table-wrap"><table><thead id="activityTableHead"></thead><tbody id="activityTableBody"></tbody></table></div>`,false,{replaceCurrent});
+    const modal=$('#modalLayer .modal');modal.classList.add('activity-modal-v81');modal._activityContextV81=context;
+    const syncPeriod=()=>{$('#activityPeriodModeV81').value=context.mode;$('#activityStartV81').value=context.start;$('#activityEndV81').value=context.end;$('#activityEndWrapV81').classList.toggle('hidden',context.mode==='day')};
+    const render=()=>{
+      const valid=!(context.start&&context.end&&context.start>context.end);
+      const periodRows=valid?context.base.filter(row=>row.date3&&(!context.start||isoDay(row.date3)>=context.start)&&(!context.end||isoDay(row.date3)<=context.end)):[];
+      const rows=periodRows.filter(row=>flexibleMatchV67(row,context.selections));
+      const a=activityBreakdown(rows);modal._activityRowsV81=rows;modal.dataset.activityThresholdV81=String(state.activityThreshold);
+      renderFlexibleFiltersV67({container:$('#activityFiltersV81'),rows:periodRows.filter(isOwnCompletion),fixedKeys:['server','activity'],additionalKeys:context.extras,selections:context.selections,allowedKeys:['server','activity','coord','team','priority','registrar','system'],onChange:render,prefix:'activityV81'});
+      $('#activityFiltersV81 [data-v67-add-trigger]').textContent='+ Mais filtros';$('#activityFiltersV81 [data-v67-clear-filters]').classList.add('hidden');
+      const selected=Object.entries(context.selections).filter(([,v])=>v.size).map(([k,v])=>flexibleFieldDefsV67[k].label+': '+exportValueList(v));
+      $('#activityScopeV81').textContent='Recorte atual: '+(context.start?exportDateValue(context.start):'início da base')+' a '+(context.end?exportDateValue(context.end):'fim da base')+' · '+(selected.join(' · ')||'todos os servidores e atividades compatíveis')+' · limite '+a.threshold+' min'+(valid?'':' · período inválido');
+      modal.dataset.activityScopeV81=$('#activityScopeV81').textContent;
+      $('#activityKpisV81').innerHTML=[['Média servidor/dia',fmtDuration(a.avgActive),'mean',''],['Mediana servidor/dia',fmtDuration(a.medianActive),'median',''],['Média coletiva/dia',fmtHours(a.avgCollectiveDay),'collective','horas-servidor'],['Total no período',a.calculableGroups?fmtHours(a.totalActive):'—','total','horas-servidor'],['Janela média',fmtDuration(a.avgWindow),'window',''],['Blocos de continuidade',fmtNum(a.blocks),'blocks','média: '+(a.groups?fmtNum(a.blocks/a.groups):'—')+' por servidor/dia']].map(([label,value,key,sub])=>`<div class="mini-kpi has-tip" tabindex="0" data-tip="${esc(activityTipsV81[key])}"><span>${label} <span class="info" aria-hidden="true">i</span></span><strong>${value}</strong><small>${sub}</small></div>`).join('');
+      const columns=[['server','Servidor'],['day','Dia'],['first','Primeira conclusão'],['last','Última conclusão'],['window','Janela'],['active','Atividade estimada'],['pauses','Pausas'],['processes','Processos']];
+      const ordered=a.detail.slice().sort((x,y)=>{let A=x[context.sort.key],B=y[context.sort.key];if(A==null)return B==null?0:1;if(B==null)return-1;return(typeof A==='string'?A.localeCompare(B,'pt-BR'):A-B)*context.sort.dir});
+      $('#activityResultCount').textContent=ordered.length+' combinações servidor/dia · '+a.calculableGroups+' calculáveis';
+      $('#activityTableHead').innerHTML='<tr>'+columns.map(([key,label])=>`<th class="sortable" tabindex="0" role="button" data-activity-sort="${key}" aria-sort="${context.sort.key===key?(context.sort.dir===1?'ascending':'descending'):'none'}">${label}${context.sort.key===key?(context.sort.dir===1?' ↑':' ↓'):''}</th>`).join('')+'</tr>';
+      $('#activityTableBody').innerHTML=ordered.length?ordered.map((d,i)=>`<tr><td><button type="button" class="name-btn" data-activity-journey-v81="${i}">${esc(d.server)}</button></td><td>${fmtDate(new Date(d.day+'T12:00:00'),false)}</td><td>${fmtTime(d.first)}</td><td>${fmtTime(d.last)}</td><td>${fmtDuration(d.window)}</td><td><button type="button" class="cell-btn" data-activity-journey-v81="${i}">${fmtDuration(d.active)}</button></td><td><button type="button" class="cell-btn" data-activity-journey-v81="${i}" data-focus-pauses-v81>${d.pauses}</button></td><td><button type="button" class="cell-btn" data-activity-processes-v81="${i}">${d.processes}</button></td></tr>`).join(''):'<tr><td colspan="8" class="empty">Nenhuma conclusão própria no recorte local.</td></tr>';
+      modal.querySelectorAll('[data-activity-sort]').forEach(b=>{b.onclick=()=>{context.sort={key:b.dataset.activitySort,dir:context.sort.key===b.dataset.activitySort?-context.sort.dir:1};render()};b.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();b.click()}}});
+      modal.querySelectorAll('[data-activity-journey-v81]').forEach(b=>b.onclick=()=>{const d=ordered[+b.dataset.activityJourneyV81];openJourneyPanelV78(d.server,rows,d.day,false,{focus:b.hasAttribute('data-focus-pauses-v81')?'pauses':'',label:modal.dataset.activityScopeV81})});
+      modal.querySelectorAll('[data-activity-processes-v81]').forEach(b=>b.onclick=()=>{const d=ordered[+b.dataset.activityProcessesV81];openProcessModal(rows.filter(r=>isOwnCompletion(r)&&r.server===d.server&&isoDay(r.date3)===d.day),d.server+' · '+d.day,{preserveRows:true})});
+    };
+    const changeDates=()=>{context.start=$('#activityStartV81').value;context.end=context.mode==='day'?context.start:$('#activityEndV81').value;syncPeriod();render()};
+    $('#activityPeriodModeV81').onchange=e=>{context.mode=e.target.value;if(context.mode==='day')context.end=context.start;syncPeriod();render()};$('#activityStartV81').onchange=changeDates;$('#activityEndV81').onchange=changeDates;
+    const resetPeriod=()=>{context.start=context.inherited.start;context.end=context.inherited.end;context.mode=context.start&&context.start===context.end?'day':'range';syncPeriod()};
+    $('#activityUseRadarV81').onclick=()=>{resetPeriod();render()};$('#activityClearV81').onclick=()=>{context.selections={server:new Set,activity:new Set};context.extras=[];resetPeriod();render()};
+    $('#modalActivityThreshold').onchange=e=>{const mode=e.target.value;$('#modalCustomThresholdWrap').classList.toggle('hidden',mode!=='custom');if(mode==='custom'){$('#modalCustomThreshold').focus();return}applyPauseLimitV78(mode,mode,()=>openActivityPanel(true,context))};
+    bindPauseCustomV78($('#modalCustomThreshold'),$('#modalPauseFeedbackV78'),value=>applyPauseLimitV78('custom',value,()=>openActivityPanel(true,context)));
+    syncPeriod();render();modal._refreshActivityV81=render;
+  }
+
+  // O renderer da v7.9 (gráfico + meta + sequência cronológica + XLSX) é a base canônica.
+  // openPausePanel passa a ser somente um adaptador de entrada; o renderer é privado.
+  const renderPauseBaseV81=openPausePanel,renderJourneyTimelineV81=openOperationalTimelineV79;
+  const detailUniverseV81=new WeakMap,activityBreakdownV81Base=activityBreakdown;
+  activityBreakdown=function(rows,threshold=state.activityThreshold){const result=activityBreakdownV81Base(rows,threshold);for(const detail of result.detail)detailUniverseV81.set(detail,rows);return result};
+  const operationalDayMapV81Base=operationalDayMapV69;
+  operationalDayMapV69=function(rows,date){const result=operationalDayMapV81Base(rows,date);for(const day of result.map.values()){day.journeyUniverseV81=rows;if(day.activityDetail)detailUniverseV81.set(day.activityDetail,rows)}return result};
+  function openJourneyPanelV78(name,rows,selectedDay=null,replaceCurrent=false,context={}){
+    const scope=context.scope||rows.filter(row=>row.server===name),days=new Map;
+    for(const row of scope){if(!row.date3||!isOperationallyResolved(row))continue;const day=isoDay(row.date3);if(!days.has(day))days.set(day,0);if(isOwnCompletion(row))days.set(day,days.get(day)+1)}
+    const date=selectedDay||[...days.keys()].sort().at(-1)||state.operationalDateV69;
+    if(!date)return;
+    if(!days.has(date))days.set(date,0);
+    const detail=activityBreakdown(scope).detail.find(item=>item.day===date)||{server:name,day:date,events:[],pauseDetails:[],first:null,last:null,window:null,active:null,pauses:0,blocks:0,processes:0,calculable:false};
+    let day=context.day?.day===date?{...context.day}:operationalDayMapV69(scope,new Date(date+'T12:00:00')).map.get(name);
+    day=day||operationalEmptyDayV69(name,new Date(date+'T12:00:00'));
+    day={...day,activityDetail:detail,_timelineV79:null,journeyUniverseV81:scope};
+    const dayRows=scope.filter(row=>row.date3&&isoDay(row.date3)===date);
+    const institutionRows=dayRows.length?dayRows:day.availableRows;
+    const values=key=>[...new Set(institutionRows.map(row=>row[key]).filter(value=>value&&value!=='Não informado'))].join(' · ')||'Não informado';
+    const item={server:name,coord:values('coord'),team:values('team')},timeline=operationalTimelineV79(day);
+    if(!detail.events.length){
+      openModal('Jornada e pausas · '+name,fmtDate(day.date,false),'<div class="server-kpis">'+[['Janela observada','—'],['Tempo líquido estimado','—'],['Pausas','0'],['Tempo total em pausas','0min'],['Maior pausa','—']].map(([label,value])=>'<div class="mini-kpi"><span>'+label+'</span><strong>'+value+'</strong></div>').join('')+'</div><div class="pause-chart-shell"><h3>Linha do tempo das conclusões e pausas</h3><p>Sem conclusão própria nesta data. Não há horários ou tempo de atividade a estimar.</p></div><p class="pause-context-note goal-method">Observações são contexto adicional e não justificam, por si só, uma pausa.</p><div class="table-wrap"><table class="pause-table-extended"><thead><tr><th>Início</th><th>Fim</th><th>Duração</th><th>Processo anterior</th><th>Observação anterior</th><th>Processo seguinte</th><th>Observação seguinte</th></tr></thead><tbody><tr><td colspan="7">Sem pausas próprias observáveis.</td></tr></tbody></table></div>',false,{replaceCurrent});
+    }
+    renderJourneyTimelineV81(item,day,context.focusIndex??-1,{replaceCurrent,renderedV81:!detail.events.length});
+    const modal=$('#modalLayer .modal');modal.classList.add('journey-modal-v78','journey-canonical-v81');
+    modal.dataset.journeyServer=name;modal.dataset.journeyDay=date;modal.dataset.journeyThreshold=String(state.activityThreshold);
+    const savedContext={...context,scope,day};modal._journeyContextV81=savedContext;
+    modal.querySelector('.modal-head h2').textContent='Jornada e pausas · '+name;
+    modal.querySelector('.modal-head p').textContent=fmtDate(day.date,false)+' · '+item.coord+' · '+item.team+' · limite '+state.activityThreshold+' min'+(context.label?' · '+context.label:'');
+    modal.querySelector('.modal-export-btn').onclick=()=>openExportDialog(modal,'Jornada e pausas · '+name);
+    const toolbar=document.createElement('div');toolbar.className='journey-toolbar-v78 export-control';
+    toolbar.innerHTML='<label for="journeyDayV78">Dia analisado<select id="journeyDayV78">'+[...days].sort((a,b)=>b[0].localeCompare(a[0])).map(([key,count])=>'<option value="'+key+'" '+(key===date?'selected':'')+'>'+fmtDate(new Date(key+'T12:00:00'),false)+' · '+count+' conclusões</option>').join('')+'</select></label><label for="journeyLimitV78">Considerar pausa a partir de<select id="journeyLimitV78">'+activityOptions(state.activityMode)+'</select></label><label id="journeyCustomWrapV78" class="'+(state.activityMode==='custom'?'':'hidden')+'" for="journeyCustomV78">Minutos personalizados<input id="journeyCustomV78" type="number" min="1" max="240" step="1" value="'+state.activityThreshold+'"></label><span id="journeyPauseFeedbackV78" class="pause-feedback-v78" role="status"></span><button id="journeyProcessesV78" type="button" class="btn small">Ver processos do dia</button>';
+    modal.querySelector('.modal-body').prepend(toolbar);
+    const note=document.createElement('p');note.className='journey-context-v78';modal.querySelector('.server-kpis').after(note);
+    journeyEnhanceV80(modal,name,scope,date,detail,timeline);
+    if(context.label)note.textContent+=' Origem: '+context.label;
+    // A faixa temporal substitui apenas a repetição dos mesmos horários no contexto institucional.
+    modal.querySelectorAll('.operational-timeline-info-v79>div').forEach(cell=>{if(['Primeira conclusão','Meta atingida às','Última conclusão'].includes(cell.querySelector('span')?.textContent))cell.remove()});
+    modal.querySelectorAll('.journey-milestone-v80').forEach(cell=>cell.classList.toggle('is-goal-v81',cell.querySelector('span')?.textContent.includes('Meta atingida')));
+    const production=modal.querySelector('#journeyProductionV80'),parts=production?.querySelectorAll('.journey-production-row-v80');
+    if(parts?.length===2){parts[0].textContent=modal.dataset.journeyDocuments+' documentos · '+(modal.dataset.journeySpecific==='Não se aplica'?'Específicos: não se aplica':modal.dataset.journeySpecific+' específicos');parts[1].remove();production.lastElementChild?.tagName==='SMALL'&&production.lastElementChild.textContent==='Ver processos do dia'&&production.lastElementChild.remove()}
+    const pauseNote=modal.querySelector('.pause-context-note');if(pauseNote){const h=document.createElement('h3');h.textContent='Pausas observadas';h.id='journeyPausesV81';pauseNote.before(h)}
+    if(!timeline.entries.length)modal.querySelector('.operational-timeline-list-v79')?.insertAdjacentHTML('beforeend','<p>Não há conclusão própria nesta data.</p>');
+    if(timeline.reached){const legend=modal.querySelector('.pause-legend');legend?.insertAdjacentHTML('beforeend','<span><i class="legend-mark operational-goal-legend-v81"></i>Meta atingida às '+fmtTime(timeline.reached)+'</span>')}
+    $('#journeyProcessesV78').onclick=()=>openProcessModal(dayRows.filter(isOwnCompletion),name+' · '+fmtDate(day.date,false),{preserveRows:true});
+    $('#journeyDayV78').onchange=e=>openJourneyPanelV78(name,scope,e.target.value,true,{...savedContext,day:null,focusIndex:-1});
+    $('#journeyLimitV78').onchange=e=>{const mode=e.target.value;$('#journeyCustomWrapV78').classList.toggle('hidden',mode!=='custom');if(mode==='custom'){$('#journeyCustomV78').focus();return}applyPauseLimitV78(mode,mode,()=>openJourneyPanelV78(name,scope,date,true,savedContext))};
+    bindPauseCustomV78($('#journeyCustomV78'),$('#journeyPauseFeedbackV78'),value=>applyPauseLimitV78('custom',value,()=>openJourneyPanelV78(name,scope,date,true,savedContext)));
+    modal.querySelectorAll('.pause-table-extended tbody tr').forEach((tr,index)=>{if(!detail.pauseDetails[index])return;tr.cells[0].innerHTML='<button type="button" class="cell-btn" aria-label="Abrir detalhe da pausa '+(index+1)+'">'+(index+1)+'</button>';tr.cells[0].firstElementChild.onclick=()=>openJourneyPauseDetailV78(detail,detail.pauseDetails[index])});
+    if(context.focus==='pauses')requestAnimationFrame(()=>modal.querySelector('#journeyPausesV81')?.scrollIntoView({block:'nearest'}));
+  }
+  openPausePanel=function(detail,options={}){if(!detail)return;const rows=detailUniverseV81.get(detail)||detail.events.flatMap(event=>event.sourceRows||[event]);openJourneyPanelV78(detail.server,rows,detail.day,!!options.replaceCurrent,{focus:'pauses'})};
+  openOperationalTimelineV79=function(item,day,focusIndex=-1,options={}){const rows=day.journeyUniverseV81||detailUniverseV81.get(day.activityDetail)||[...day.availableRows,...day.completedRows];openJourneyPanelV78(item.server,rows,day.day,!!options.replaceCurrent,{day,focusIndex})};
+  const historicalSheetV81Base=openOperationalServerV69;
+  openOperationalServerV69=function(item){historicalSheetV81Base(item);const modal=$('#modalLayer .modal');modal.classList.add('historical-sheet-v81');modal.classList.remove('medium');const button=$('#profilePausesV69');if(button){button.textContent='Jornada e pausas';button.disabled=false;button.onclick=()=>openOperationalTimelineV79(item,item.current)}};
+  const operationalDayV81Base=openOperationalDayV69;
+  openOperationalDayV69=function(item,day){operationalDayV81Base(item,day);const button=$('#dayPausesV69');if(button){button.textContent='Jornada e pausas';button.disabled=false;button.onclick=()=>openOperationalTimelineV79(item,day)}};
+  goBackModal=function(){const previous=modalHistory.at(-1),context=previous?._journeyContextV81,activity=previous?._activityContextV81;goBackModalV78Base();if(context&&Number(previous.dataset.journeyThreshold)!==state.activityThreshold)openJourneyPanelV78(previous.dataset.journeyServer,context.scope,previous.dataset.journeyDay,true,context);else if(activity&&Number(previous.dataset.activityThresholdV81)!==state.activityThreshold)openActivityPanel(true,activity)};
+
+  const exportContextV81Base=exportContext;
+  exportContext=function(title,target,partLabel=''){const result=exportContextV81Base(title,target,partLabel);if(target.dataset?.activityScopeV81)result.splice(Math.max(0,result.length-1),0,target.dataset.activityScopeV81);return result};
+  const prepareExportCloneV81Base=prepareExportClone;
+  prepareExportClone=function(target,mode,analyticRows=null){const result=prepareExportCloneV81Base(target,mode,analyticRows);if(target.matches('.journey-canonical-v81,.historical-sheet-v81,.activity-modal-v81')){const clone=result.clone;clone.style.maxHeight='none';clone.style.maxWidth='none';clone.style.overflow='visible';const body=clone.querySelector('.modal-body');body.style.maxHeight='none';body.style.overflow='visible';clone.querySelectorAll('.operational-sheet-actions-v69,.journey-rules-v80').forEach(el=>el.remove());}return result};
+  document.addEventListener('click',event=>{const info=event.target.closest?.('.activity-modal-v81 .has-tip .info,#kpiGrid .has-tip .info');if(!info)return;const trigger=info.closest('[data-tip]');event.preventDefault();event.stopPropagation();const same=goalFloatingPinned&&goalFloatingTrigger===trigger;goalFloatingPinned=!same;if(same)hideGoalFloatingTip(true);else showGoalFloatingTip(trigger)},true);
+  const navMapV81=document.createElement('button');navMapV81.className='section-nav-link';navMapV81.type='button';navMapV81.dataset.sectionTarget='concentrationMap';navMapV81.title='Mapa de concentração produtiva';navMapV81.innerHTML='<span class="nav-index"></span><span class="nav-label">Mapa de concentração produtiva</span>';
+  $('#sectionNav [data-section-target="goals"]').after(navMapV81);navMapV81.onclick=()=>navigateSectionV65('concentrationMap');
+  if(!sectionDefs.includes('concentrationMap'))sectionDefs.splice(sectionDefs.indexOf('goals')+1,0,'concentrationMap');
+  sectionRenderersV65.concentrationMap=()=>renderConcentrationMap();
+  $$('#sectionNav [data-section-target]').forEach((button,index)=>{const n=button.querySelector('.nav-index');if(n)n.textContent=String(index+1)});
+  const styleV81=document.createElement('style');styleV81.textContent=`
+  .activity-period-v81{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:12px}.activity-period-v81 label{display:grid;gap:4px;font-size:.8rem;font-weight:700}.activity-period-v81 input,.activity-period-v81 select{min-height:36px;border:1px solid var(--line);border-radius:7px;padding:6px}
+  .activity-modal-v81 .server-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.activity-modal-v81 .mini-kpi{min-width:0}.activity-modal-v81 .mini-kpi small{display:block;margin-top:4px;color:var(--muted)}
+  .activity-modal-v81 .has-tip:after,#kpiGrid .has-tip:after{display:none!important}
+  .historical-sheet-v81 .operational-sheet-block-v69.full .operational-mini-grid-v69{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .journey-canonical-v81 .server-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.journey-canonical-v81 .journey-production-v80,.journey-canonical-v81 .journey-third-v80{grid-column:auto;min-width:0;padding:11px}.journey-canonical-v81 .journey-production-v80>strong,.journey-canonical-v81 .journey-third-total-v80{font-size:1.12rem}.journey-canonical-v81 .journey-production-row-v80{font-size:.75rem;text-transform:none}.journey-canonical-v81 .journey-composition-v80{font-size:.72rem}.journey-canonical-v81 .journey-third-breakdown-v80{display:flex;flex-wrap:wrap;gap:4px}
+  .journey-canonical-v81 .journey-milestones-v80{margin:10px 0;padding:8px;gap:6px}.journey-canonical-v81 .journey-milestone-v80{padding:7px 10px}.journey-canonical-v81 .journey-milestone-v80>strong{font-size:1.3rem;color:var(--navy)!important;font-weight:800}.journey-canonical-v81 .journey-milestone-v80.is-goal-v81>strong{color:#087a73!important}.operational-goal-legend-v81{background:#16876c!important}
+  .journey-canonical-v81 .operational-timeline-info-v79{grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr))}.journey-canonical-v81 .operational-timeline-info-v79>div{min-width:0;overflow-wrap:anywhere}.journey-canonical-v81 .operational-timeline-event-v79 summary{min-width:0;overflow-wrap:anywhere}.journey-canonical-v81 .operational-timeline-production-v79{white-space:normal}
+  .historical-sheet-v81{width:min(1240px,calc(100vw - 28px));max-width:calc(100vw - 28px)}.historical-sheet-v81 .modal-body{min-width:0;overflow-x:hidden}.historical-sheet-v81 .operational-sheet-grid-v69{grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));min-width:0}.historical-sheet-v81 .operational-sheet-block-v69{min-width:0;max-width:100%}.historical-sheet-v81 .operational-sheet-block-v69.full{grid-column:1/-1}.historical-sheet-v81 .operational-mini-grid-v69{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));min-width:0}.historical-sheet-v81 .operational-mini-v69{min-width:0;overflow-wrap:anywhere}.historical-sheet-v81 .operational-mini-v69 span,.historical-sheet-v81 .operational-mini-v69 strong{white-space:normal;overflow:visible;text-overflow:clip;max-width:100%;overflow-wrap:anywhere}.historical-sheet-v81 .operational-hour-bars-v69,.historical-sheet-v81 .operational-history-chart-v69{max-width:100%;overflow-x:auto}.historical-sheet-v81 .operational-sheet-actions-v69{flex-wrap:wrap}.export-snapshot.historical-sheet-v81{max-width:none}
+  @media(max-width:920px){.journey-canonical-v81 .server-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.activity-period-v81 label{width:100%}.activity-modal-v81 .server-kpis,.journey-canonical-v81 .server-kpis{grid-template-columns:1fr}.journey-canonical-v81 .journey-milestones-v80{flex-direction:column;align-items:stretch}.journey-canonical-v81 .journey-milestone-arrow-v80{align-self:center;transform:rotate(90deg)}.historical-sheet-v81 .operational-mini-grid-v69{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:380px){.historical-sheet-v81 .operational-mini-grid-v69{grid-template-columns:1fr}}
+  `;document.head.appendChild(styleV81);
+  styleV81.textContent+='@media(max-width:920px){.historical-sheet-v81 .operational-sheet-block-v69.full .operational-mini-grid-v69{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:620px){.historical-sheet-v81 .operational-sheet-block-v69.full .operational-mini-grid-v69{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:380px){.historical-sheet-v81 .operational-sheet-block-v69.full .operational-mini-grid-v69{grid-template-columns:1fr}}';
+  const getStateV81Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>({...getStateV81Base(),version:'8.1',overviewV81:overviewMeasuresV81(state.filtered)});
+  const getPerformanceV81Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV81Base(),version:'8.1'});
+  window.RadarNUPACI.version='8.1';$('.version-badge').textContent='v8.1';$('.version-pill').textContent='VERSÃO 8.1';document.title='RADAR de Produtividade e Frequência NUPACI · v8.1';
 
     window.PainelNUPACI=window.RadarNUPACI;
   })();
