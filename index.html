@@ -173,7 +173,7 @@
   <script>
   (()=>{'use strict';
     const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-    const state={rows:[],filtered:[],filename:'',filenames:[],sources:{productivity:null,daily:null},sourceColumns:[],filters:{},activityThreshold:15,activityMode:'15',intervalTolerance:20,intervalMode:'20',rankMetric:'processes',timelineMetric:'processes',rankLimit:10,rankSort:{key:'processes',dir:-1},matrixSearch:'',matrixSort:{key:'total',dir:-1},profileView:'server',profileSearch:'',profileSort:{key:'dominance',dir:-1},analyticSort:{key:'date3',dir:-1},analyticPage:1,analyticSearch:'',analyticFilters:{team:new Set,server:new Set,activity:new Set},modalSort:{key:'process',dir:1},modalSearch:'',goalView:'daily',goalSearch:'',goalSort:{key:'day',dir:-1},registrationView:'registrar',registrationSearch:'',registrationSort:{key:'lines',dir:-1},distributionView:'server',distributionSearch:'',distributionSort:{key:'distributed',dir:-1},statisticsActivity:'all',statisticsGrouping:'day',statisticsCompare:true,statisticsCompareMode:'equivalent',statisticsCompareStart:'',statisticsCompareEnd:'',statisticsServerSort:{key:'completed',dir:-1},statisticsDeadlineDays:7,statisticsDeadlineMode:'auto',managers:[]};
+    const state={rows:[],filtered:[],filename:'',filenames:[],sources:{productivity:null,daily:null},sourceColumns:[],filters:{},activityThreshold:30,activityMode:'30',intervalTolerance:20,intervalMode:'20',rankMetric:'processes',timelineMetric:'processes',rankLimit:10,rankSort:{key:'processes',dir:-1},matrixSearch:'',matrixSort:{key:'total',dir:-1},profileView:'server',profileSearch:'',profileSort:{key:'dominance',dir:-1},analyticSort:{key:'date3',dir:-1},analyticPage:1,analyticSearch:'',analyticFilters:{team:new Set,server:new Set,activity:new Set},modalSort:{key:'process',dir:1},modalSearch:'',goalView:'daily',goalSearch:'',goalSort:{key:'day',dir:-1},registrationView:'registrar',registrationSearch:'',registrationSort:{key:'lines',dir:-1},distributionView:'server',distributionSearch:'',distributionSort:{key:'distributed',dir:-1},statisticsActivity:'all',statisticsGrouping:'day',statisticsCompare:true,statisticsCompareMode:'equivalent',statisticsCompareStart:'',statisticsCompareEnd:'',statisticsServerSort:{key:'completed',dir:-1},statisticsDeadlineDays:7,statisticsDeadlineMode:'auto',managers:[]};
     const filterDefs=[['coord','Coordenadoria'],['team','Equipe'],['server','Servidor'],['activity','Atividade'],['system','Sistema'],['done','Feito'],['registrar','Cadastrador'],['priority','Prioridade']];
     const analyticFilterDefs=[['team','Equipe'],['server','Servidor'],['activity','Atividade']];
     const sectionDefs=['overview','executionTimeSection','productionSection','rankingSection','matrixSection','profileSection','rhythmSection','institutionalSection','registrationSection','distributionTrackingSection','goals','dailyOperationalSection','statisticsSection','analyticSection'];
@@ -527,7 +527,7 @@
     function excelColumn(index){let value=index+1,label='';while(value){value--;label=String.fromCharCode(65+value%26)+label;value=Math.floor(value/26)}return label}
     function xlsxCell(value,address,style=0){if(value instanceof Date&&!isNaN(value))return`<c r="${address}" s="2"><v>${excelSerial(value)}</v></c>`;if(typeof value==='number'&&Number.isFinite(value))return`<c r="${address}"${style?` s="${style}"`:''}><v>${value}</v></c>`;const text=String(value??'');return`<c r="${address}" t="inlineStr"${style?` s="${style}"`:''}><is><t xml:space="preserve">${xmlEscape(text)}</t></is></c>`}
     function worksheetXml(headers,rows){const widths=headers.map((header,index)=>Math.min(44,Math.max(11,String(header).length+2,...rows.slice(0,300).map(row=>String(row[index]??'').length+2)))),last=excelColumn(headers.length-1),headerXml=headers.map((value,index)=>xlsxCell(value,`${excelColumn(index)}1`,1)).join(''),rowsXml=rows.map((row,rowIndex)=>`<row r="${rowIndex+2}">${row.map((value,columnIndex)=>xlsxCell(value,`${excelColumn(columnIndex)}${rowIndex+2}`)).join('')}</row>`).join('');return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:${last}${rows.length+1}"/><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${widths.map((width,index)=>`<col min="${index+1}" max="${index+1}" width="${width}" customWidth="1"/>`).join('')}</cols><sheetData><row r="1">${headerXml}</row>${rowsXml}</sheetData><autoFilter ref="A1:${last}${rows.length+1}"/></worksheet>`}
-    function createXlsxBlob(processHeaders,processRows,contextRows,secondSheetName='Contexto'){const created=new Date().toISOString(),files=[['[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`],['_rels/.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`],['docProps/app.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>RADAR NUPACI</Application></Properties>`],['docProps/core.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator>RADAR NUPACI</dc:creator><dc:title>Processos exportados</dc:title><dcterms:created xsi:type="dcterms:W3CDTF">${created}</dcterms:created></cp:coreProperties>`],['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Processos" sheetId="1" r:id="rId1"/><sheet name="${xmlEscape(secondSheetName)}" sheetId="2" r:id="rId2"/></sheets></workbook>`],['xl/_rels/workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],['xl/styles.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy hh:mm"/></numFmts><fonts count="2"><font><sz val="10"/><name val="Arial"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="10"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B1F33"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],['xl/worksheets/sheet1.xml',worksheetXml(processHeaders,processRows)],['xl/worksheets/sheet2.xml',worksheetXml(['Informação','Valor'],contextRows)]];return new Blob([zipBytes(files)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+    function createXlsxBlob(processHeaders,processRows,contextRows,secondSheetName='Contexto',firstSheetName='Processos',secondHeaders=['Informação','Valor']){const created=new Date().toISOString(),files=[['[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`],['_rels/.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`],['docProps/app.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>RADAR NUPACI</Application></Properties>`],['docProps/core.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator>RADAR NUPACI</dc:creator><dc:title>Processos exportados</dc:title><dcterms:created xsi:type="dcterms:W3CDTF">${created}</dcterms:created></cp:coreProperties>`],['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${xmlEscape(firstSheetName)}" sheetId="1" r:id="rId1"/><sheet name="${xmlEscape(secondSheetName)}" sheetId="2" r:id="rId2"/></sheets></workbook>`],['xl/_rels/workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],['xl/styles.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy hh:mm"/></numFmts><fonts count="2"><font><sz val="10"/><name val="Arial"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="10"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B1F33"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],['xl/worksheets/sheet1.xml',worksheetXml(processHeaders,processRows)],['xl/worksheets/sheet2.xml',worksheetXml(secondHeaders,contextRows)]];return new Blob([zipBytes(files)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
     function exportProcessXlsx(rows,columns,title,context=[]){if(!rows.length){toast('Não há processos exibidos para exportar.');return}const headers=columns.map(column=>column.label),data=rows.map(row=>columns.map(column=>{const value=column.value(row);if(column.key==='duration')return fmtDuration(value);return value})),contextRows=[['Relatório',title],['Registros exportados',rows.length],...context.map(item=>{const separator=item.indexOf(':');return separator>0?[item.slice(0,separator),item.slice(separator+1).trim()]:['Contexto',item]})],blob=createXlsxBlob(headers,data,contextRows),stamp=new Date().toISOString().slice(0,10),filename=`radar-nupaci-${exportSlug(title)}-${stamp}.xlsx`;downloadBlob(blob,filename);toast(`${rows.length} registros exportados para XLSX.`)}
     function openProcessModal(rows,title,options={}){
       const procs=options.preserveRows?[...rows]:uniqueProcesses(rows);state.modalSearch='';state.modalSort={key:'date3',dir:1};
@@ -1833,6 +1833,237 @@ $('#rankLimit').onchange=e=>{state.rankLimit=+e.target.value;renderRankBars()};$
   window.RadarNUPACI.getPerformance=()=>({...getPerformanceV78Base(),version:'7.8'});
   $('.version-badge').textContent='v7.8';$('.version-pill').textContent='VERSÃO 7.8';
   document.title='RADAR de Produtividade e Frequência NUPACI · v7.8';
+
+
+  /* Versão 7.9 — linha do tempo de conclusões próprias, com a meta equivalente e a pausa globais já existentes. */
+function operationalTimelineV79(day){
+  const limit=state.activityThreshold;
+  if(day._timelineV79?.limit===limit&&day._timelineV79.meta===day.meta&&day._timelineV79.evaluable===day.evaluable)return day._timelineV79;
+  const detail=day.activityDetail;
+  const events=detail?.events||[];
+  const target=day.evaluable&&Number.isFinite(day.meta)&&day.meta>0?day.meta:null;
+  const seen=new Set,entries=[];
+  let reachedIndex=-1,produced=0;
+  events.forEach((event,index)=>{
+    const key=processKey(event),contribution=seen.has(key)?0:1;
+    seen.add(key);
+    produced+=contribution;
+    const gap=index?Math.max(0,event.date3-events[index-1].date3):null;
+    const pause=gap!==null&&gap>limit*60000;
+    if(reachedIndex<0&&target!==null&&produced>=target)reachedIndex=index;
+    entries.push({event,index,contribution,produced,percent:target===null?null:produced/target,gap,pause});
+  });
+  const pauses=detail?.pauseDetails||[];
+  const pauseTotal=pauses.reduce((sum,pause)=>sum+pause.duration,0);
+  return day._timelineV79={limit,meta:day.meta,evaluable:day.evaluable,target,entries,reachedIndex,reached:reachedIndex<0?null:entries[reachedIndex].event.date3,first:detail?.first||null,last:detail?.last||null,window:detail?.window??null,active:detail?.calculable?detail.active:null,pauses,pauseTotal};
+}
+
+function operationalSortItemsV79(items){
+  const {key,dir}=state.operationalSortV69;
+  if(!['firstV79','reachedV79','netV79'].includes(key))return operationalSortItemsV79Base(items);
+  const value=item=>{
+    const day=item.current;
+    if(key==='firstV79')return day.first?+day.first:-1;
+    const timeline=operationalTimelineV79(day);
+    return key==='reachedV79'?(timeline.reached?+timeline.reached:-1):(timeline.active??-1);
+  };
+  return items.sort((a,b)=>(value(a)-value(b))*dir||a.server.localeCompare(b.server,'pt-BR'));
+}
+
+function renderOperationalTableV79(){
+  const table=$('#operationalTableV69 table'),visible=state._operationalVisibleV69||[];
+  if(!table||!visible.length)return;
+  const head=table.tHead?.rows[0],last=head?.querySelector('[data-operational-sort-v69="last"]');
+  if(!last||head.querySelector('[data-operational-sort-v69="firstV79"]'))return;
+  function column(key,label,tip){
+    const th=document.createElement('th');
+    th.className='sortable has-tip';
+    th.tabIndex=0;
+    th.setAttribute('role','button');
+    th.dataset.operationalSortV69=key;
+    th.dataset.tip=tip;
+    th.innerHTML=esc(label)+' <span class="info" aria-hidden="true">i</span>'+(state.operationalSortV69.key===key?(state.operationalSortV69.dir===1?' ↑':' ↓'):'');
+    const apply=()=>{
+      const old=state.operationalSortV69;
+      state.operationalSortV69={key,dir:old.key===key?-old.dir:-1};
+      renderOperationalPanelV69();
+    };
+    th.onclick=apply;
+    th.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();apply()}};
+    return th;
+  }
+  head.insertBefore(column('firstV79','Primeira conclusão','Horário da primeira conclusão própria válida registrada na Data3 da data analisada; FeitoOutro não participa.'),last);
+  head.insertBefore(column('reachedV79','Meta atingida às','Horário da primeira conclusão própria válida em que os processos distintos acumulados alcançaram ou ultrapassaram 100% da meta esperada equivalente. Não representa o encerramento da jornada nem impede produção posterior.'),last);
+  last.dataset.tip='Horário da última conclusão própria válida registrada na Data3 da data analisada. FeitoOutro não participa.';
+  head.appendChild(column('netV79','Tempo líquido','Estimativa da atividade produtiva observável entre a primeira e a última conclusão própria do dia, descontando os intervalos estritamente superiores ao limite de pausa configurado. Exige ao menos duas conclusões próprias. Não representa jornada formal nem mede trabalho sem conclusão registrada.'));
+  const rows=table.tBodies[0]?.rows||[];
+  [...rows].forEach((row,index)=>{
+    const item=visible[index];
+    if(!item)return;
+    const day=item.current,timeline=operationalTimelineV79(day),lastCell=row.cells[row.cells.length-1];
+    function cell(value,focus,enabled=true){
+      const td=document.createElement('td');
+      if(enabled){
+        const btn=document.createElement('button');
+        btn.className='operational-number-v69';
+        btn.type='button';
+        btn.textContent=value;
+        btn.onclick=()=>openOperationalTimelineV79(item,day,focus);
+        td.appendChild(btn);
+      }else{td.className='muted';td.textContent=value}
+      return td;
+    }
+    row.insertBefore(cell(timeline.first?fmtTime(timeline.first):'—',0,!!timeline.first),lastCell);
+    row.insertBefore(cell(timeline.reached?fmtTime(timeline.reached):'—',timeline.reachedIndex,!!timeline.reached),lastCell);
+    if(timeline.last){
+      lastCell.textContent='';
+      const button=document.createElement('button');
+      button.className='operational-number-v69';
+      button.type='button';
+      button.textContent=fmtTime(timeline.last);
+      button.onclick=()=>openOperationalTimelineV79(item,day,timeline.entries.length-1);
+      lastCell.appendChild(button);
+    }
+    row.appendChild(cell(timeline.active===null?'—':fmtDuration(timeline.active),-1,timeline.active!==null));
+  });
+}
+function exportOperationalTimelineV79(item,day,timeline){
+  const summary=[
+    ['Servidor',item.server],['Coordenadoria',item.coord],['Equipe',item.team],
+    ['Data analisada',fmtDate(day.date,false)],['Primeira conclusão',timeline.first?fmtTime(timeline.first):'—'],
+    ['Meta atingida às',timeline.reached?fmtTime(timeline.reached):'—'],
+    ['Última conclusão',timeline.last?fmtTime(timeline.last):'—'],
+    ['Janela observada',fmtDuration(timeline.window)],
+    ['Limite de pausa (min)',timeline.limit],['Pausas observadas',timeline.pauses.length],
+    ['Soma de pausas',fmtDuration(timeline.pauseTotal)],
+    ['Tempo líquido estimado',fmtDuration(timeline.active)],
+    ['Meta esperada equivalente',day.meta??'Dados insuficientes'],
+    ['Produção própria · processos distintos',day.completed],
+    ['% da meta',day.attainment==null?'Dados insuficientes':fmtPct(day.attainment)],
+    ['Fonte',state.inputSource?.label||state.filename||'Dados normalizados pelo Radar']
+  ];
+  const headers=['Data3','Processo','Servidor','Atividade','Quantidade','Contribuição · processos distintos','Produção acumulada','Percentual acumulado da meta','Intervalo desde evento anterior','Classificação do intervalo','FeitoOutro'];
+  const rows=timeline.entries.map(entry=>[
+    fmtDate(entry.event.date3),entry.event.process,entry.event.server,entry.event.activity,entry.event.quantity,
+    entry.contribution,entry.produced,entry.percent===null?'Dados insuficientes':fmtPct(entry.percent),
+    entry.gap===null?'—':fmtDuration(entry.gap),entry.gap===null?'Primeira conclusão':entry.pause?'Pausa observada':'Dentro do limite',
+    entry.event.otherDoneRaw||''
+  ]);
+  const blob=createXlsxBlob(['Informação','Valor'],summary,rows,'Eventos','Resumo',headers);
+  downloadBlob(blob,'radar-nupaci-linha-do-tempo-'+exportSlug(item.server)+'-'+day.day+'.xlsx');
+  toast(rows.length+' conclusões exportadas para XLSX.');
+}
+
+function openOperationalTimelineV79(item,day,focusIndex=-1,options={}){
+  const timeline=operationalTimelineV79(day);
+  if(!timeline.entries.length)return;
+  openPausePanel(day.activityDetail,options);
+  const modal=$('#modalLayer .modal');
+  if(!modal)return;
+  modal.classList.add('operational-timeline-modal-v79');
+  modal.dataset.operationalTimelineServer=item.server;
+  modal.dataset.operationalTimelineDay=day.day;
+  modal.dataset.operationalTimelineLimit=String(timeline.limit);
+  modal.querySelector('.modal-head h2').textContent='Linha do tempo da atividade diária';
+  modal.querySelector('.modal-head p').textContent=item.server+' · '+fmtDate(day.date,false)+' · '+item.coord+' · '+item.team+' · limite '+timeline.limit+' min';
+  const exportButton=document.createElement('button');
+  exportButton.id='operationalTimelineXlsxV79';
+  exportButton.className='btn small export-control';
+  exportButton.type='button';
+  exportButton.textContent='Exportar XLSX';
+  modal.querySelector('.modal-head-actions').insertBefore(exportButton,modal.querySelector('.modal-head-actions .close'));
+  exportButton.onclick=()=>exportOperationalTimelineV79(item,day,timeline);
+  modal.querySelector('.modal-export-btn').onclick=()=>openExportDialog(modal,'Linha do tempo da atividade diária · '+item.server);
+  const intro=document.createElement('div');
+  intro.className='operational-timeline-intro-v79';
+  const indicators=[
+    ['Servidor',item.server],['Data analisada',fmtDate(day.date,false)],['Coordenadoria',item.coord],
+    ['Equipe',item.team],['Primeira conclusão',timeline.first?fmtTime(timeline.first):'—'],
+    ['Meta atingida às',timeline.reached?fmtTime(timeline.reached):'—'],
+    ['Última conclusão',timeline.last?fmtTime(timeline.last):'—'],
+    ['Meta esperada',timeline.target===null?'Dados insuficientes':fmtNum(timeline.target)],
+    ['Produção própria',fmtNum(day.completed)+' processos distintos']
+  ];
+  intro.innerHTML='<div class="operational-timeline-info-v79">'+indicators.map(([key,value])=>'<div><span>'+esc(key)+'</span><strong>'+esc(value)+'</strong></div>').join('')+'</div>'+
+    '<p class="goal-method">A janela e o tempo líquido usam apenas conclusões próprias na Data3. Intervalos acima de '+timeline.limit+' min são pausas observadas. Uma única conclusão não permite estimar tempo líquido. FeitoOutro permanece contexto operacional separado. Estes dados não constituem registro formal de jornada e não medem trabalho sem conclusão registrada.</p>';
+  modal.querySelector('.server-kpis').before(intro);
+  const chart=modal.querySelector('.pause-chart-shell');
+  const list=document.createElement('section');
+  list.className='operational-timeline-list-v79';
+  list.innerHTML='<h3>Conclusões próprias em ordem cronológica</h3><p>Um processo conta uma vez na produção acumulada; a meta esperada usa a composição das atividades disponíveis. Conclusões após a meta continuam exibidas.</p>'+
+    timeline.entries.map(entry=>{
+      const event=entry.event;
+      const value=entry.percent===null?'Meta não calculável':fmtPct(entry.percent)+' da meta';
+      const tag=entry.index===timeline.reachedIndex?'<strong class="operational-goal-label-v79">Meta atingida</strong>':'';
+      const gap=entry.gap===null?'Primeira conclusão':entry.pause?'Pausa observada · '+fmtDuration(entry.gap)+' · '+fmtTime(timeline.entries[entry.index-1].event.date3)+' → '+fmtTime(event.date3):'Intervalo '+fmtDuration(entry.gap);
+      return'<details class="operational-timeline-event-v79 '+(entry.pause?'paused':'')+'" id="operationalEventV79-'+entry.index+'"><summary><time>'+esc(fmtTime(event.date3))+'</time><span><strong>'+esc(event.process||'Processo não informado')+'</strong><small>'+esc(event.activity||'Atividade não informada')+' · '+esc(gap)+'</small></span><span class="operational-timeline-production-v79">'+esc(fmtNum(event.quantity))+' doc. · +'+entry.contribution+' processo · '+esc(fmtNum(entry.produced))+' acumulado(s) · '+esc(value)+'</span>'+tag+'</summary><div class="operational-timeline-event-detail-v79"><p>Data3: '+esc(fmtDate(event.date3))+' · contribuição para a meta: '+(entry.percent===null?'não calculável':esc(fmtPct(entry.contribution/timeline.target)))+'.</p><button type="button" class="btn small export-control" data-operational-event-process-v79="'+entry.index+'">Ver registro do processo</button></div></details>';
+    }).join('');
+  chart?.insertAdjacentElement('afterend',list);
+  modal.querySelectorAll('.pause-band').forEach((button,index)=>{button.onclick=()=>openJourneyPauseDetailV78(day.activityDetail,timeline.pauses[index])});
+  modal.querySelectorAll('[data-operational-event-process-v79]').forEach(button=>{
+    button.onclick=()=>{const event=timeline.entries[+button.dataset.operationalEventProcessV79].event;openProcessModal(event.sourceRows||[event],item.server+' · '+fmtTime(event.date3),{preserveRows:true})};
+  });
+  if(timeline.reachedIndex>=0){
+    const mark=modal.querySelectorAll('.completion-mark')[timeline.reachedIndex];
+    mark?.classList.add('operational-goal-mark-v79');
+    if(mark)mark.setAttribute('aria-label','Meta atingida às '+fmtTime(timeline.reached));
+  }
+  if(focusIndex>=0){
+    const focused=modal.querySelector('#operationalEventV79-'+focusIndex);
+    if(focused){focused.open=true;requestAnimationFrame(()=>focused.scrollIntoView({block:'nearest'}))}
+  }
+}
+function openOperationalCriteriaV79(){
+  openOperationalCriteriaV79Base();
+  const grid=$('#modalLayer .operational-criteria-grid-v69');
+  if(!grid)return;
+  const limit=state.activityThreshold;
+  const selected=['15','20','30','45','60'].includes(String(limit))?String(limit):'custom';
+  const field=document.createElement('div');
+  field.className='field operational-pause-criteria-v79';
+  field.innerHTML='<label for="criteriaPauseV79">Intervalo mínimo para considerar pausa</label><select id="criteriaPauseV79"><option value="15">15 minutos</option><option value="20">20 minutos</option><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60">60 minutos</option><option value="custom">Personalizado</option></select><label for="criteriaPauseCustomV79" id="criteriaPauseCustomWrapV79" class="'+(selected==='custom'?'':'hidden')+'">Minutos personalizados<input id="criteriaPauseCustomV79" type="number" min="1" max="240" step="1" value="'+limit+'"></label><small id="criteriaPauseFeedbackV79" role="status">Valor aplicado a todos os painéis que compartilham a regra de pausa; intervalos iguais ao limite permanecem atividade observada.</small>';
+  grid.appendChild(field);
+  const picker=$('#criteriaPauseV79'),custom=$('#criteriaPauseCustomV79');
+  picker.value=selected;
+  picker.onchange=()=>{
+    const mode=picker.value;
+    $('#criteriaPauseCustomWrapV79').classList.toggle('hidden',mode!=='custom');
+    if(mode==='custom'){custom.focus();return}
+    applyPauseLimitV78(mode==='45'?'custom':mode,mode);
+  };
+  bindPauseCustomV78(custom,$('#criteriaPauseFeedbackV79'),value=>{if(picker.value==='custom')applyPauseLimitV78('custom',value)});
+  const oldRestore=$('#criteriaRestoreV69').onclick;
+  $('#criteriaRestoreV69').onclick=()=>{applyPauseLimitV78('30',30);oldRestore()};
+}
+
+function openOperationalRulesV79(){
+  openOperationalRulesV79Base();
+  const grid=$('#modalLayer .operational-rule-grid-v69');
+  if(!grid)return;
+  const section=document.createElement('section');
+  section.innerHTML='<h3>21. Horários e atividade observada</h3><p>Primeira e última conclusão são os horários extremos das conclusões próprias válidas na Data3. A meta atingida às identifica a primeira conclusão em que os processos distintos acumulados alcançam a meta equivalente calculada pelas atividades disponíveis. Não indica encerramento da jornada: conclusões posteriores continuam exibidas.</p><p>O tempo líquido é a soma, entre a primeira e a última conclusão, dos intervalos consecutivos menores ou iguais ao limite atual de '+state.activityThreshold+' minutos. Intervalos estritamente superiores são pausas observadas. O padrão inicial é 30 minutos; a preferência já salva no navegador é respeitada. O limite é compartilhado com Jornada e pausas e Metas e jornada e pode ser alterado em Configurar critérios.</p><p>Com apenas uma conclusão, o tempo líquido não é estimável; sem conclusão própria, horários e tempo líquido ficam vazios. FeitoOutro continua somente como contexto operacional. O indicador não mede jornada formal nem atividades sem conclusão no sistema.</p>';
+  grid.appendChild(section);
+}
+
+function exportContextV79(title,target,partLabel=''){
+  const meta=exportContextV79Base(title,target,partLabel);
+  if(target.classList?.contains('operational-timeline-modal-v79')){
+    const insert=Math.max(0,meta.length-1);
+    meta.splice(insert,0,'Servidor: '+target.dataset.operationalTimelineServer,'Data analisada: '+target.dataset.operationalTimelineDay,'Limite de pausa: '+target.dataset.operationalTimelineLimit+' min');
+  }
+  if(target.id==='dailyOperationalSection')meta.splice(Math.max(0,meta.length-1),0,'Limite de pausa: '+state.activityThreshold+' min');
+  return meta;
+}
+  const v79Style=document.createElement('style');v79Style.textContent=".operational-table-v69 table{min-width:1910px}\n.operational-pause-criteria-v79{grid-column:1/-1;display:grid;gap:6px}\n.operational-pause-criteria-v79 label{font-size:.78rem;font-weight:700}\n.operational-pause-criteria-v79 select,.operational-pause-criteria-v79 input{min-height:38px}\n.operational-timeline-intro-v79{margin-bottom:15px}\n.operational-timeline-info-v79{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}\n.operational-timeline-info-v79>div{display:grid;gap:3px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#f8fbfc}\n.operational-timeline-info-v79 span{font-size:.7rem;color:var(--muted)}\n.operational-timeline-info-v79 strong{overflow-wrap:anywhere}\n.operational-timeline-list-v79{margin:15px 0}\n.operational-timeline-list-v79>p{font-size:.8rem;color:var(--muted)}\n.operational-timeline-event-v79{margin:8px 0;border:1px solid var(--line);border-radius:9px}\n.operational-timeline-event-v79.paused{border-left:4px solid #e1a32e}\n.operational-timeline-event-v79 summary{display:grid;grid-template-columns:60px minmax(155px,1fr) minmax(170px,1fr) auto;align-items:center;gap:9px;padding:10px;cursor:pointer}\n.operational-timeline-event-v79 summary time{font-weight:800;color:var(--blue)}\n.operational-timeline-event-v79 summary small{display:block;color:var(--muted)}\n.operational-timeline-production-v79{font-size:.78rem}\n.operational-goal-label-v79{color:#14755c;font-size:.77rem}\n.operational-timeline-event-detail-v79{border-top:1px solid var(--line);padding:8px 12px}\n.completion-mark.operational-goal-mark-v79{background:#2d9c54!important;box-shadow:0 0 0 4px #c9efd5}\n@media(max-width:760px){.operational-timeline-info-v79{grid-template-columns:repeat(2,minmax(0,1fr))}.operational-timeline-event-v79 summary{grid-template-columns:56px minmax(0,1fr)}.operational-timeline-production-v79{grid-column:2}.operational-goal-label-v79{grid-column:2}}\n@media(max-width:430px){.operational-timeline-info-v79{grid-template-columns:1fr}.operational-timeline-event-v79 summary{grid-template-columns:1fr}.operational-timeline-production-v79,.operational-goal-label-v79{grid-column:1}}";document.head.appendChild(v79Style);
+  const operationalSortItemsV79Base=operationalSortItemsV69;operationalSortItemsV69=operationalSortItemsV79;
+  const renderOperationalPanelV79Base=renderOperationalPanelV69;renderOperationalPanelV69=function(){const result=renderOperationalPanelV79Base();renderOperationalTableV79();return result};
+  const openOperationalCriteriaV79Base=openOperationalCriteriaV69;openOperationalCriteriaV69=openOperationalCriteriaV79;$('#operationalCriteriaV69').onclick=openOperationalCriteriaV69;
+  const openOperationalRulesV79Base=openOperationalRulesV69;openOperationalRulesV69=openOperationalRulesV79;$('#operationalRulesV69').onclick=openOperationalRulesV69;
+  const exportContextV79Base=exportContext;exportContext=exportContextV79;
+  sourceRulesV70.dailyOperationalSection={...sourceRulesV70.dailyOperationalSection,purpose:sourceRulesV70.dailyOperationalSection.purpose+' A Data3 das conclusões próprias identifica primeira e última conclusão, horário da meta equivalente e intervalos do tempo líquido. FeitoOutro permanece contexto operacional separado.',compat:sourceRulesV70.dailyOperationalSection.compat+' CSV e Microsoft Lists usam a mesma normalização. Processos distintos acumulados alcançam a meta equivalente de atividades disponíveis; intervalos superiores ao limite vigente são pausas observadas.'};
+  const getStateV79Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>{const base=getStateV79Base(),snap=state._operationalV69,byServer=new Map((snap?.items||[]).map(item=>[item.server,item.current]));return{...base,version:'7.9',dailyOperational:base.dailyOperational&&snap?{...base.dailyOperational,pauseLimit:state.activityThreshold,servers:base.dailyOperational.servers.map(server=>{const current=byServer.get(server.server),model=current?operationalTimelineV79(current):null;return{...server,first:model?.first?.toISOString()||null,goalReached:model?.reached?.toISOString()||null,last:model?.last?.toISOString()||null,netMs:model?.active??null}})}:base.dailyOperational}};
+  const getPerformanceV79Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV79Base(),version:'7.9'});
+  window.RadarNUPACI.version='7.9';$('.version-badge').textContent='v7.9';$('.version-pill').textContent='VERSÃO 7.9';document.title='RADAR de Produtividade e Frequência NUPACI · v7.9';
 
     window.PainelNUPACI=window.RadarNUPACI;
   })();
