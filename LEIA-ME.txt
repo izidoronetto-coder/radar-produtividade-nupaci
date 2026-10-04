@@ -1,5 +1,20 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 7.9
+Versão 8.0
+
+NOVIDADES DA VERSÃO 8.0 — JORNADA, PRODUÇÃO DO DIA E RESOLUÇÕES POR TERCEIROS
+
+- O popup Jornada e pausas passa a reunir produção própria, resoluções operacionais por terceiros e os horários da primeira conclusão, da meta atingida e da última conclusão, preservando janela observada, tempo líquido estimado, pausas, total em pausas, maior pausa, gráfico e tabela de pausas.
+- Produção do dia apresenta processos distintos com conclusão própria válida na Data3 do servidor/dia e, separadamente, a soma de Quantidade como documentos gerais. O seletor Dia analisado informa o número de registros de conclusão; quando um mesmo processo possui mais de um registro no dia, esse número pode superar os processos distintos do card. O gráfico temporal conserva sua deduplicação própria.
+- Documentos específicos usam somente o resultado da normalização e do parser central de DocumentosEspecificos, sem interpretação adicional por painel. SAE/Alvará: Físico e SAE; BNMP: Mandado, Contramandado, Guia e MDP; SAPRE/TRF5: ROPV e Precatório. A composição por tipo e atividade aparece no card quando houver quantidades positivas.
+- Sem conclusão própria em atividade suportada, Documentos específicos mostra “Não se aplica”; havendo atividade suportada sem quantidade específica registrada, mostra 0. Documentos gerais e específicos são medidas independentes e não são somados automaticamente.
+- Clicar em Produção do dia aciona exatamente o mesmo botão Ver processos do dia e o mesmo popup analítico já existente, sem alterar sua busca, filtros, colunas, cópia de processos, ordenação, XLSX, imagem ou histórico ← Voltar.
+- Resoluções por terceiros contam processos distintos com Data3 na data selecionada, usando a classificação central FeitoOutro. Outro servidor e Gabinete são apresentados separadamente; valores não reconhecidos permanecem auditáveis em categoria própria. Em ocorrências diferentes do mesmo processo, a categoria contabilizada é a última resolução do dia; o detalhamento do total preserva as linhas de auditoria.
+- Total, Outro servidor e Gabinete abrem o popup de processos já existente com o recorte correspondente. Esses eventos não criam produção própria, documentos, meta, primeira/última conclusão, janela, tempo líquido ou pausas do destinatário. Dias com apenas resolução por terceiros são identificados no seletor sem inventar jornada produtiva.
+- A faixa temporal Primeira conclusão → Meta atingida às → Última conclusão antecede o gráfico. Quando a meta não é alcançada ou não pode ser calculada, a faixa mostra apenas primeira e última. Os horários vêm da Data3 própria; a meta usa a mesma regra existente do Acompanhamento Diário, com processos distintos acumulados perante a meta equivalente das atividades disponíveis.
+- O texto abaixo dos indicadores preserva quantidade de conclusões e filtros sem repetir os horários em destaque. A ajuda contextual apresenta fontes, aplicabilidade, taxonomia, interpretação e limitações. Não há julgamento automático nem controle formal de jornada.
+- O parâmetro global de pausa, a linha do tempo azul/amarelo, o popup de observações das pausas, o botão Ver processos do dia e a infraestrutura existente de Copiar imagem permanecem. A nova composição e os horários acompanham o relatório; detalhamentos mantêm a exportação XLSX já oferecida pelo popup de processos.
+- Microsoft Lists e CSV alimentam o mesmo modelo normalizado; não houve alteração na extensão. Os recortes categóricos e temporais continuam acompanhando a origem dos registros da ficha.
+- A política desta atualização cria a branch backup-pre-v8.0 no commit exato da main anterior, preservando a versão 7.9 como ponto de retorno. A v8.0 é publicada na main por avanço normal do histórico, sem force push e sem mudança da configuração do GitHub Pages.
 
 NOVIDADES DA VERSÃO 7.9 — HORÁRIOS, META E TEMPO LÍQUIDO NO ACOMPANHAMENTO DIÁRIO
 

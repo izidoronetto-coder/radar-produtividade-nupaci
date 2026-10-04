@@ -642,7 +642,7 @@
     let sectionNavFrame=0;function scheduleSectionNavUpdate(){if(sectionNavFrame)return;sectionNavFrame=requestAnimationFrame(()=>{sectionNavFrame=0;updateSectionNavActive()})}
     async function copyText(text,msg='Processo copiado'){try{await navigator.clipboard.writeText(text)}catch{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}toast(msg)}
     let toastTimer;function toast(msg){clearTimeout(toastTimer);$('#toast').textContent=msg;$('#toast').classList.remove('hidden');toastTimer=setTimeout(()=>$('#toast').classList.add('hidden'),2200)}
-    let goalFloatingTip=null,goalFloatingTrigger=null,goalFloatingPinned=false;const goalFloatingSelector='.overview-data-help,.goal-section th.has-tip,.goal-pause-copy .has-tip,.statistics-section th.has-tip,.statistics-kpi[data-tip],.statistics-origin-card[data-tip],.statistics-origin-head>.has-tip,.statistics-chart-group[data-tip],.statistics-origin-trend-group[data-tip],.statistics-deadline-help[data-tip],.daily-operational-section .has-tip[data-tip]';
+    let goalFloatingTip=null,goalFloatingTrigger=null,goalFloatingPinned=false;const goalFloatingSelector='.overview-data-help,.goal-section th.has-tip,.goal-pause-copy .has-tip,.statistics-section th.has-tip,.statistics-kpi[data-tip],.statistics-origin-card[data-tip],.statistics-origin-head>.has-tip,.statistics-chart-group[data-tip],.statistics-origin-trend-group[data-tip],.statistics-deadline-help[data-tip],.daily-operational-section .has-tip[data-tip],.journey-modal-v78 .has-tip[data-tip]';
     function ensureGoalFloatingTip(){if(goalFloatingTip)return goalFloatingTip;goalFloatingTip=document.createElement('div');goalFloatingTip.id='goalFloatingTooltip';goalFloatingTip.className='goal-floating-tooltip';goalFloatingTip.setAttribute('role','tooltip');goalFloatingTip.setAttribute('aria-hidden','true');document.body.appendChild(goalFloatingTip);return goalFloatingTip}
     function showGoalFloatingTip(trigger){const message=trigger?.dataset.tip;if(!message)return;const tip=ensureGoalFloatingTip();if(goalFloatingTrigger&&goalFloatingTrigger!==trigger)goalFloatingTrigger.removeAttribute('aria-describedby');goalFloatingTrigger=trigger;trigger.setAttribute('aria-describedby',tip.id);tip.textContent=message;tip.classList.toggle('long',trigger.classList.contains('overview-data-help'));tip.style.left='0px';tip.style.top='0px';tip.classList.add('visible');tip.setAttribute('aria-hidden','false');const rect=trigger.getBoundingClientRect(),box=tip.getBoundingClientRect(),margin=12,gap=9;let left=rect.left+rect.width/2-box.width/2,top=rect.top-box.height-gap;left=Math.max(margin,Math.min(left,innerWidth-box.width-margin));if(top<margin)top=Math.min(innerHeight-box.height-margin,rect.bottom+gap);tip.style.left=`${Math.round(left)}px`;tip.style.top=`${Math.round(top)}px`}
     function hideGoalFloatingTip(force=false){if(!goalFloatingTip)return;if(!force&&(goalFloatingPinned||(goalFloatingTrigger&&(goalFloatingTrigger.matches(':hover')||document.activeElement===goalFloatingTrigger))))return;goalFloatingTrigger?.removeAttribute('aria-describedby');goalFloatingTrigger=null;goalFloatingTip.classList.remove('visible','long');goalFloatingTip.setAttribute('aria-hidden','true')}
@@ -2087,6 +2087,234 @@ function exportContextV79(title,target,partLabel=''){
   const getStateV79Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>{const base=getStateV79Base(),snap=state._operationalV69,byServer=new Map((snap?.items||[]).map(item=>[item.server,item.current]));return{...base,version:'7.9',dailyOperational:base.dailyOperational&&snap?{...base.dailyOperational,pauseLimit:state.activityThreshold,servers:base.dailyOperational.servers.map(server=>{const current=byServer.get(server.server),model=current?operationalTimelineV79(current):null;return{...server,first:model?.first?.toISOString()||null,goalReached:model?.reached?.toISOString()||null,last:model?.last?.toISOString()||null,netMs:model?.active??null}})}:base.dailyOperational}};
   const getPerformanceV79Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV79Base(),version:'7.9'});
   window.RadarNUPACI.version='7.9';$('.version-badge').textContent='v7.9';$('.version-pill').textContent='VERSÃO 7.9';document.title='RADAR de Produtividade e Frequência NUPACI · v7.9';
+
+
+  /* Versão 8.0 — resumo do dia no popup de Jornada e pausas. */
+  const journeyProductionTipV80='Produção do dia: processos distintos concluídos pelo próprio servidor, documentos gerais da coluna Quantidade e documentos específicos das atividades SAE/Alvará, BNMP e SAPRE/TRF5. As duas métricas de documentos são independentes e não devem ser somadas. FeitoOutro não é produtividade própria.';
+  const journeyThirdTipV80='Resoluções por terceiros: processos destinados ao servidor cuja resolução na Data3 foi registrada como realizada por outro servidor ou pelo Gabinete. Não integram a produtividade, os documentos, a meta ou os intervalos do servidor destinatário.';
+  const journeyFirstTipV80='Horário da primeira conclusão própria válida na Data3 da data analisada.';
+  const journeyGoalTipV80='Primeira conclusão própria válida em que a produção acumulada alcançou ou ultrapassou a meta esperada equivalente. Não representa encerramento da jornada.';
+  const journeyLastTipV80='Horário da última conclusão própria válida na Data3 da data analisada. Não representa necessariamente o encerramento da jornada de trabalho.';
+
+  function journeyDailyModelV80(name,rows,day){
+    const own=[],third=[],types=new Map,thirdByProcess=new Map;
+    let documents=0,specific=0,applicable=false;
+    for(const row of rows){
+      if(row.server!==name||!row.date3||isoDay(row.date3)!==day)continue;
+      if(isOwnCompletion(row)){
+        own.push(row);
+        documents+=row.quantity;
+        const activity=specificActivityV77(row.activity);
+        if(!activity)continue;
+        applicable=true;
+        const parsed=row.specificV77;
+        if(!parsed)continue;
+        specific+=parsed.total;
+        for(const [type,quantity] of Object.entries(parsed.counts)){
+          if(!quantity)continue;
+          const key=specificTypesV77[activity].label+' · '+type;
+          types.set(key,(types.get(key)||0)+quantity);
+        }
+      }else if(isThirdPartyCompletion(row)){
+        third.push(row);
+        const key=processKey(row),previous=thirdByProcess.get(key);
+        if(!previous||row.date3>previous.date3||(row.date3.getTime()===previous.date3.getTime()&&(row.id||0)>(previous.id||0)))thirdByProcess.set(key,row);
+      }
+    }
+    const groups={other:[],cabinet:[],unknown:[]};
+    for(const [key,row] of thirdByProcess){
+      const bucket=row.thirdPartyCode==='other-server'?'other':row.thirdPartyCode==='cabinet'?'cabinet':'unknown';
+      groups[bucket].push(key);
+    }
+    return{own,third,processes:new Set(own.map(processKey)).size,documents,specific,applicable,types,thirdByProcess,groups,thirdCount:thirdByProcess.size,events:own.length};
+  }
+  function journeyThirdRowsV80(model,code){
+    if(code==='all')return model.third;
+    const keys=new Set(model.groups[code]||[]);
+    return model.third.filter(row=>keys.has(processKey(row))&&(
+      code==='unknown'?row.thirdPartyCode!=='other-server'&&row.thirdPartyCode!=='cabinet':
+      row.thirdPartyCode===(code==='other'?'other-server':'cabinet')
+    ));
+  }
+  function journeyScopeSignatureV80(){
+    return JSON.stringify([...(state.processFilterKeys||[])].sort())+'|'+filterDefs.map(([key])=>key+':'+[...(state.filters[key]||[])].sort().join(',')).join('|');
+  }
+  function journeyMetaTimelineV80(name,day,detail){
+    if(!detail)return null;
+    const signature=journeyScopeSignatureV80();
+    let snapshot=state._operationalV69;
+    if(!snapshot||snapshot._journeyBaseV80!==state.rows||snapshot._journeySignatureV80!==signature){
+      snapshot=state._journeyOnDemandV80;
+      if(!snapshot||snapshot._journeyBaseV80!==state.rows||snapshot._journeySignatureV80!==signature){
+        snapshot={rows:operationalUniverseV69(),dayMaps:new Map,_journeyBaseV80:state.rows,_journeySignatureV80:signature};
+        state._journeyOnDemandV80=snapshot;
+      }
+    }
+    let dayMap=snapshot.dayMaps.get(day);
+    if(!dayMap){
+      dayMap=operationalDayMapV69(snapshot.rows,new Date(day+'T12:00:00'));
+      snapshot.dayMaps.set(day,dayMap);
+    }
+    const reference=dayMap.map.get(name);
+    return operationalTimelineV79({activityDetail:detail,meta:reference?.meta??null,evaluable:!!reference?.evaluable});
+  }
+
+
+  function journeyHelpV80(){
+    return '<details class="journey-help-v80"><summary>ⓘ Entenda as regras desta jornada</summary><p>Produção do dia conta processos distintos com conclusão própria válida, soma Quantidade em documentos gerais e apresenta, separadamente, DocumentosEspecificos já normalizados. SAE/Alvará: Físico e SAE; BNMP: Mandado, Contramandado, Guia e MDP; SAPRE/TRF5: ROPV e Precatório. Sem atividade aplicável: Não se aplica. Com atividade aplicável sem documento específico: 0. As duas métricas de documentos são independentes.</p><p>Resoluções por terceiros mostram processos distintos com Data3 no dia, classificados como Outro servidor ou Gabinete; valores não reconhecidos continuam auditáveis. Não entram na produtividade própria, meta, documentos ou cálculos temporais do destinatário.</p><p>Primeira e última conclusão são as extremidades de Data3 própria; Meta atingida às é o primeiro evento que alcança a meta esperada equivalente conforme a regra existente. A janela é o intervalo entre primeira e última conclusão. Tempo líquido estimado soma os intervalos dentro do limite vigente; acima dele são pausas observadas.</p><p>Horários e pausas descrevem registros observados: intervalos longos e ausência de conclusão não comprovam ausência de trabalho e não constituem controle formal de jornada.</p></details>';
+  }
+  function journeyEnhanceV80(modal,name,rows,day,detail){
+    const model=journeyDailyModelV80(name,rows,day),kpis=modal.querySelector('.server-kpis');
+    if(!kpis)return;
+    modal.classList.add('journey-summary-v80');
+    const production=document.createElement('button');
+    production.type='button';
+    production.className='mini-kpi journey-production-v80 has-tip';
+    production.id='journeyProductionV80';
+    production.dataset.tip=journeyProductionTipV80;
+    production.setAttribute('aria-label','Produção do dia: '+model.processes+' processos concluídos, '+model.documents+' documentos gerais, '+(model.applicable?model.specific+' documentos específicos':'documentos específicos não se aplicam')+'. Abrir processos do dia.');
+    const composition=[...model.types].map(([label,count])=>{const [activity,type]=label.split(' · ');return fmtNum(count)+' '+type+' ('+activity+')'}).join(' · ');
+    production.innerHTML='<span>Produção do dia <span class="info" aria-hidden="true">i</span></span><strong>'+fmtNum(model.processes)+' processos concluídos</strong><span class="journey-production-row-v80">'+fmtNum(model.documents)+' documentos produzidos</span><span class="journey-production-row-v80">Documentos específicos: '+(model.applicable?fmtNum(model.specific):'Não se aplica')+'</span>'+(composition?'<small class="journey-composition-v80">'+esc(composition)+'</small>':'')+'<small>Ver processos do dia</small>';
+    production.onclick=()=>modal.querySelector('#journeyProcessesV78')?.click();
+    const third=document.createElement('div');
+    third.className='mini-kpi journey-third-v80 has-tip';
+    third.tabIndex=0;
+    third.dataset.tip=journeyThirdTipV80;
+    third.innerHTML='<span>Resoluções por terceiros <span class="info" aria-hidden="true">i</span></span><button class="journey-third-total-v80" type="button" data-journey-third-v80="all">'+fmtNum(model.thirdCount)+' '+(model.thirdCount===1?'processo':'processos')+'</button><span class="journey-third-breakdown-v80"><button type="button" data-journey-third-v80="other">'+fmtNum(model.groups.other.length)+' Outro servidor</button><span aria-hidden="true"> · </span><button type="button" data-journey-third-v80="cabinet">'+fmtNum(model.groups.cabinet.length)+' Gabinete</button></span>'+(model.groups.unknown.length?'<button type="button" data-journey-third-v80="unknown" class="journey-third-unknown-v80">'+fmtNum(model.groups.unknown.length)+' valor não reconhecido · conferir</button>':'');
+    kpis.prepend(third);
+    kpis.prepend(production);
+    modal.querySelectorAll('[data-journey-third-v80]').forEach(button=>{
+      const key=button.dataset.journeyThirdV80,count=key==='all'?model.thirdCount:model.groups[key].length;
+      button.disabled=!count;
+      button.onclick=()=>openProcessModal(journeyThirdRowsV80(model,key),name+' · '+fmtDate(new Date(day+'T12:00:00'),false)+' · '+(key==='all'?'Resoluções por terceiros':key==='other'?'Outro servidor':key==='cabinet'?'Gabinete':'Valor não reconhecido')+' · '+count+' '+(count===1?'processo distinto':'processos distintos'),{preserveRows:true,summaryLabel:'registros de resolução por terceiros'});
+    });
+    modal.addEventListener('click',event=>{
+      const info=event.target.closest?.('.has-tip[data-tip] .info');
+      if(!info)return;
+      const trigger=info.closest('.has-tip[data-tip]');
+      if(!trigger)return;
+      event.preventDefault();
+      event.stopPropagation();
+      const pinned=goalFloatingPinned&&goalFloatingTrigger===trigger;
+      goalFloatingPinned=!pinned;
+      if(pinned)hideGoalFloatingTip(true);else showGoalFloatingTip(trigger);
+    },true);
+    const timeline=journeyMetaTimelineV80(name,day,detail),strip=document.createElement('section');
+    strip.className='journey-milestones-v80';
+    strip.setAttribute('aria-label','Marcos temporais das conclusões próprias');
+    const milestones=[
+      ['Primeira conclusão',detail?.first?fmtTime(detail.first):'—',journeyFirstTipV80],
+      ...(timeline?.reached?[['Meta atingida às',fmtTime(timeline.reached),journeyGoalTipV80]]:[]),
+      ['Última conclusão',detail?.last?fmtTime(detail.last):'—',journeyLastTipV80]
+    ];
+    strip.innerHTML=milestones.map(([label,value,tip],index)=>(index?'<span class="journey-milestone-arrow-v80" aria-hidden="true">→</span>':'')+'<div class="journey-milestone-v80 has-tip" tabindex="0" data-tip="'+esc(tip)+'"><span>'+esc(label)+' <span class="info" aria-hidden="true">i</span></span><strong>'+esc(value)+'</strong></div>').join('');
+    const chart=modal.querySelector('.pause-chart-shell');
+    if(chart)chart.before(strip);else kpis.after(strip);
+    const note=modal.querySelector('.journey-context-v78');
+    if(note){
+      const filters=filterDefs.flatMap(([key,label])=>state.filters[key]?.size?[label+': '+exportValueList(state.filters[key])]:[]);
+      note.textContent=fmtNum(model.events)+' '+(model.events===1?'conclusão própria registrada':'conclusões próprias registradas')+(detail&&detail.events.length!==model.events?' · '+fmtNum(detail.events.length)+' eventos distintos considerados nos intervalos':'')+' · '+(filters.join(' · ')||'sem filtros categóricos adicionais')+'. Os indicadores usam horários de conclusão na Data3; ausência de registros ou intervalos longos não comprovam, isoladamente, ausência de trabalho.';
+    }
+    const help=document.createElement('div');
+    help.innerHTML=journeyHelpV80();
+    (chart||strip).before(help.firstElementChild);
+    const picker=modal.querySelector('#journeyDayV78');
+    if(picker){
+      const ownCounts=new Map,thirdDaysSet=new Set;
+      for(const row of rows){
+        if(!row.date3)continue;
+        const rowDay=isoDay(row.date3);
+        if(isOwnCompletion(row))ownCounts.set(rowDay,(ownCounts.get(rowDay)||0)+1);
+        if(isThirdPartyCompletion(row))thirdDaysSet.add(rowDay);
+      }
+      for(const option of picker.options){
+        const count=ownCounts.get(option.value)||0;
+        option.textContent=fmtDate(new Date(option.value+'T12:00:00'),false)+' · '+count+' '+(count===1?'conclusão':'conclusões');
+      }
+      const thirdDays=[...thirdDaysSet];
+      for(const date of thirdDays){
+        if([...picker.options].some(option=>option.value===date))continue;
+        const option=document.createElement('option');
+        option.value=date;
+        option.textContent=fmtDate(new Date(date+'T12:00:00'),false)+' · 0 conclusões · terceiros';
+        picker.appendChild(option);
+      }
+      [...picker.options].sort((a,b)=>b.value.localeCompare(a.value)).forEach(option=>picker.appendChild(option));
+      picker.value=day;
+    }
+    const dayButton=modal.querySelector('#journeyProcessesV78');
+    if(dayButton&&model.processes)dayButton.textContent='Ver processos do dia · '+fmtNum(model.processes);
+    modal.dataset.journeyOwnProcesses=String(model.processes);
+    modal.dataset.journeyDocuments=String(model.documents);
+    modal.dataset.journeySpecific=model.applicable?String(model.specific):'Não se aplica';
+    modal.dataset.journeyThird=String(model.thirdCount);
+    modal.dataset.journeyReached=timeline?.reached?fmtTime(timeline.reached):'—';
+  }
+
+
+  function journeyThirdOnlyV80(name,rows,day,replaceCurrent=false){
+    const date=day||[...new Set(rows.filter(isThirdPartyCompletion).map(row=>isoDay(row.date3)).filter(Boolean))].sort().at(-1);
+    if(!date)return false;
+    const ownDays=new Map,thirdDays=new Set;
+    rows.forEach(row=>{
+      if(!row.date3)return;
+      const key=isoDay(row.date3);
+      if(isOwnCompletion(row))ownDays.set(key,(ownDays.get(key)||0)+1);
+      if(isThirdPartyCompletion(row))thirdDays.add(key);
+    });
+    const days=[...new Set([...ownDays.keys(),...thirdDays])].sort().reverse();
+    openModal('Jornada e pausas · '+name,fmtDate(new Date(date+'T12:00:00'),false)+' · '+journeyPeriodV78()+' · limite '+state.activityThreshold+'min',
+      '<div class="journey-toolbar-v78 export-control"><label for="journeyDayV78">Dia analisado<select id="journeyDayV78">'+days.map(item=>'<option value="'+item+'" '+(item===date?'selected':'')+'>'+fmtDate(new Date(item+'T12:00:00'),false)+' · '+(ownDays.get(item)||0)+' conclusões'+(thirdDays.has(item)&&!ownDays.has(item)?' · terceiros':'')+'</option>').join('')+'</select></label><label for="journeyLimitV78">Considerar pausa a partir de<select id="journeyLimitV78">'+activityOptions(state.activityMode)+'</select></label><label id="journeyCustomWrapV78" class="'+(state.activityMode==='custom'?'':'hidden')+'" for="journeyCustomV78">Minutos personalizados<input id="journeyCustomV78" class="journey-custom-v78" type="number" min="1" max="240" step="1" value="'+state.activityThreshold+'"></label><span id="journeyPauseFeedbackV78" class="pause-feedback-v78" role="status"></span><button id="journeyProcessesV78" class="btn small" type="button">Ver processos do dia</button></div><div class="server-kpis"></div><p class="journey-context-v78"></p><p class="goal-method">Nenhuma conclusão própria com Data3 nesta data. Não há janela, tempo líquido ou pausas produtivas a estimar. Resoluções por terceiros aparecem separadamente como contexto operacional.</p>',false,{replaceCurrent});
+    const modal=$('#modalLayer .modal');
+    modal.classList.add('journey-modal-v78');
+    modal.dataset.journeyServer=name;
+    modal.dataset.journeyDay=date;
+    modal.dataset.journeyThreshold=String(state.activityThreshold);
+    modal.querySelector('.modal-export-btn').onclick=()=>openExportDialog(modal,'Jornada e pausas · '+name);
+    journeyEnhanceV80(modal,name,rows,date,null);
+    modal.querySelector('#journeyDayV78').onchange=event=>openJourneyPanelV78(name,rows,event.target.value);
+    modal.querySelector('#journeyLimitV78').onchange=event=>{
+      const mode=event.target.value;
+      modal.querySelector('#journeyCustomWrapV78').classList.toggle('hidden',mode!=='custom');
+      if(mode==='custom'){modal.querySelector('#journeyCustomV78').focus();return}
+      applyPauseLimitV78(mode,mode,()=>openJourneyPanelV78(name,rows,date,true));
+    };
+    bindPauseCustomV78(modal.querySelector('#journeyCustomV78'),modal.querySelector('#journeyPauseFeedbackV78'),value=>applyPauseLimitV78('custom',value,()=>openJourneyPanelV78(name,rows,date,true)));
+    modal.querySelector('#journeyProcessesV78').onclick=()=>openProcessModal([],name+' · '+fmtDate(new Date(date+'T12:00:00'),false),{preserveRows:true});
+    return true;
+  }
+  const openJourneyPanelV80Base=openJourneyPanelV78;
+  openJourneyPanelV78=function(name,rows,selectedDay=null,replaceCurrent=false){
+    const ownDays=activityBreakdown(rows).detail.filter(item=>item.server===name);
+    if((selectedDay&&!ownDays.some(item=>item.day===selectedDay))||!ownDays.length){
+      if(journeyThirdOnlyV80(name,rows,selectedDay,replaceCurrent))return;
+    }
+    openJourneyPanelV80Base(name,rows,selectedDay,replaceCurrent);
+    const modal=$('#modalLayer .modal');
+    if(!modal?.classList.contains('journey-modal-v78'))return;
+    const day=modal.dataset.journeyDay,detail=ownDays.find(item=>item.day===day);
+    if(detail)journeyEnhanceV80(modal,name,rows,day,detail);
+  };
+  const exportContextV80Base=exportContext;
+  exportContext=function(title,target,partLabel=''){
+    const lines=exportContextV80Base(title,target,partLabel);
+    if(target.classList?.contains('journey-summary-v80'))lines.splice(Math.max(0,lines.length-1),0,
+      'Processos próprios: '+target.dataset.journeyOwnProcesses,
+      'Documentos gerais: '+target.dataset.journeyDocuments,
+      'Documentos específicos: '+target.dataset.journeySpecific,
+      'Processos resolvidos por terceiros: '+target.dataset.journeyThird,
+      'Meta atingida às: '+target.dataset.journeyReached);
+    return lines;
+  };
+
+  const styleV80=document.createElement('style');styleV80.textContent=".journey-summary-v80 .server-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}\n.journey-production-v80{grid-column:span 2;text-align:left;font:inherit;cursor:pointer;border-color:#8ac6c1;background:#ebf8f6;color:var(--navy)}\n.journey-production-v80:hover,.journey-production-v80:focus-visible{border-color:var(--teal);box-shadow:0 0 0 2px rgba(13,148,136,.16)}\n.journey-production-v80>strong{font-size:1.4rem}\n.journey-production-row-v80{display:block;margin:4px 0;color:var(--ink);font-size:.85rem}\n.journey-composition-v80{display:block;margin-top:5px;color:var(--muted);font-size:.75rem}\n.journey-third-v80{grid-column:span 1;background:#f6f9fb;border-color:#d6e0e8}\n.journey-third-total-v80,.journey-third-breakdown-v80 button,.journey-third-unknown-v80{border:0;background:transparent;padding:2px 0;color:var(--blue);font:inherit;font-weight:700;text-align:left;cursor:pointer}\n.journey-third-total-v80{display:block;font-size:1.25rem;font-weight:850;margin:3px 0}\n.journey-third-breakdown-v80{display:flex;align-items:center;flex-wrap:wrap;gap:4px;color:var(--muted);font-size:.79rem}.journey-third-breakdown-v80 button{white-space:nowrap}\n.journey-third-unknown-v80{display:block;font-size:.74rem}\n.journey-third-v80 button:disabled{cursor:default;color:var(--muted);text-decoration:none}\n.journey-third-v80 button:not(:disabled):hover{text-decoration:underline}\n.journey-milestones-v80{display:flex;align-items:center;gap:10px;margin:14px 0 13px;padding:14px;border:1px solid #bfdbdc;border-radius:13px;background:#f3fafb}\n.journey-milestone-v80{flex:1;min-width:0;padding:10px 12px;border-radius:10px;background:#fff}\n.journey-milestone-v80>span{display:block;color:#34576d;font-size:.7rem;font-weight:800;text-transform:uppercase}\n.journey-milestone-v80>strong{display:block;margin-top:5px;color:#113c58;font-size:1.65rem;line-height:1.1}\n.journey-milestone-v80:nth-child(3)>strong{color:#087a73}\n.journey-milestone-arrow-v80{color:#527b89;font-size:1.2rem}\n.journey-help-v80{margin:10px 0;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#f9fbfc;font-size:.8rem}\n.journey-help-v80 summary{cursor:pointer;color:var(--navy);font-weight:750}\n.journey-help-v80 p{line-height:1.45}\n.journey-modal-v78 .has-tip[data-tip]:hover::after,.journey-modal-v78 .has-tip[data-tip]:focus::after{display:none!important}\n.export-snapshot .journey-help-v80{display:none!important}\n@media(max-width:920px){.journey-summary-v80 .server-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.journey-third-v80{grid-column:span 2}}\n@media(max-width:620px){.journey-summary-v80 .server-kpis{grid-template-columns:1fr}.journey-production-v80,.journey-third-v80{grid-column:auto}.journey-milestones-v80{flex-direction:column;align-items:stretch}.journey-milestone-arrow-v80{text-align:center;transform:rotate(90deg)}.journey-milestone-v80>strong{font-size:1.4rem}}\n";document.head.appendChild(styleV80);
+  sourceRulesV70.dailyOperationalSection={...sourceRulesV70.dailyOperationalSection,purpose:sourceRulesV70.dailyOperationalSection.purpose+' Jornada e pausas reúne processos distintos próprios, documentos gerais e específicos, resoluções de FeitoOutro separadas e marcos de Data3.',compat:sourceRulesV70.dailyOperationalSection.compat+' O popup reutiliza o classificador central, o parser único dos documentos específicos e a mesma camada normalizada para CSV e Microsoft Lists.'};
+  const renderOperationalPanelV80Base=renderOperationalPanelV69;
+  renderOperationalPanelV69=function(){const result=renderOperationalPanelV80Base();if(state._operationalV69){state._operationalV69._journeyBaseV80=state.rows;state._operationalV69._journeySignatureV80=journeyScopeSignatureV80()}return result};
+  window.RadarNUPACI.version='8.0';
+  const getStateV80Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>({...getStateV80Base(),version:'8.0'});
+  const getPerformanceV80Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV80Base(),version:'8.0'});
+  $('.version-badge').textContent='v8.0';$('.version-pill').textContent='VERSÃO 8.0';document.title='RADAR de Produtividade e Frequência NUPACI · v8.0';
 
     window.PainelNUPACI=window.RadarNUPACI;
   })();
