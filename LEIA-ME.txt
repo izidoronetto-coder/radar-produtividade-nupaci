@@ -3,6 +3,7 @@ Versão 7.9
 
 NOVIDADES DA VERSÃO 7.9 — HORÁRIOS, META E TEMPO LÍQUIDO NO ACOMPANHAMENTO DIÁRIO
 
+- No Acompanhamento Diário, Servidor, Processos disponíveis, Concluídos e Documentos permanecem visíveis durante a rolagem horizontal da tabela. Os deslocamentos acompanham a largura real dos cabeçalhos; em telas estreitas, Servidor permanece fixo para manter espaço para as demais colunas. Na exportação da tabela completa, todas as colunas voltam ao fluxo normal da imagem.
 - Ajuste de usabilidade: os tooltips dos cards e cabeçalhos do Acompanhamento Diário usam a camada flutuante já existente, fora da tabela com rolagem; o ícone de informação também responde ao clique/toque sem acionar a ordenação ou os filtros.
 - O limite de pausa vigente aparece junto à data analisada. Em “Configurar critérios”, a escolha do limite fica no início da janela e continua sincronizada com Jornada e pausas e Metas e jornada.
 - A tabela de Acompanhamento Diário de Atividade e Perfil Operacional apresenta Primeira conclusão, Meta atingida às, Última conclusão e Tempo líquido, após Perfil histórico e Dias críticos. Os horários são da Data3 das conclusões próprias válidas no dia; FeitoOutro continua como contexto operacional separado.
