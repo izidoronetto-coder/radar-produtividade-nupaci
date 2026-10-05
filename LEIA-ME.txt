@@ -1,5 +1,16 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.3
+Versão 8.4
+
+NOVIDADES DA VERSÃO 8.4 — PERSISTÊNCIA INTELIGENTE DOS FILTROS GERAIS
+
+- Atualizar as bases do Microsoft Lists preserva automaticamente as seleções atuais dos filtros gerais, os períodos gerais e a consulta de processos aplicada ao painel. A nova fotografia é carregada normalmente e todos os resultados são recalculados sobre os registros novos.
+- As seleções preservadas são reconciliadas com a base atualizada: valores ainda existentes permanecem; somente valores ausentes são removidos. Quando isso ocorre, o Radar apresenta um aviso discreto com a quantidade e, quando possível, a identificação das seleções removidas.
+- Opções, compatibilidades e contagens (n) dos filtros em cascata são sempre reconstruídas com a nova base. Nenhuma contagem, card, gráfico ou tabela calculada anteriormente é persistida.
+- A opção “Lembrar meus filtros neste navegador” é opt-in e armazena localmente somente as dimensões dos filtros gerais e seus períodos. Nomes ou categorias selecionados podem compor essa configuração; nenhuma cópia de processos, documentos, observações ou registros das bases é criada.
+- Filtros locais de popups, buscas, paginações, ordenações e demais estados temporários não são persistidos. A consulta textual de processos também não é restaurada entre sessões, embora seja preservada durante uma atualização de base já aberta.
+- Com a opção ativa, alterações efetivas são gravadas com atraso curto para evitar escritas excessivas. “Limpar filtros” atualiza imediatamente o estado salvo para vazio, impedindo que seleções antigas retornem após recarregar a página.
+- Desativar a opção mantém o recorte aplicado na sessão atual e remove a configuração salva. A preferência é exclusiva deste navegador e não é sincronizada com outros computadores, usuários, Microsoft Lists ou servidor.
+- CSV e Microsoft Lists continuam usando a mesma arquitetura normalizada. A reconciliação também se aplica de forma consistente quando uma nova fotografia CSV substitui a anterior, sem alterar regras analíticas, cache ou integração.
 
 NOVIDADES DA VERSÃO 8.3 — FILTROS INSTITUCIONAIS NO DETALHAMENTO DE DOCUMENTOS ESPECÍFICOS
 

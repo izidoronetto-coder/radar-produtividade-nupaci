@@ -143,6 +143,7 @@
         <div class="date-filter-group"><div class="date-filter-head"><strong>Período de conclusão</strong><button id="clearCompletionDates" type="button">Limpar período</button></div><div class="date-grid"><div class="field"><label for="completionStart">Conclusão inicial</label><input id="completionStart" type="date"></div><div class="field"><label for="completionEnd">Conclusão final</label><input id="completionEnd" type="date"></div></div></div>
         <div class="process-filter-block"><div class="process-filter-head"><strong>Processo(s)</strong><button id="clearProcessFilter" class="hidden" type="button">Limpar</button></div><button id="sideProcessQuery" class="process-filter-trigger" type="button"><span id="sideProcessQueryLabel">Todos os processos</span><b>⌕</b></button></div>
         <div id="dynamicFilters"></div>
+        <div class="remember-filters-v84"><label><input id="rememberFiltersV84" type="checkbox"><span>Lembrar meus filtros neste navegador</span></label><span class="has-tip" tabindex="0" data-tip="Quando ativado, o Radar restaura os últimos filtros gerais selecionados ao ser aberto novamente neste navegador. A configuração é local e não é compartilhada com outros computadores ou usuários. Filtros temporários de popups e buscas não são salvos."><span class="info" aria-hidden="true">i</span></span><small>Atualizar as bases preserva os filtros gerais compatíveis e recalcula opções e contagens com os dados novos.</small></div>
       </div>
       <div class="side-actions"><button id="clearFilters" class="btn small" type="button">Limpar filtros</button></div></div>
     </aside>
@@ -2633,6 +2634,71 @@ function exportContextV79(title,target,partLabel=''){
   const getStateV83Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>({...getStateV83Base(),version:'8.3',specificBodiesV83:{mapped:specificBodyCoordinationMapV83.size,c1:specificInstitutionalBodiesV83.c1.length,c2:specificInstitutionalBodiesV83.c2.length,c5:specificInstitutionalBodiesV83.c5.length}});
   const getPerformanceV83Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV83Base(),version:'8.3'});
   window.RadarNUPACI.classifyJudgingBodyCoordination=classifyJudgingBodyCoordinationV83;window.RadarNUPACI.version='8.3';$('.version-badge').textContent='v8.3';$('.version-pill').textContent='VERSÃO 8.3';document.title='RADAR de Produtividade e Frequência NUPACI · v8.3';
+
+  /* v8.4 — preservação e persistência opt-in dos filtros gerais. */
+  const generalFilterStorageKeyV84='radarNupaci.generalFilters.v1',generalFilterSchemaV84=1,generalPeriodIdsV84=['distributionStart','distributionEnd','completionStart','completionEnd'];
+  let generalFiltersInitializedV84=false,rememberGeneralFiltersV84=false,persistGeneralFiltersTimerV84=null,suppressGeneralFilterRenderV84=false,suppressGeneralFilterBuildV84=false;
+  function readGeneralFilterConfigV84(){
+    try{
+      const raw=localStorage.getItem(generalFilterStorageKeyV84);if(!raw)return null;
+      const parsed=JSON.parse(raw);if(parsed?.schema!==generalFilterSchemaV84||parsed?.remember!==true||!parsed.filters||typeof parsed.filters!=='object')throw new Error('schema incompatível');
+      const allowed=new Set(filterDefs.map(([key])=>key)),filters={};
+      for(const [key,values] of Object.entries(parsed.filters))if(allowed.has(key)&&Array.isArray(values))filters[key]=values.filter(value=>typeof value==='string');
+      const periods={};for(const id of generalPeriodIdsV84)periods[id]=typeof parsed.periods?.[id]==='string'?parsed.periods[id]:'';
+      return{filters,periods};
+    }catch(_error){try{localStorage.removeItem(generalFilterStorageKeyV84)}catch{}return null}
+  }
+  const persistedGeneralFiltersV84=readGeneralFilterConfigV84();rememberGeneralFiltersV84=!!persistedGeneralFiltersV84;
+  function generalFilterSnapshotV84(includeProcess=false){
+    return{filters:Object.fromEntries(filterDefs.map(([key])=>[key,[...(state.filters[key]||[])]])),periods:Object.fromEntries(generalPeriodIdsV84.map(id=>[id,$('#'+id)?.value||''])),processInput:includeProcess?(state.processFilterInput||state.processFilterEntries?.map(entry=>entry.input).join('\n')||''):''};
+  }
+  function prepareGeneralFilterRestoreV84(){
+    if(generalFiltersInitializedV84)return{source:'refresh',...generalFilterSnapshotV84(true)};
+    if(persistedGeneralFiltersV84)return{source:'session',filters:persistedGeneralFiltersV84.filters,periods:persistedGeneralFiltersV84.periods,processInput:''};
+    return{source:'initial',filters:{},periods:null,processInput:''};
+  }
+  function restoreGeneralFiltersV84(plan){
+    const removed=[],labels=new Map(filterDefs),available=Object.fromEntries(filterDefs.map(([key])=>[key,new Set]));
+    for(const row of state.rows)for(const [key] of filterDefs)available[key].add(row[key]);
+    for(const [key] of filterDefs)for(const value of plan?.filters?.[key]||[]){if(available[key].has(value))state.filters[key].add(value);else removed.push({label:labels.get(key),value})}
+    if(plan?.periods)for(const id of generalPeriodIdsV84){const value=plan.periods[id]||'';if(!value||/^\d{4}-\d{2}-\d{2}$/.test(value))$('#'+id).value=value;else removed.push({label:'Período',value})}
+    if(plan?.processInput){const analysis=analyzeProcessQuery(plan.processInput),found=analysis.found;state.processFilterEntries=found;state.processFilterMissing=[];state.processFilterKeys=new Set(found.map(entry=>entry.key));state.processFilterInput=found.map(entry=>entry.input).join('\n');analysis.missing.forEach(entry=>removed.push({label:'Processo',value:entry.input}))}
+    updateProcessQueryControls();return{source:plan?.source||'initial',removed};
+  }
+  function syncGeneralFilterControlsV84(){
+    $$('#dynamicFilters .filter-pop[data-pop]').forEach(pop=>{const selected=state.filters[pop.dataset.pop]||new Set;pop.querySelectorAll('input[type=checkbox]').forEach(box=>box.checked=selected.has(box.value))});
+    updateProcessQueryControls();
+  }
+  function writeGeneralFiltersV84(){
+    if(!generalFiltersInitializedV84||!rememberGeneralFiltersV84)return;
+    try{const snapshot=generalFilterSnapshotV84(false);localStorage.setItem(generalFilterStorageKeyV84,JSON.stringify({schema:generalFilterSchemaV84,remember:true,filters:snapshot.filters,periods:snapshot.periods}))}catch{}
+  }
+  function persistGeneralFiltersV84(immediate=false){
+    if(!generalFiltersInitializedV84||!rememberGeneralFiltersV84)return;clearTimeout(persistGeneralFiltersTimerV84);
+    if(immediate)writeGeneralFiltersV84();else persistGeneralFiltersTimerV84=setTimeout(writeGeneralFiltersV84,160);
+  }
+  function finalizeGeneralFilterRestoreV84(report){
+    generalFiltersInitializedV84=true;const checkbox=$('#rememberFiltersV84');if(checkbox)checkbox.checked=rememberGeneralFiltersV84;persistGeneralFiltersV84(true);
+    if(report?.removed?.length){const count=report.removed.length,details=report.removed.slice(0,3).map(item=>`${item.label}: ${item.value}`).join(' · '),more=count>3?` · +${count-3}`:'';toast(`${count} ${count===1?'seleção anterior não está mais disponível e foi removida':'seleções anteriores não estão mais disponíveis e foram removidas'}. ${details}${more}`)}
+  }
+  const applyFiltersV84Base=applyFilters;applyFilters=function(){if(suppressGeneralFilterRenderV84)return;const result=applyFiltersV84Base();persistGeneralFiltersV84();return result};
+  const buildFiltersV84Base=buildFilters;buildFilters=function(){if(suppressGeneralFilterBuildV84)return;return buildFiltersV84Base()};
+  const clearFiltersV84Base=clearFilters;clearFilters=function(){const result=clearFiltersV84Base();persistGeneralFiltersV84(true);return result};
+  const initDashboardV84Base=initDashboard;initDashboard=function(){
+    const started=performance.now(),plan=prepareGeneralFilterRestoreV84();suppressGeneralFilterRenderV84=true;suppressGeneralFilterBuildV84=true;let result;
+    try{result=initDashboardV84Base()}finally{suppressGeneralFilterRenderV84=false;suppressGeneralFilterBuildV84=false}
+    const report=restoreGeneralFiltersV84(plan);buildFilters();syncGeneralFilterControlsV84();applyFilters();markV74('firstRenderMs',performance.now()-started);finalizeGeneralFilterRestoreV84(report);return result;
+  };
+  for(const id of generalPeriodIdsV84)$('#'+id).onchange=()=>applyFilters();
+  $('#headerClearAllFilters').onclick=()=>clearFilters();$('#clearFilters').onclick=()=>clearFilters();$('#headerClearFilters').onclick=()=>{clearFilters();closeHeaderFilters()};
+  const rememberFiltersControlV84=$('#rememberFiltersV84');rememberFiltersControlV84.checked=rememberGeneralFiltersV84;rememberFiltersControlV84.onchange=()=>{rememberGeneralFiltersV84=rememberFiltersControlV84.checked;clearTimeout(persistGeneralFiltersTimerV84);if(rememberGeneralFiltersV84){persistGeneralFiltersV84(true);toast('Os filtros gerais serão lembrados neste navegador.')}else{try{localStorage.removeItem(generalFilterStorageKeyV84)}catch{}toast('Os filtros atuais foram mantidos e não serão lembrados em uma nova sessão.')}};
+  const styleV84=document.createElement('style');styleV84.textContent=`
+    .remember-filters-v84{display:grid;grid-template-columns:auto 22px;align-items:center;gap:4px 7px;margin-top:12px;padding:10px;border:1px solid #c9dfdd;border-radius:10px;background:#f4fbfa}.remember-filters-v84 label{display:flex;align-items:flex-start;gap:7px;color:var(--navy);font-size:.76rem;font-weight:800;cursor:pointer}.remember-filters-v84 input{margin-top:2px;accent-color:var(--teal)}.remember-filters-v84>.has-tip{display:inline-flex;align-items:center;justify-content:center}.remember-filters-v84 small{grid-column:1/-1;color:var(--muted);font-size:.68rem;line-height:1.4}@media(max-width:760px){.remember-filters-v84{grid-template-columns:minmax(0,1fr) 22px}}
+  `;document.head.appendChild(styleV84);
+  const getStateV84Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>({...getStateV84Base(),version:'8.4',generalFilterPersistence:{schema:generalFilterSchemaV84,remember:rememberGeneralFiltersV84,initialized:generalFiltersInitializedV84,key:generalFilterStorageKeyV84}});
+  const getPerformanceV84Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV84Base(),version:'8.4'});
+  window.RadarNUPACI.generalFilterPersistence={key:generalFilterStorageKeyV84,schemaVersion:generalFilterSchemaV84,remember:()=>rememberGeneralFiltersV84,snapshot:()=>generalFilterSnapshotV84(false)};
+  window.RadarNUPACI.version='8.4';$('.version-badge').textContent='v8.4';$('.version-pill').textContent='VERSÃO 8.4';document.title='RADAR de Produtividade e Frequência NUPACI · v8.4';
 
     window.PainelNUPACI=window.RadarNUPACI;
   })();
