@@ -1,5 +1,11 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.4.1
+Versão 8.4.2
+
+CORREÇÃO DA VERSÃO 8.4.2 — RECORTES EXTENSOS EM METAS E JORNADA
+
+- O modo “Área exibida” da exportação de Metas e jornada passa a respeitar a altura visível da tabela, sem expandir silenciosamente todas as linhas do recorte.
+- No modo “Tabela completa”, tabelas com mais de 120 linhas são divididas automaticamente em PNGs numerados, reutilizando o comportamento auditável já adotado pela Tabela analítica.
+- A correção evita exceder os limites de dimensão da imagem sem aumentar limites de canvas e preserva a separação do Mapa de Concentração Produtiva implementada na versão 8.4.1.
 
 CORREÇÃO DA VERSÃO 8.4.1 — EXPORTAÇÃO DE METAS E JORNADA
 
