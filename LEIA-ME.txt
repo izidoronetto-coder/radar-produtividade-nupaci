@@ -1,5 +1,11 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.4
+Versão 8.4.1
+
+CORREÇÃO DA VERSÃO 8.4.1 — EXPORTAÇÃO DE METAS E JORNADA
+
+- A exportação de imagem de “Acompanhamento de metas e jornada” passa a incluir somente os indicadores, o contexto e a tabela próprios dessa análise.
+- O “Mapa de Concentração Produtiva” é removido apenas do snapshot de exportação de Metas e jornada e sua tabela deixa de participar do cálculo de largura nos modos “Área exibida” e “Tabela completa”.
+- O mapa permanece inalterado na tela e conserva sua exportação independente pelo botão próprio, tanto para copiar a imagem quanto para baixar o PNG pelo diálogo existente.
 
 NOVIDADES DA VERSÃO 8.4 — PERSISTÊNCIA INTELIGENTE DOS FILTROS GERAIS
 
