@@ -1,5 +1,18 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.2
+Versão 8.3
+
+NOVIDADES DA VERSÃO 8.3 — FILTROS INSTITUCIONAIS NO DETALHAMENTO DE DOCUMENTOS ESPECÍFICOS
+
+- O popup “Detalhamento dos documentos específicos produzidos”, dentro de Estatísticas, ganhou os filtros locais fixos Coordenadoria do órgão e Órgão julgador. Ambos possuem busca, checkboxes, multisseleção, Selecionar todos, Limpar, resumo da seleção e contagens contextuais.
+- A classificação utiliza um único mapa institucional explícito de OrgaoJulgado: 19 órgãos da Coordenadoria 1 - Crateús, 13 da Coordenadoria 2 - Iguatu e 13 da Coordenadoria 5 - Caucaia, totalizando 45 órgãos oficialmente mapeados.
+- A correspondência ignora somente caixa, acentuação e diferenças de espaços. Não há aproximação semântica, inferência por comarca nem uso da Coordenadoria do registro. Órgão preenchido fora do mapa é classificado em Outros; ausência de OrgaoJulgado permanece em Órgão não informado.
+- Coordenadoria do órgão julgador e Coordenadoria do registro/servidor são dimensões independentes. Divergência entre elas não é tratada automaticamente como inconsistência.
+- Os filtros funcionam em cascata nos dois sentidos. As opções de cada filtro consideram o outro filtro ativo, e a contagem (n) representa processos distintos compatíveis, não documentos, linhas ou registros brutos.
+- Todo o popup é recalculado sobre o recorte local: cards, composição SAE/Alvará, BNMP e SAPRE/TRF5, matrizes por órgão, totais, auditoria, busca, drilldowns, XLSX e imagem. Limpar filtros de órgão preserva a busca e não altera os filtros gerais do Radar.
+- SAE/Alvará sem OrgaoJulgado continua nos totais quando não há filtro local de órgão. Ao filtrar, entram somente registros efetivamente compatíveis; nenhum órgão é preenchido ou inferido.
+- Drilldowns recebem exatamente as ocorrências da célula no recorte filtrado. “← Voltar” restaura Coordenadoria, órgãos, busca, ordenação e o contexto anterior do popup.
+- O XLSX preserva as colunas auditáveis e acrescenta ao resumo a Coordenadoria do órgão, o Órgão julgador, a busca, o recorte local, o período, a atividade, os filtros gerais e os totais exportados. A imagem registra o recorte aplicado junto aos cards e tabelas visíveis.
+- CSV e Microsoft Lists passam pela mesma normalização de OrgaoJulgado e pelo mesmo mapa institucional. FeitoOutro continua fora da produtividade específica do destinatário. A otimização de Estatísticas permanece preservada.
 
 OTIMIZAÇÃO DE DESEMPENHO — ESTATÍSTICAS (VERSÃO 8.2)
 

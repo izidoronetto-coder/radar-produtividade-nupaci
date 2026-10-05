@@ -2500,6 +2500,140 @@ function exportContextV79(title,target,partLabel=''){
   const getStateV82Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>({...getStateV82Base(),version:'8.2',executionV82:state._executionV82?{base:state.executionBaseV82,analysis:state.executionAnalysisV82,period:{start:isoDay(state._executionV82.period.start),end:isoDay(state._executionV82.period.end)},count:state._executionV82.current.count,median:state._executionV82.current.median,average:state._executionV82.current.average,pending:state._executionV82.pendingProcesses.length}:null});
   const getPerformanceV82Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV82Base(),version:'8.2'});window.RadarNUPACI.version='8.2';$('.version-badge').textContent='v8.2';$('.version-pill').textContent='VERSÃO 8.2';document.title='RADAR de Produtividade e Frequência NUPACI · v8.2';
 
+  /* v8.3 — filtros institucionais por Coordenadoria do órgão e Órgão julgador. */
+  const specificCoordinationLabelsV83={
+    c1:'Coordenadoria 1 - Crateús',
+    c2:'Coordenadoria 2 - Iguatu',
+    c5:'Coordenadoria 5 - Caucaia',
+    other:'Outros',
+    missing:'Órgão não informado'
+  };
+  const specificInstitutionalBodiesV83={
+    c1:[
+      '1ª Vara da Comarca de Boa Viagem','2ª Vara da Comarca de Boa Viagem','1ª Vara Cível da Comarca de Crateús',
+      '2ª Vara Cível da Comarca de Crateús','Juizado Especial da Comarca de Crateús','Vara Única Criminal da Comarca de Crateús',
+      'Vara Única da Comarca de Independência','Vara Única da Comarca de Ipueiras','Vara Única da Comarca de Monsenhor Tabosa',
+      '1ª Vara da Comarca de Nova Russas','2ª Vara da Comarca de Nova Russas','Vara Única da Comarca de Novo Oriente',
+      'Vara Única da Comarca de Pedra Branca','Vara Única da Comarca de Tamboril','1ª Vara Cível da Comarca de Tauá',
+      '2ª Vara Cível da Comarca de Tauá','1ª Vara Criminal da Comarca de Tauá','2ª Vara Criminal da Comarca de Tauá',
+      'Juizado Especial da Comarca de Tauá'
+    ],
+    c2:[
+      'Vara Única da Comarca de Cedro','Vara Única da Comarca de Ipaumirim','Vara Única da Comarca de Várzea Alegre',
+      '1ª Vara da Comarca de Mombaça','2ª Vara da Comarca de Mombaça','1ª Vara da Comarca de Jaguaribe',
+      '2ª Vara da Comarca de Jaguaribe','1ª Vara Cível da Comarca de Icó','2ª Vara Cível da Comarca de Icó',
+      'Vara Única Criminal da Comarca de Icó','Juizado Especial Cível e Criminal de Icó','1ª Vara da Comarca de Jucás',
+      '2ª Vara da Comarca de Jucás'
+    ],
+    c5:[
+      '1ª Vara Cível da Comarca de Caucaia','2ª Vara Cível da Comarca de Caucaia','3ª Vara Cível da Comarca de Caucaia',
+      '1º Juizado Especial Cível e Criminal da Comarca de Caucaia','2º Juizado Especial Cível e Criminal da Comarca de Caucaia',
+      'Vara Única da Infância e Juventude da Comarca de Caucaia','1ª Vara de Família e Sucessões da Comarca de Caucaia',
+      '2ª Vara de Família e Sucessões da Comarca de Caucaia','Juizado da Violência Doméstica e Familiar Contra a Mulher da Comarca de Caucaia',
+      '1ª Vara Criminal da Comarca de Caucaia','2ª Vara Criminal da Comarca de Caucaia','3ª Vara Criminal da Comarca de Caucaia',
+      '4ª Vara Criminal da Comarca de Caucaia'
+    ]
+  };
+  const specificBodyKeyV83=value=>norm(value).replace(/\s+/g,' ');
+  const specificBodyCoordinationMapV83=new Map(Object.entries(specificInstitutionalBodiesV83).flatMap(([key,names])=>names.map(name=>[specificBodyKeyV83(name),{coordination:specificCoordinationLabelsV83[key],name}])));
+  function classifyJudgingBodyCoordinationV83(judgingBody){
+    const key=specificBodyKeyV83(judgingBody);
+    return key?(specificBodyCoordinationMapV83.get(key)?.coordination||specificCoordinationLabelsV83.other):specificCoordinationLabelsV83.missing;
+  }
+  function canonicalJudgingBodyV83(judgingBody){const raw=String(judgingBody||'').trim().replace(/\s+/g,' ');return raw?(specificBodyCoordinationMapV83.get(specificBodyKeyV83(raw))?.name||raw):specificCoordinationLabelsV83.missing}
+  if(specificBodyCoordinationMapV83.size!==45)throw new Error('Mapa institucional de órgãos julgadores inválido: esperado 45 órgãos distintos.');
+  const specificModelV83Base=specificModelV77;
+  specificModelV77=function(rows){
+    const model=specificModelV83Base(rows);
+    model.entries.forEach(item=>{item.process=item.row.process;item.organCoordV83=classifyJudgingBodyCoordinationV83(item.row.judgingBodyV77);item.organV83=canonicalJudgingBodyV83(item.row.judgingBodyV77);item.organ=item.organV83});
+    return model;
+  };
+  Object.defineProperties(flexibleFieldDefsV67,{
+    organCoordV83:{value:{label:'Coordenadoria do órgão',value:item=>item.organCoordV83},enumerable:false},
+    organV83:{value:{label:'Órgão julgador',value:item=>item.organV83},enumerable:false}
+  });
+  const specificContextV83Base=specificContextV77;
+  specificContextV77=function(data,entries,extra=[]){
+    const details=Array.isArray(extra)?{lines:extra}:extra||{},context=specificContextV83Base(data,entries,details.lines||[]);
+    if(details.v83)context.splice(3,0,
+      ['Coordenadoria(s) do órgão',details.coordinations||'Todas'],
+      ['Órgão(s) julgador(es)',details.organs||'Todos'],
+      ['Busca local',details.query||'Sem busca'],
+      ['Recorte local',details.scope||'Todos os órgãos']
+    );
+    return context;
+  };
+  function specificSelectionLabelV83(set,allLabel){return set?.size?[...set].sort((a,b)=>a.localeCompare(b,'pt-BR')).join(' | '):allLabel}
+  function specificScopeLabelV83(selections){
+    const coordinations=selections.organCoordV83,organs=selections.organV83;
+    if(!coordinations.size&&!organs.size)return'Todos os órgãos';
+    const parts=[];
+    if(coordinations.size)parts.push(specificSelectionLabelV83(coordinations,'Todas as coordenadorias'));
+    if(organs.size===1)parts.push([...organs][0]);else if(organs.size>1)parts.push(`${organs.size} órgãos julgadores selecionados`);
+    return parts.join(' · ');
+  }
+  openSpecificV77=function(entries,data,invalid){
+    const title='Detalhamento dos documentos específicos produzidos',selections={organCoordV83:new Set,organV83:new Set};
+    const body=`<section class="specific-v77 specific-v83">
+      <p class="goal-method">Documentos específicos são independentes de Quantidade. Um processo pode gerar mais de um documento. FeitoOutro não é produção do destinatário.</p>
+      <div class="registration-context-kpis" id="specificTotalsV77"></div>
+      <p><strong>Atividade:</strong> ${esc(statisticsActivityLabel())} · <strong>Período:</strong> ${fmtDate(data.start,false)} a ${fmtDate(data.end,false)}</p>
+      <p><strong>Filtros:</strong> ${esc(filterDefs.flatMap(([key,label])=>state.filters[key]?.size?[`${label}: ${exportValueList(state.filters[key])}`]:[]).join(' · ')||'Nenhum')}</p>
+      <div class="specific-filter-heading-v83"><span>Filtros locais por órgão</span><button class="overview-data-help" type="button" aria-label="Entenda a Coordenadoria do órgão" data-tip="A Coordenadoria do órgão é determinada pelo mapa institucional do campo OrgaoJulgado. Os órgãos oficialmente associados às Coordenadorias 1, 2 e 5 são classificados nessas unidades. Órgãos preenchidos fora desse mapa aparecem em Outros. Registros sem OrgaoJulgado aparecem em Órgão não informado. Esta classificação é independente da Coordenadoria registrada para o servidor ou processo."><span class="info" aria-hidden="true">i</span><span>Entenda a classificação</span></button></div>
+      <p class="specific-count-help-v83">As contagens (n) representam processos distintos compatíveis com cada opção.</p>
+      <div id="specificFiltersV83" class="execution-filters specific-filters-v83"></div>
+      <p id="specificScopeV83" class="specific-scope-v83"><strong>Recorte local:</strong> Todos os órgãos</p>
+      <div class="modal-actions export-control"><input id="specificSearchV77" class="search" type="search" placeholder="Buscar processo, servidor, órgão ou tipo" aria-label="Buscar documentos específicos">
+      <button id="specificXlsxV77" class="btn small" type="button">Exportar XLSX</button></div>
+      <div id="specificCompositionV77"></div><div id="specificMatrixV77"></div><div id="specificAuditV77"></div></section>`;
+    openModal(title,specificSummaryV77(entries),body);
+    const modal=$('#modalLayer .modal');modal.classList.add('specific-modal-v77','specific-modal-v83');
+    let query='',sort={key:'organ',dir:1},visible=entries,organScoped=entries;
+    const matches=item=>!query||norm([item.row.process,item.row.server,item.row.coord,item.row.activity,item.row.registrar,item.type,item.organ,item.row.specificRawV77].join(' ')).includes(query),
+      total=list=>list.reduce((sum,item)=>sum+item.quantity,0),button=(list,label)=>`<button class="cell-btn" type="button" data-specific-drill="${register(list,label)}">${fmtNum(total(list))}</button>`;
+    let drills=[];
+    function register(list,label){drills.push({list,label});return drills.length-1}
+    function filterInvalidV83(){return invalid.filter(row=>{const item={process:row.process,organCoordV83:classifyJudgingBodyCoordinationV83(row.judgingBodyV77),organV83:canonicalJudgingBodyV83(row.judgingBodyV77)};return flexibleMatchV67(item,selections)&&(!query||norm([row.process,row.server,row.activity,row.specificRawV77,row.judgingBodyV77].join(' ')).includes(query))})}
+    function renderFiltersV83(){
+      const host=$('#specificFiltersV83');
+      renderFlexibleFiltersV67({container:host,rows:entries,fixedKeys:['organCoordV83','organV83'],additionalKeys:[],selections,allowedKeys:['organCoordV83','organV83'],onChange:render,prefix:'specific-v83'});
+      host.querySelector('.v67-add-wrap')?.remove();const clear=host.querySelector('[data-v67-clear-filters]');if(clear)clear.textContent='Limpar filtros de órgão';
+    }
+    function render(){
+      drills=[];organScoped=entries.filter(item=>flexibleMatchV67(item,selections));visible=organScoped.filter(matches);renderFiltersV83();
+      const scope=specificScopeLabelV83(selections),coordLabel=specificSelectionLabelV83(selections.organCoordV83,'Todas'),organLabel=specificSelectionLabelV83(selections.organV83,'Todos');
+      const modalSummary=modal.querySelector('.modal-head p');if(modalSummary)modalSummary.textContent=specificSummaryV77(visible);
+      $('#specificScopeV83').innerHTML=`<strong>Recorte local:</strong> ${esc(scope)}`;modal.dataset.specificScopeV83=scope;modal.dataset.specificCoordV83=coordLabel;modal.dataset.specificOrganV83=organLabel;
+      $('#specificTotalsV77').innerHTML=`<div class="mini-kpi"><span>Documentos específicos</span><strong>${fmtNum(total(visible))}</strong></div><div class="mini-kpi"><span>Processos distintos</span><strong><button class="cell-btn" type="button" data-specific-summary="processes" aria-label="Ver processos distintos">${fmtNum(new Set(visible.map(item=>processKey(item.row))).size)}</button></strong></div><div class="mini-kpi"><span>Registros</span><strong><button class="cell-btn" type="button" data-specific-summary="records" aria-label="Ver registros">${fmtNum(new Set(visible.map(item=>item.row)).size)}</button></strong></div>`;
+      const active=state.statisticsActivity==='all'?Object.keys(specificTypesV77):Object.keys(specificTypesV77).filter(key=>visible.some(item=>item.key===key)||specificActivityV77(statisticsActivityLabel())===key);
+      $('#specificCompositionV77').innerHTML=`<h3>Composição por atividade e tipo</h3>${active.map(key=>{const group=specificTypesV77[key],subset=specificScopeV77(visible,key);return`<div class="table-wrap"><table><thead><tr><th>${esc(group.label)}</th>${group.types.map(type=>`<th>${esc(type)}</th>`).join('')}<th>Total</th></tr></thead><tbody><tr><td>${esc(group.label)}</td>${group.types.map(type=>`<td>${button(specificScopeV77(subset,null,type),`${group.label} · ${type}`)}</td>`).join('')}<td>${button(subset,group.label+' · total')}</td></tr></tbody></table></div>`}).join('')||'<p>Sem documentos específicos no recorte.</p>'}`;
+      $('#specificMatrixV77').innerHTML=active.filter(key=>key!=='sae').map(key=>{const group=specificTypesV77[key],items=specificScopeV77(visible,key),organs=[...new Set(items.map(item=>item.organ))].sort((a,b)=>a.localeCompare(b,'pt-BR')),sums=organs.map(organ=>({organ,items:specificScopeV77(items,null,null,organ)}));sums.sort((a,b)=>sort.key==='total'?(total(a.items)-total(b.items))*sort.dir:(sort.key==='organ'?a.organ.localeCompare(b.organ,'pt-BR'):total(specificScopeV77(a.items,null,sort.key))-total(specificScopeV77(b.items,null,sort.key)))*sort.dir);return`<h3>${esc(group.label)} · documentos por órgão julgador</h3><div class="table-wrap"><table><thead><tr><th><button type="button" class="link-btn export-control" data-specific-sort="organ">Órgão julgador</button></th>${group.types.map(type=>`<th><button type="button" class="link-btn export-control" data-specific-sort="${esc(type)}">${esc(type)}</button></th>`).join('')}<th><button type="button" class="link-btn export-control" data-specific-sort="total">Total</button></th></tr></thead><tbody>${sums.map(({organ,items:subset})=>`<tr><td><button class="cell-btn" type="button" data-specific-drill="${register(subset,group.label+' · '+organ)}" aria-label="Ver documentos específicos de ${esc(organ)}">${esc(organ)}</button></td>${group.types.map(type=>`<td>${button(specificScopeV77(subset,null,type),`${group.label} · ${organ} · ${type}`)}</td>`).join('')}<td>${button(subset,`${group.label} · ${organ} · total`)}</td></tr>`).join('')||`<tr><td colspan="${group.types.length+2}">Sem documentos específicos.</td></tr>`}<tr><th>Total</th>${group.types.map(type=>`<th>${button(specificScopeV77(items,null,type),`${group.label} · ${type}`)}</th>`).join('')}<th>${button(items,group.label+' · total')}</th></tr></tbody></table></div>`}).join('');
+      const visibleInvalid=filterInvalidV83();$('#specificAuditV77').innerHTML=visibleInvalid.length?`<p><button class="btn small export-control" type="button" id="specificInvalidV77">Conferir ${visibleInvalid.length} registro(s) com trecho não interpretável</button></p>`:'';
+      $$('#modalLayer .specific-modal-v83 [data-specific-drill]').forEach(el=>el.onclick=()=>{const item=drills[+el.dataset.specificDrill];openSpecificDrillV77(item.list,`${item.label} · ${scope}`)});
+      $$('#modalLayer .specific-modal-v83 [data-specific-summary]').forEach(el=>el.onclick=()=>openSpecificDrillV77(visible,`${el.dataset.specificSummary==='processes'?'Processos distintos':'Registros'} · documentos específicos · ${scope}`,el.dataset.specificSummary==='processes'));
+      $$('#modalLayer .specific-modal-v83 [data-specific-sort]').forEach(el=>el.onclick=()=>{const key=el.dataset.specificSort;sort={key,dir:sort.key===key?-sort.dir:1};render()});
+      const audit=$('#specificInvalidV77');if(audit)audit.onclick=()=>openProcessModal(visibleInvalid,`DocumentosEspecificos · trechos não interpretáveis · ${scope}`,{preserveRows:true,summaryLabel:'registros'});
+      $('#specificXlsxV77').onclick=()=>specificXlsxV77(visible,data,{v83:true,coordinations:coordLabel,organs:organLabel,query:$('#specificSearchV77').value.trim(),scope,lines:[`Ordenação: ${sort.key} ${sort.dir===1?'crescente':'decrescente'}`]});
+    }
+    $('#specificSearchV77').oninput=event=>{query=norm(event.target.value);render()};render();
+  };
+  const exportContextV83Base=exportContext;exportContext=function(title,target,partLabel=''){
+    const meta=exportContextV83Base(title,target,partLabel);
+    if(target.classList?.contains('specific-modal-v83'))meta.splice(Math.max(0,meta.length-1),0,
+      `Recorte local: ${target.dataset.specificScopeV83||'Todos os órgãos'}`,
+      `Coordenadoria do órgão: ${target.dataset.specificCoordV83||'Todas'}`,
+      `Órgão julgador: ${target.dataset.specificOrganV83||'Todos'}`
+    );
+    return meta;
+  };
+  sourceRulesV70.statisticsSection={...sourceRulesV70.statisticsSection,purpose:'DocumentosEspecificos mede quantidades especializadas em conclusões próprias. No detalhamento, OrgaoJulgado também alimenta os filtros locais por órgão e a classificação institucional da Coordenadoria do órgão.',compat:'CSV e Microsoft Lists usam o mesmo campo OrgaoJulgado normalizado e o mesmo mapa institucional de 45 órgãos. FeitoOutro não gera produtividade específica.',prevalence:'Coordenadoria do órgão depende exclusivamente do mapa institucional de OrgaoJulgado e é independente da Coordenadoria registrada no processo ou servidor.'};
+  const styleV83=document.createElement('style');styleV83.textContent=`
+    .specific-filter-heading-v83{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px}.specific-filter-heading-v83>span{color:var(--navy);font-weight:850}.specific-filter-heading-v83 .overview-data-help{margin:0}.specific-count-help-v83{margin:4px 0 8px;color:var(--muted);font-size:.74rem}.specific-filters-v83{padding:10px;border:1px solid #c7dfdc;border-radius:11px;background:#f5fbfa}.specific-filters-v83 .v67-filter-block{min-width:min(290px,100%)}.specific-scope-v83{margin:8px 0 12px;padding:8px 10px;border-left:3px solid var(--teal);background:#f2fbfa;color:#3d5e70;font-size:.78rem}@media(max-width:760px){.specific-modal-v83{width:100vw;min-width:0;max-width:100vw}.specific-modal-v83 .modal-head{display:grid;grid-template-columns:minmax(0,1fr)}.specific-modal-v83 .modal-head-main,.specific-modal-v83 .modal-head-actions{width:auto;min-width:0}.specific-modal-v83 .modal-head-actions{justify-content:flex-end}.specific-modal-v83 .modal-body{overflow-x:hidden}.specific-modal-v83 .search{width:100%;max-width:100%}.specific-v83>p{overflow-wrap:anywhere}.specific-filter-heading-v83{align-items:flex-start;flex-direction:column}.specific-count-help-v83{overflow-wrap:anywhere}.specific-filters-v83 .v67-filter-block{width:100%}}
+  `;document.head.appendChild(styleV83);
+  const getStateV83Base=window.RadarNUPACI.getState;window.RadarNUPACI.getState=()=>({...getStateV83Base(),version:'8.3',specificBodiesV83:{mapped:specificBodyCoordinationMapV83.size,c1:specificInstitutionalBodiesV83.c1.length,c2:specificInstitutionalBodiesV83.c2.length,c5:specificInstitutionalBodiesV83.c5.length}});
+  const getPerformanceV83Base=window.RadarNUPACI.getPerformance;window.RadarNUPACI.getPerformance=()=>({...getPerformanceV83Base(),version:'8.3'});
+  window.RadarNUPACI.classifyJudgingBodyCoordination=classifyJudgingBodyCoordinationV83;window.RadarNUPACI.version='8.3';$('.version-badge').textContent='v8.3';$('.version-pill').textContent='VERSÃO 8.3';document.title='RADAR de Produtividade e Frequência NUPACI · v8.3';
+
     window.PainelNUPACI=window.RadarNUPACI;
   })();
   </script>
