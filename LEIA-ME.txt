@@ -1,5 +1,21 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.4.2
+Versão 8.5
+
+NOVIDADES DA VERSÃO 8.5 — PARAMETRIZAÇÃO DAS METAS POR ATIVIDADE
+
+- “⚙ Configurar metas”, em Acompanhamento de metas e jornada, permite definir metas diárias sem alterar o código. A precedência é única e explícita: Meta personalizada > Padrão do Radar > Sem meta configurada.
+- Os 12 padrões incorporados ao Radar foram preservados: Urgência 35; Análise 35; Baixa 35; Certificação de prazo 60; Encaminhamento 10; Audiência cível 18; Audiência criminal 15; SAE/ALVARÁ 15; BNMP/Guias 12; SEEU 35; SAPRE/TRF5 10; Saneamento 140.
+- A configuração reúne os padrões, as personalizações já salvas e as atividades efetivamente detectadas na base. Atividades novas aparecem como Sem meta, geram aviso dinâmico e podem ser configuradas sem editar ou republicar o HTML. “+ Adicionar atividade” oferece somente atividades detectadas e ainda não configuradas; não utiliza texto livre.
+- Metas aceitam somente números finitos e positivos, inclusive decimais quando informados. As alterações ficam em rascunho até “Salvar alterações”; o Radar evita descarte acidental ao fechar ou voltar com mudanças pendentes.
+- “Restaurar padrão” remove apenas a personalização individual. Para atividade sem padrão, remover a personalização devolve o estado Sem meta. “Restaurar padrões”, com confirmação, remove todas as personalizações e nunca apaga os padrões incorporados.
+- As personalizações usam uma estrutura local versionada (`radarNupaci.activityGoals.v1`, schema 1), carregada uma vez para memória. Configurações corrompidas, incompletas ou incompatíveis são ignoradas com segurança e nunca impedem a abertura do Radar.
+- A configuração é exclusiva do navegador/perfil atual. Não é compartilhada entre computadores ou usuários, não cria cópia da base, não altera os registros originais e não realiza escrita no Microsoft Lists.
+- “Exportar configuração” gera `radar-nupaci-configuracao-metas.json` somente com schema, atividades e metas personalizadas. “Importar configuração” valida schema, tipos, campos e valores, apresenta quantidade de metas, atividades ausentes da base, conflitos e registros inválidos antes da aplicação. Arquivo inválido não substitui a configuração vigente.
+- A consulta de meta foi centralizada em `getActivityGoal(activity)`. Metas e jornada, meta equivalente, Acompanhamento Diário, classificações dependentes de atingimento, Ficha histórica, Perfil produtivo, Jornada e pausas, progressão cronológica, “Meta atingida às”, marcadores e exportações pertinentes usam a mesma meta efetiva.
+- Atividade sem meta continua contando como produção, processo, documento, ranking e análise temporal aplicável. Ela fica fora apenas da fração dependente de meta, não incrementa artificialmente o progresso, não recebe meta inferida e não é classificada automaticamente como acima ou abaixo da meta.
+- Ao salvar, importar ou restaurar, os módulos dependentes são recalculados imediatamente sobre a base já carregada, sem sincronização, recarga de página ou alteração dos filtros. A fonte de metas permanece idêntica para CSV e Microsoft Lists depois da normalização.
+- “Ver metas e regras” exibe o valor efetivo e a origem Padrão do Radar, Personalizada ou Sem meta. Tooltips explicam cada origem e o popup de configuração identifica personalizações que não possuem registros na fotografia atual sem apagá-las.
+- As análises históricas são recalculadas com a configuração atualmente ativa. A v8.5 não mantém histórico automático das metas vigentes em cada data; essa limitação é informada na consulta de regras, no configurador, na Ficha histórica e na Jornada.
 
 CORREÇÃO DA VERSÃO 8.4.2 — RECORTES EXTENSOS EM METAS E JORNADA
 
