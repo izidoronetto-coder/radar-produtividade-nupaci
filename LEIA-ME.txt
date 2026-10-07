@@ -1,5 +1,59 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.5
+Versão 8.6
+
+NOVIDADES DA VERSÃO 8.6 — DESEMPENHO E NAVEGABILIDADE (SEM ALTERAÇÃO DE REGRAS)
+
+VISÃO GERAL
+- A versão 8.6 trata exclusivamente de velocidade. Nenhuma regra, fórmula, meta, classificação, filtro, período, texto, exportação ou integração com o Microsoft Lists foi alterada. A extensão não foi modificada.
+- O número do processo continua isolado em seu próprio elemento, como a marcação azul e o clique que abre o PJe (extensão) exigem.
+- Os resultados foram comparados com os da v8.5, com os mesmos dados reais (51.686 registros após conciliação), em Chrome. Resultado: 101 de 101 pontos de comparação idênticos (todos os painéis, filtros combinados, períodos de conclusão e distribuição, todas as visões, controles das Estatísticas, buscas de painel, Acompanhamento Diário e 17 popups de detalhamento), além de verificações anteriores de 24 de 25 e 17 de 17 pontos (a única diferença esperada é o número de linhas exibidas inicialmente nos popups).
+- Única diferença visível: os popups de processos exibem inicialmente as primeiras 300 linhas (ver item 2).
+
+O QUE FOI FEITO
+
+1. Matriz “Servidor × atividade” (buildMatrixUniverseV66, matrixSnapshotV66, invalidateFilterCachesV74)
+- Antes: para cada registro da base diária sem par, o código percorria toda a base de produtividade recalculando chaves, e o resultado era descartado a cada filtro.
+- Agora: as chaves são montadas uma vez (conjunto), e o resultado só é descartado quando os dados mudam, pois não depende dos filtros.
+- Medido: abrir a Matriz de cerca de 13 s para 0,8 s; filtrar com a Matriz na tela de 12,9 s para 0,19 s.
+
+2. Popups de processos (openProcessModal, usado em 77 pontos do Radar)
+- Passam a exibir as primeiras 300 linhas, com os botões “Mostrar mais 500” e “Mostrar todos (N)”. O total, a busca, os filtros rápidos, as colunas, a ordenação e “← Voltar” permanecem. Copiar processos e Exportar XLSX continuam usando TODOS os processos do filtro aplicado no popup.
+- O texto de busca e os valores dos filtros rápidos de cada linha são calculados uma única vez por popup.
+- A busca do popup passou a aguardar 190 ms após a digitação, como as demais buscas do Radar.
+- Medido: abrir popup de 34.117 linhas de 18,7 s para 0,64 s; de 3.913 linhas de 1,7 s para 0,24 s; digitar na busca de até 1,7 s para cerca de 0,03 s; fechar de 1,6 s para 0,19 s.
+
+3. Formatação de datas e números (fmtDate, fmtTime, fmtNum)
+- Antes, um formatador novo era criado a cada célula. Agora são criados uma única vez. A saída é idêntica.
+- Microteste: 40 mil datas de 2,9 s para 0,04 s.
+
+4. Acompanhamento Diário de Atividade e Perfil Operacional (operationalSnapshotV69)
+- O cálculo dos 20 dias úteis é guardado e só é refeito quando mudam os dados, a data, o recorte histórico, os critérios, as metas ou o limite de pausa. A busca de servidor passou a aguardar 190 ms.
+- Medido: cada tecla ou clique em card de 1,1 a 1,3 s para 0,04 a 0,15 s. Trocar a data ou o recorte histórico continua recalculando (cerca de 1 s).
+
+5. Estatísticas (isManagerName, namesEquivalent, registrationAnalytics, statisticsServerRows)
+- As comparações de nome (funções puras) passam a guardar o resultado; a lista de gestores deixa de ser percorrida milhões de vezes.
+- O gráfico “Evolução da origem” calcula somente as duas séries que utiliza, em vez da análise completa de cada período.
+- Os pares cadastrador→servidor e os servidores passam a ser agrupados em uma única passada (antes, toda a base era refiltrada para cada par/servidor).
+- Medido: abrir Estatísticas de cerca de 6,8 s para 3,1 s.
+
+6. Carregamento
+- As duas listas do Microsoft Lists passam a ser lidas em paralelo, em lotes de até 5.000 registros (antes, 2.000): leitura do cache de cerca de 4,5 s para 3,2–3,9 s (varia com o computador).
+- Mensagem “Montando painéis e filtros” com uma pausa curta antes da montagem final, para que a tela não pareça congelada.
+
+CONDIÇÕES DOS TESTES
+- 51.686 registros após conciliação (43.190 em NUPACIProdutividade e 36.033 em ProditividadeDiaNUPACI), Microsoft Lists via extensão, Chrome no computador do autor. Os tempos variam conforme equipamento e volume; servem para comparar a v8.5 com a v8.6 no mesmo ambiente.
+
+COMO FOI VERIFICADA A EQUIVALÊNCIA
+- Foi gerada uma impressão digital (hash) do texto de cada painel, dos indicadores, de popups e de detalhamentos, e comparada entre a v8.5 e a v8.6 com os mesmos dados. Os cenários incluem: todos os painéis; filtros combinados; período de conclusão; período de distribuição; todas as visões de Perfil, Cadastramentos, Distribuição e Metas; presets, agrupamentos, comparações e período das Estatísticas; buscas dos painéis; Acompanhamento Diário (busca, cards, data e histórico); popups de processos (busca, ordenação, filtro rápido); e 17 popups de detalhamento.
+- Não foram exercitados nesta verificação: arquivos gerados (XLSX e imagens PNG), a edição da lista de gestores, a configuração de metas, o uso em celular e o acesso por CSV. Recomenda-se uma conferência por amostragem desses pontos pelos coordenadores.
+
+PONTOS DE ATENÇÃO
+- “Copiar imagem” de um popup captura as linhas exibidas. Para uma imagem de tabela maior, clique em “Mostrar todos” antes.
+- “Atualizar agora”, no cabeçalho, continua forçando a releitura completa das duas listas no Microsoft Lists (cerca de 1 minuto nos testes), comportamento da integração mantido para detectar exclusões. A atualização incremental (botão da tela inicial) leva cerca de 9 s. Alterar esse padrão é decisão separada.
+- Ainda existem painéis de 1 a 1,8 s na primeira abertura (Perfil, Ritmo/Institucional, Metas, Acompanhamento Diário, Tempo de execução) e a montagem inicial de cerca de 3 s. Podem ser objeto de versão futura.
+- A v8.5 permanece preservada na pasta de backup correspondente, como ponto de retorno.
+
+
 
 AJUSTE PONTUAL DA VERSÃO 8.5 — CÓPIA JUNTO AO NÚMERO DO PROCESSO
 
