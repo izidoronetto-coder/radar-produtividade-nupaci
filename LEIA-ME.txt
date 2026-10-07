@@ -1,5 +1,26 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.6
+Versão 8.7
+
+NOVIDADES DA VERSÃO 8.7 — ATUALIZAÇÃO RÁPIDA E ATUALIZAÇÃO COMPLETA
+
+- O botão “Atualizar agora”, no cabeçalho, foi substituído por dois botões, cada um com uma explicação exibida ao passar o mouse (tooltip) e nome acessível equivalente para leitores de tela:
+  • “Atualização rápida”: busca no Microsoft Lists somente o que é novo ou foi alterado desde a última atualização. Costuma ser mais rápida (de cerca de 10 segundos a cerca de 1 minuto). Se a quantidade de registros do Lists não bater com a esperada (por exemplo, por exclusões), a extensão lê a lista inteira sozinha e a atualização demora mais. Exclusões compensadas por novos registros no mesmo período podem passar despercebidas; para garantir, use a Atualização completa.
+  • “Atualização completa”: lê novamente todas as linhas das duas listas do Microsoft Lists (cerca de 1 minuto ou um pouco mais). Remove do Radar os registros excluídos no Lists e traz alterações em registros antigos. Recomenda-se usá-la ao menos uma vez ao dia ou sempre que houver suspeita de diferença nos números.
+- Enquanto uma atualização está em andamento, os dois botões ficam desabilitados; somente o botão acionado exibe “Atualizando…” e o percentual, junto da barra de progresso existente. Ao concluir, os dois voltam ao normal.
+- Comportamento anterior (v8.6 e anteriores): o botão do cabeçalho executava sempre a releitura completa. Agora ela é a “Atualização completa”; a “Atualização rápida” aciona o mesmo modo incremental que já existia no botão da tela inicial.
+- Importante: ao abrir o Radar, ele continua carregando o cache local da última atualização e não consulta o Microsoft Lists sozinho. Para ver dados mais recentes, é preciso acionar uma das duas atualizações. A extensão também faz, por conta própria, a releitura completa quando se passaram mais de 7 dias desde a última completa.
+- Nada mais foi alterado: regras, fórmulas, metas, filtros, painéis, exportações e a extensão permanecem como na v8.6 (que traz as melhorias de desempenho descritas abaixo). Alterações técnicas: marcação dos botões (headerSyncV75 e headerSyncFullV87), updateSourceActionsV75, renderSyncProgressV75, syncListsV75 e os tratadores de clique.
+
+VALIDAÇÃO DA VERSÃO 8.7 (Chrome, com a extensão e dados reais do Microsoft Lists, cerca de 52,9 mil registros)
+- Atualização rápida: executada duas vezes. Levou 74 s e 46 s, porque a extensão passou à leitura completa de uma ou das duas listas (a quantidade de registros do Lists mudou entre as execuções). Em teste anterior, sem alterações no Lists, levou cerca de 9 s. Portanto, o tempo varia conforme o que mudou no Lists.
+- Atualização completa: executada uma vez, em cerca de 1 minuto, com 80.798 registros lidos nas duas listas. Ao final, os dois botões voltaram ao estado normal e não houve erro.
+- Durante cada atualização, somente o botão acionado exibiu “Atualizando…” e o percentual, o outro ficou desabilitado e a barra de progresso foi exibida.
+- Os resultados dos painéis na v8.7 foram idênticos aos da v8.6 (16 de 16 pontos de comparação, com o mesmo cache de dados). Sem erros no console do navegador. A v8.6, por sua vez, foi comparada com a v8.5 em 101 pontos de comparação idênticos (ver abaixo).
+- Não verificado: aparência em celular e telas estreitas. Pelo CSS existente, nessas telas os botões exibem apenas o ícone (o texto é ocultado); então o tooltip por passagem do mouse não está disponível em toque. Recomenda-se conferência pelos coordenadores. Também não foram exercitados XLSX/PNG gerados, edição da lista de gestores e configuração de metas.
+
+NOTA: a Atualização rápida não é sinônimo de “garantidamente rápida”: é o modo que tenta ler apenas as diferenças. A extensão decide sozinha ampliar a leitura quando percebe divergência de contagem, o que também ajuda a detectar exclusões.
+
+
 
 NOVIDADES DA VERSÃO 8.6 — DESEMPENHO E NAVEGABILIDADE (SEM ALTERAÇÃO DE REGRAS)
 
