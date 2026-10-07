@@ -1,6 +1,13 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
 Versão 8.5
 
+AJUSTE PONTUAL DA VERSÃO 8.5 — CÓPIA JUNTO AO NÚMERO DO PROCESSO
+
+- Os detalhamentos que usam a renderização central de Processo passam a exibir um pequeno ícone de cópia imediatamente à esquerda do número em cada linha.
+- O ícone copia somente o número daquela linha, reutilizando o atributo data-copy e a função copyText existentes, com o mesmo mecanismo de área de transferência, fallback e confirmação.
+- O botão possui tooltip, nome acessível com o número do processo, foco visível e acionamento por teclado. Sem número disponível, o ícone fica desabilitado.
+- O botão “Copiar” no extremo direito permanece integralmente preservado. Demais colunas, filtros, ordenações, paginação, XLSX, “← Voltar”, metas e demais comportamentos não foram alterados.
+
 NOVIDADES DA VERSÃO 8.5 — PARAMETRIZAÇÃO DAS METAS POR ATIVIDADE
 
 - “⚙ Configurar metas”, em Acompanhamento de metas e jornada, permite definir metas diárias sem alterar o código. A precedência é única e explícita: Meta personalizada > Padrão do Radar > Sem meta configurada.
@@ -883,3 +890,4 @@ O processamento foi separado da visualização e expõe internamente uma camada 
 
 - comparação entre coletas e registro persistente de relativizações gerenciais.
 Validação do fluxo em nuvem realizada com sucesso.
+
