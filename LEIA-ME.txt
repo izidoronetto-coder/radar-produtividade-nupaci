@@ -1,5 +1,26 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 9.4
+Versão 9.5
+
+NOVIDADES DA VERSÃO 9.5 — MÉDIAS POR DIA NO PAINEL “METAS E JORNADA” (VISÕES “POR SERVIDOR” E “MENSAL”)
+
+Nenhuma regra, fórmula, meta ou rotina foi alterada, e a extensão não foi modificada. As colunas novas são apenas divisões de números que o painel já exibia.
+
+- Três colunas novas, com ícone “i” e texto de ajuda, ordenáveis e com uma casa decimal:
+  • Proc./dia (média de processos por dia), logo depois de Processos;
+  • Doc./dia (média de documentos por dia), logo depois de Documentos;
+  • Pausas/dia (média de pausas por dia), logo depois de Pausas e antes de Cobertura média.
+- Como é calculado: Processos ÷ Dias, Documentos ÷ Dias e Pausas ÷ Dias, com a coluna Dias da própria tabela. Dias é a quantidade de dias PRODUTIVOS do servidor (dias com produção), não de dias úteis do calendário: dia sem produção não entra na conta, e quem trabalhou menos dias não é penalizado. Isso está explicado no texto de ajuda de cada coluna.
+- Visão “Por servidor”: as três colunas entram nas posições acima.
+- Visão “Mensal”: as mesmas três colunas, calculadas por servidor em cada mês. Nesta visão, a coluna “Pausas” (que antes ficava depois de “Turno predominante”) passou para logo depois de Doc./dia, ao lado de Pausas/dia, para ficar na mesma ordem da visão “Por servidor”. Ela continua clicável (abre as pausas por dia) e ordenável como antes.
+- As visões “Diária” e “Por atividade” não foram alteradas.
+
+Verificação (mesmos dados reais, cerca de 57 mil registros)
+- Por servidor: 124 servidores; em todas as linhas, Proc./dia, Doc./dia e Pausas/dia conferem com a divisão por Dias (0 linhas divergentes). Exemplo: Pedro Cardoso de Carvalho Neto, 12 dias, 1.765 processos → 147,1 por dia; 1.774 documentos → 147,8; 35 pausas → 2,9. Ordenar por Proc./dia coloca 147,1; 124,2; 83,9… em ordem decrescente.
+- Mensal: 235 linhas servidor/mês, 0 divergentes; ordenação por Pausas/dia e por Pausas funciona; o clique em Pausas abre o detalhamento do servidor; há uma única coluna Pausas.
+- Regressão: com os mesmos dados, o conteúdo de texto dos 15 painéis do Sumário ficou idêntico ao da versão 9.4 (15 de 15; o painel Metas e jornada é comparado na visão padrão, Diária). Sem erros no console.
+- Não verificado: aparência em celular e telas estreitas (a tabela tem três colunas a mais e já rola na horizontal); arquivos XLSX/PNG gerados; uso com CSV.
+
+Alterações técnicas: renderGoals (colunas e células das visões period e monthly), goalHeader/goalColumnTips (textos de ajuda), novas funções goalAvgV95, goalAvgLabelV95 e goalAvgPropsV95, enhanceGoalMonthlyPauses (desativada: a coluna Pausas do Mensal agora é montada na própria tabela).
 
 NOVIDADES DA VERSÃO 9.4 — NOME “USO EXCLUSIVO SAPRE/BNMP” E FILTRO “COORDENADORIA” NAS ESTATÍSTICAS
 
