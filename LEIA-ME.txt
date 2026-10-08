@@ -1,5 +1,29 @@
-RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 9.5
+﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
+Versão 9.6
+
+NOVIDADES DA VERSÃO 9.6 — LINHA DE MÉDIA, MÉDIA MÓVEL E TENDÊNCIA NO GRÁFICO “EVOLUÇÃO DAS DISTRIBUIÇÕES E CONCLUSÕES”
+
+Nenhuma regra da planilha, fórmula, meta ou rotina foi alterada, e a extensão não foi modificada. Só mudou a linha de referência desse gráfico; as barras, os valores diários, os pop-ups e os demais painéis continuam iguais.
+
+- Novo seletor “Linha: Média · Média móvel · Tendência”, ao lado dos botões Processos/Documentos e Distribuídos/Concluídos/Comparar. O padrão é “Média”.
+- Média (linha pontilhada, como antes): agora é o total ÷ número de DIAS ÚTEIS (segunda a sexta) COM PRODUÇÃO. Fins de semana e dias sem produção (valor zero) não entram na conta e não puxam a média para baixo; as barras desses dias continuam aparecendo. ATENÇÃO: por isso o número da média passa a ser maior que o da versão 9.5, que dividia pelo total de dias do período.
+- Média móvel (linha contínua com ponto na ponta): a cada dia útil com produção, média dos últimos 3 dias úteis com produção (5, quando o período tem 20 ou mais). Suaviza as oscilações e mostra para onde o ritmo caminha.
+- Tendência (reta tracejada com ponto na ponta): regressão linear sobre os dias úteis com produção. A legenda diz se está “em alta”, “em queda” ou “estável (platô)” e quanto varia por dia útil. Alta ou queda quando a reta varia 10% ou mais ao longo do período; abaixo disso é platô.
+- Séries curtas: a Tendência só fica disponível a partir de 10 dias úteis com produção (o botão fica desativado, com aviso na tela sob o gráfico indicando quantos dias o período tem). Se a Tendência estava escolhida e o período encurta, o gráfico passa para Média móvel; se faltarem dias até para a média móvel, volta para a Média, sempre com aviso.
+- Comparar: cada fluxo (Distribuídos, Concluídos, Feitos por terceiros) tem a sua própria linha e os seus próprios dias com produção; os valores aparecem na legenda.
+- Rótulo da linha: não cobre mais o valor da última barra; é posicionado no trecho do gráfico com barras mais baixas, acima delas. Em Comparar o rótulo no gráfico é omitido (valores na legenda).
+- Textos de ajuda da legenda e “Entenda as regras — Evolução” atualizados.
+- O dia em andamento (hoje) entra nos cálculos como qualquer outro dia útil com produção; por ser parcial, pode puxar a última ponta da média móvel e a tendência para baixo.
+- Dias úteis = segunda a sexta; feriados não são reconhecidos (um feriado sem nenhuma produção já fica de fora por ter valor zero; se tiver produção residual, entra).
+
+Verificação (mesmos dados reais, cerca de 60 mil registros; período 08/09 a 08/10/2026, 31 dias, 23 dias úteis com produção)
+- Média: 2.107,87 (concluídos), igual ao cálculo independente feito a partir dos valores das barras (antes: 1.564,52 na regra antiga). Média móvel de 5 dias: último ponto 3.600 (confere: 3.865+3.772+3.726+4.173+2.464 ÷ 5). Tendência: +190,9 processos por dia útil, igual à regressão calculada à parte.
+- Período “Últimos 7 dias” (5 dias úteis com produção): média 3.600; média móvel de 3 dias: 3.454,33; Tendência desativada com aviso “disponível a partir de 10 dias úteis com produção (período atual: 5)”.
+- Processos, Documentos, Distribuídos, Concluídos e Comparar exercitados; sem erros no console.
+- Regressão: o conteúdo de texto dos 15 painéis do Sumário ficou idêntico ao da versão 9.5 com os mesmos dados em 14 de 15; a única diferença é a seção “Evolução”, esperada pela mudança.
+- Não verificado: aparência em celular e telas estreitas; arquivos XLSX/PNG gerados; uso com CSV; “Feitos por terceiros” isolado.
+
+Alterações técnicas: renderTimeline (linha de referência), novas funções timelineCountedV96, timelineMovingV96, timelineTrendV96, timelineLineInfoV96, timelineLineLayerV96, timelineLegendKeyV96 e timelineLineControlsV96, seletor #timelineLineV96, camada SVG da linha, regras da Evolução.
 
 NOVIDADES DA VERSÃO 9.5 — MÉDIAS POR DIA NO PAINEL “METAS E JORNADA” (VISÕES “POR SERVIDOR” E “MENSAL”)
 
