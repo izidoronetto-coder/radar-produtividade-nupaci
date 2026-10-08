@@ -1,5 +1,56 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 9.2
+Versão 9.4
+
+NOVIDADES DA VERSÃO 9.4 — NOME “USO EXCLUSIVO SAPRE/BNMP” E FILTRO “COORDENADORIA” NAS ESTATÍSTICAS
+
+Nenhuma regra da planilha, coluna, fórmula, meta ou rotina foi alterada, e a extensão não foi modificada.
+
+1) Mudança de nome (para evitar confusão de entendimento)
+- O filtro que na versão 9.3 se chamava “Coordenadoria do órgão” passou a se chamar “Uso exclusivo SAPRE/BNMP”, tanto na barra das Estatísticas quanto no filtro e na coluna do pop-up de processos. O funcionamento é o mesmo: classifica o registro pela coordenadoria do órgão julgador (Coordenadoria 1 - Crateús, 2 - Iguatu, 5 - Caucaia, Outros e Órgão não informado) e só tem dado nos registros com Órgão julgador preenchido (ver o aviso da versão 9.3 mais abaixo).
+- O texto de resumo exibido sobre as Estatísticas e a linha da exportação do painel também usam o novo nome.
+- Não foram renomeados os textos já existentes do detalhamento “Documentos específicos produzidos” (filtros por Coordenadoria do órgão e Órgão julgador da versão 8.3), que continuam como eram.
+
+2) Novo filtro “Coordenadoria” na barra das Estatísticas
+- Posição: entre “Atividade analisada” e “Uso exclusivo SAPRE/BNMP”.
+- Filtra pela Coordenadoria do servidor (Coordenadoria 1 - Crateús, 2 - Iguatu, 5 - Caucaia, SAPRE, SEEU/BNMP, NUPACI Volante etc.), a mesma coordenadoria usada nos demais painéis. Caixas de seleção (uma ou várias), “Selecionar todos” e “Limpar”; sem nenhuma marcada, ou com todas marcadas, vale o mesmo resultado de “Todos”.
+- Vale para todo o painel Estatísticas (cartões de distribuída, cumprida e pendente, gráfico, tabelas, bloco de origem, pop-ups e exportação do painel) e combina com a atividade, o “Uso exclusivo SAPRE/BNMP” e o período. Com o filtro ativo, a faixa de resumo mostra “Processos distintos no recorte: distribuídos X · cumpridos Y · pendentes Z” e a coordenadoria escolhida.
+- Não é salvo: volta para “Todos” ao recarregar ou carregar novos dados. Não altera os filtros gerais da barra lateral nem os demais painéis.
+
+Verificação (mesmos dados reais, cerca de 57,1 mil registros)
+- Com o filtro vazio e com todas as coordenadorias marcadas, os cartões ficam idênticos: 56.816 distribuídas, 50.841 cumpridas e 4.634 pendentes. Coordenadoria 2 - Iguatu: 15.142 / 14.441 / 770 (11.534, 11.003 e 765 processos distintos), os mesmos números do filtro “Coordenadoria” do pop-up. Combinado com “Uso exclusivo SAPRE/BNMP” = Coordenadoria 2 - Iguatu: 1 / 1 / 0.
+- A ordem na barra: Atividade analisada, Coordenadoria, Uso exclusivo SAPRE/BNMP, Período inicial, Período final.
+- Regressão: o conteúdo de texto dos 15 painéis do Sumário ficou idêntico ao da 9.3/9.2 com os mesmos dados (14 de 14 painéis; no painel Estatísticas, idêntico quando os controles novos são ocultados). Sem erros no console após a correção feita durante os testes.
+- Não verificado: aparência em celular; arquivos XLSX e PNG gerados com os filtros ativos; uso com CSV.
+
+Alterações técnicas: lista de filtros locais das Estatísticas (statisticsFiltersV93) com os controles “Coordenadoria” e “Uso exclusivo SAPRE/BNMP”, statisticsActivityMatch (também considera os dois filtros), decorateStatisticsOrganV93 e exportContext (resumo e exportação), rótulo da coluna/filtro do pop-up (organCoordV93).
+
+NOVIDADES DA VERSÃO 9.3 — “COORDENADORIA DO ÓRGÃO” NO POP-UP DE PROCESSOS E NO FILTRO DAS ESTATÍSTICAS
+
+Nenhuma regra da planilha, coluna, fórmula, meta ou rotina foi alterada, e a extensão não foi modificada. O Radar apenas passou a usar, para filtrar, a “Coordenadoria do órgão” que já existia (a mesma classificação do detalhamento dos documentos específicos), a partir do campo Órgão julgador que já vem da lista.
+
+AVISO IMPORTANTE SOBRE O DADO (leia antes de usar com os coordenadores)
+- O campo Órgão julgador, na base atual, só vem preenchido em poucos registros: cerca de 0,8% (481 de 57.059) — justamente os que têm documentos específicos. Nos processos PENDENTES, ele vem vazio em todos (0 de 4.529 na medição).
+- Consequência: ao filtrar por uma coordenadoria (1 - Crateús, 2 - Iguatu, 5 - Caucaia ou Outros), o resultado mostra apenas os registros que têm órgão informado; os demais ficam em “Órgão não informado”, que é uma opção do filtro. Por isso, os números por coordenadoria serão pequenos perto do total e os pendentes por coordenadoria aparecem zerados enquanto o órgão não for informado nessas linhas. Isso é uma limitação do dado, não do filtro. O Radar avisa isso na tela quando o filtro está ativo.
+
+1) Pop-up de processos (em todos os pop-ups de lista de processos, inclusive os cartões das Estatísticas)
+- Novo filtro rápido visível “Coordenadoria do órgão” (como sexto filtro padrão) e nova coluna “Coordenadoria do órgão” (disponível em “Colunas visíveis”). Opções: Coordenadoria 1 - Crateús, 2 - Iguatu, 5 - Caucaia, Outros e Órgão não informado, com a quantidade (n) de cada opção.
+- O filtro “Órgão julgador” já existia nos pop-ups (coluna da lista, em “Mais filtros” como OrgaoJulgado) e foi mantido.
+- Quando houver busca ou filtro rápido ativo, o contador do pop-up passa a mostrar também “· N processos distintos” (por exemplo, “121 de 121 · 119 processos distintos”). Sem filtro nem busca, o texto do contador é o mesmo de antes.
+- Nas Estatísticas: abra “Quantidade distribuída”, “Quantidade cumprida” ou “Quantidade pendente”, escolha a coordenadoria no filtro rápido e veja quantos processos distintos há (um cartão por vez).
+
+2) Barra das Estatísticas: novo filtro “Coordenadoria do órgão”, ao lado de “Atividade analisada”
+- Com caixas de seleção (uma ou várias), “Selecionar todas” e “Limpar”, no mesmo estilo do filtro de atividade. Sem nenhuma marcada, ou com as cinco marcadas, vale o mesmo resultado de “Todas”.
+- Vale para todo o painel Estatísticas: cartões (distribuída, cumprida, pendente, pendente mais antigo etc.), gráfico, tabelas, bloco de origem dos cadastramentos, pop-ups e exportações, e combina com a atividade e o período escolhidos.
+- Com o filtro ativo, a faixa de resumo do painel mostra: “Processos distintos no recorte: distribuídos X · cumpridos Y · pendentes Z” e quantas linhas do período têm órgão julgador informado. A exportação do painel inclui a linha “Coordenadoria do órgão: …”.
+- Não é salvo: volta para “Todas” ao recarregar ou carregar novos dados. Não altera o Tempo de Execução, as demais seções nem os filtros gerais.
+
+Verificação (mesmos dados reais, cerca de 57,1 mil registros)
+- Com o filtro vazio (e com as cinco coordenadorias marcadas), os cartões das Estatísticas ficam idênticos: 56.816 distribuídas, 50.841 cumpridas e 4.634 pendentes; só “Órgão não informado” dá 56.335 / 50.360 / 4.634. Coordenadoria 1 - Crateús dá 178 / 178 / 0 e Coordenadoria 2 - Iguatu, 121 / 121 / 0 (119 processos distintos), coerentes com a cobertura medida.
+- No pop-up, o filtro “Coordenadoria do órgão” reproduz os mesmos números do filtro da barra (178 de 56.816 para Crateús).
+- Regressão: o conteúdo de texto dos 15 painéis do Sumário ficou idêntico ao da versão 9.2 com os mesmos dados (14 de 14 painéis sem o controle novo; no painel Estatísticas, idêntico quando o novo controle é ocultado). Sem erros no console.
+- Não verificado: aparência em celular; arquivos XLSX e PNG gerados com o filtro ativo; uso com CSV; o texto do contexto exibido na parte superior dos pop-ups das Estatísticas não informa a coordenadoria escolhida na barra (a informação aparece na faixa de resumo do painel e na exportação do painel).
+
+Alterações técnicas: openProcessModal (novo filtro/coluna organCoordV93, contador com processos distintos), organCoordV93 (classificação com cache), statisticsActivityMatch (agora também considera a coordenadoria escolhida), novos controles e funções (…V93) da barra das Estatísticas, renderStatistics e exportContext (envoltórios).
 
 NOVIDADES DA VERSÃO 9.2 — ESTATÍSTICAS UM POUCO MAIS RÁPIDAS (SEM ALTERAÇÃO DE REGRAS)
 
