@@ -1,5 +1,154 @@
 RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 8.7
+Versão 9.2
+
+NOVIDADES DA VERSÃO 9.2 — ESTATÍSTICAS UM POUCO MAIS RÁPIDAS (SEM ALTERAÇÃO DE REGRAS)
+
+Esta versão mexe somente em desempenho e é um ajuste pequeno sobre a 9.1. Nenhuma regra, fórmula, meta, filtro, exportação ou texto de painel foi alterado, e a extensão não foi modificada. Os resultados são os mesmos da versão 9.1.
+
+O que mudou
+- Estatísticas, bloco “Origem dos cadastramentos”: o bloco usa só as contagens por origem (Gestão, Autocadastramento, Outros e Não informado, mais “do próprio gestor”). Antes, para obtê-las, o Radar calculava também listas que esse bloco não exibe (por cadastrador, por relação cadastrador→servidor, por dia e por atividade). Agora calcula só o necessário, com os mesmos números e os mesmos detalhamentos ao clicar.
+- Estatísticas, gráfico “Evolução da origem”: cada intervalo calcula apenas Gestão e Autocadastramento (e não as quatro origens), e a conta de “não classificados” de cada origem deixou de percorrer a base inteira.
+- Estatísticas, tabela “Por data” e verificação de possíveis duplicações: a chave de comparação de cada linha é calculada uma única vez e reaproveitada.
+
+Medição (mesmos dados reais, cerca de 55,9 mil registros; primeira abertura do painel pelo Sumário)
+- Estatísticas: de cerca de 0,92 s (9.1) para cerca de 0,76 s (9.2), em uma sequência de cada.
+- Os demais painéis, incluindo Metas e jornada (cerca de 0,7 a 0,9 s), não mudaram de forma mensurável: as variações observadas (±10% a 20%) ficam dentro da oscilação normal entre repetições. Em Metas e jornada, uma parte relevante do tempo é do próprio navegador (reorganização da página ao rolar e montagem dos painéis vizinhos), e não de cálculo do Radar.
+
+Verificação de que nada mudou (mesmos dados, mesma sequência)
+- Conteúdo de texto dos 15 painéis do Sumário idêntico ao da versão 9.0/9.1 (15 de 15).
+- Estatísticas: tela e 8 pop-ups (cartões de origem Gestão, Autocadastramento e Outros; barras do gráfico de evolução da origem; indicador; tabela “Por data”; tabela de servidores) idênticos aos da 9.1 (12 de 12 pontos de comparação).
+- Origem dos cadastramentos: cartões, tabela e pop-ups idênticos (10 de 10). Sem erros no console do navegador.
+- Não verificado: aparência em celular; arquivos XLSX e PNG gerados; uso com dados carregados por CSV.
+
+Alterações técnicas: registrationMeasure (conjunto de não classificados), novo registrationCategoriesV92 (evolução da origem), renderStatisticsOrigin (usa registrationAnalytics com categoriesOnly), statisticsDuplicateGroups e statisticsRepetition (chave por linha em cache).
+
+NOVIDADES DA VERSÃO 9.1 — NAVEGAÇÃO MAIS RÁPIDA ENTRE OS PAINÉIS (SEM ALTERAÇÃO DE REGRAS)
+
+Esta versão mexe somente em desempenho. Nenhuma regra, fórmula, meta, filtro, exportação ou texto de painel foi alterado, e a extensão não foi modificada. Os resultados dos painéis são os mesmos da versão 9.0.
+
+O que melhorou
+- Resposta imediata ao clicar em um painel no Sumário: o painel ainda não aberto agora mostra na hora o aviso “Carregando painel…” e a aba ativa no menu, e só então é montado (antes a tela parecia travada até o painel ficar pronto). Painéis já abertos continuam abrindo como antes.
+- Menos cálculo repetido na primeira abertura dos painéis mais pesados:
+  • Estatísticas: o período e a lista de pendentes por intervalo deixaram de ser recalculados a cada gráfico/intervalo (cálculo por data numérica já preparada), sem ordenar milhares de datas só para achar a menor e a maior.
+  • Acompanhamento diário: as conclusões por dia e os processos disponíveis por dia são preparados uma vez e reaproveitados, e as linhas de cada servidor deixam de ser filtradas a cada servidor.
+  • Ritmo de conclusão e Distribuição institucional: as barras de grupos contavam processos com um cálculo completo de indicadores por grupo; agora contam diretamente os processos distintos (mesmo número).
+  • Perfil de atuação, Ranking/Matriz, Visão geral e Origem dos cadastramentos: textos normalizados, datas por dia e identificadores de processo são memorizados (mesmo valor, sem refazer a conta a cada uso).
+  • Mapa de concentração: a data mais recente é obtida por varredura, sem ordenação.
+
+Medição (mesmos dados reais, cerca de 55,9 mil registros; primeira abertura de cada painel pelo Sumário, em tempo de processamento bloqueado da página; uma sequência completa para cada versão)
+  Painel                                  v9.0       v9.1
+  Visão geral                             377 ms     326 ms
+  Evolução das distribuições/conclusões   140 ms     118 ms
+  Ranking detalhado                       555 ms     447 ms
+  Perfil de atuação                       609 ms     295 ms
+  Ritmo de conclusão                      974 ms     429 ms
+  Origem dos cadastramentos               194 ms     110 ms
+  Acompanhamento das distribuições        173 ms     158 ms
+  Metas e jornada                         752 ms     673 ms
+  Mapa de concentração produtiva          241 ms      91 ms
+  Acompanhamento diário                   901 ms     479 ms
+  Estatísticas                          1.641 ms     922 ms
+  Tabela analítica                        218 ms     196 ms
+  TOTAL                                 6.775 ms   4.244 ms   (cerca de 37% menos)
+A variação entre repetições da mesma medição foi de aproximadamente 10% a 20% por painel; os painéis com maior ganho (Estatísticas, Ritmo, Acompanhamento diário, Perfil, Mapa de concentração) ficaram menores em todas as repetições feitas. Restam como mais pesados na primeira abertura: Estatísticas (cerca de 1 s) e Metas e jornada (cerca de 0,7 s).
+
+Verificação de que nada mudou (mesmos dados, mesma sequência de abertura)
+- Conteúdo de texto dos 15 painéis do Sumário idêntico ao da versão 9.0 (15 de 15).
+- Tempo de Execução e Comparativo: cartões, texto do recorte, tabela e pop-ups (linha, faixa, pendentes e inconsistências; bases Data3 e Data2) idênticos (17 de 17 pontos de comparação).
+- Origem dos cadastramentos: cartões, tabela e pop-ups (cartão, linha, célula e total) idênticos (9 de 10 pontos; a décima comparação, o texto do período, diferiu apenas porque uma etapa do roteiro de teste alterna “Ampliar período” antes da leitura — conferido manualmente: o texto é o mesmo).
+- Sem erros no console do navegador. O aviso “Carregando painel…” aparece no clique, o painel é montado e o aviso some; o painel fica posicionado abaixo do cabeçalho.
+- Não verificado: aparência em celular; arquivos XLSX e PNG gerados; uso com dados carregados por CSV; os pop-ups dos painéis que não têm roteiro de comparação específico (a comparação textual dos 15 painéis cobre a tela principal de cada um).
+
+Alterações técnicas: norm, isoDay e processIdentity com cache; statisticsPeriod, statisticsPendingRows, concentrationLatestDayV70, operationalAvailableRowsV69, operationalCompletedRowsV69, operationalDayMetricsV69, uniqueCompletionEvents e renderGroupBars (versão institucional); envoltório de navigateSectionV65 (aviso e renderização no quadro seguinte).
+
+NOVIDADES DA VERSÃO 9.0 — FILTRO DE HORÁRIO NOS FILTROS GERAIS, NO ACOMPANHAMENTO DAS DISTRIBUIÇÕES E FAIXAS PERSONALIZADAS
+
+1) Filtros gerais (barra lateral), logo abaixo de “Período de conclusão”: dois blocos novos, “Horário da distribuição (Data2)” e “Horário da conclusão (Data3)”.
+- Cada bloco tem os modos: Todos os horários, Hora a hora (24 caixas de seleção), Faixas horárias (Antes das 08h, 08h–10h, 10h–12h, 12h–14h, 14h–16h, 16h–18h e Após 18h) e Faixas personalizadas. As opções mostram a quantidade (n) de registros no recorte atual. Há “Limpar horário” em cada bloco.
+- Funcionam como os períodos gerais: valem para todos os painéis que seguem os filtros gerais (resumo, cartões, evolução, rankings, matriz, perfil, metas, estatísticas, tabela analítica etc.), somam-se (condição “E”) aos períodos de datas e aos demais filtros gerais, aparecem nos filtros ativos do cabeçalho (com “×” para remover), na linha de resumo do período, no “Limpar filtros” e nas exportações.
+- Como os períodos gerais, NÃO alteram os painéis que têm recorte local próprio (Tempo de Execução e Comparativo, Origem dos cadastramentos e Acompanhamento das distribuições); esses usam o filtro de horário local de cada painel.
+- Registros sem horário informado ficam de fora enquanto o filtro estiver ativo (o bloco informa quantos). Com o horário da conclusão (Data3) ativo, processos pendentes não aparecem (não têm Data3), como já ocorre com o período geral de conclusão.
+- O filtro geral de horário não é gravado no navegador: volta para “Todos os horários” ao recarregar o Radar ou carregar novos dados.
+
+2) Faixas personalizadas (substituem o “Intervalo personalizado” da 8.9) — nos filtros gerais e nos três filtros locais.
+- É possível informar uma ou mais faixas, cada uma com horário inicial e final (HH:mm), com “+ Adicionar faixa” e “Remover faixa”. O registro entra se o horário cair em qualquer uma das faixas. Início inclusivo, fim exclusivo. Se o início for maior que o fim, a faixa atravessa a meia-noite (ex.: 22:00 → 02:00). Faixa incompleta ou com início igual ao fim é ignorada e o Radar avisa na tela.
+- As faixas ficam apenas na tela: voltam ao padrão (zeradas) ao recarregar.
+
+3) Acompanhamento das distribuições: novo bloco “Filtro de horário (Data2/Data3)”, no mesmo visual do bloco de Origem, com os mesmos modos.
+- Cada indicador usa a sua própria data: distribuições, origens, pendentes e não feitos usam a Data2; conclusões e documentos usam a Data3. A taxa de execução passa a comparar as conclusões do horário (Data3) com as distribuições do horário (Data2).
+- Pendentes e Não feitos continuam sendo o estoque reconstruído ao final do recorte (a posição de cada processo não é recalculada); o filtro apenas seleciona, entre eles, os distribuídos no horário escolhido.
+- Vale para os cartões, a tabela, os detalhamentos e as exportações do painel; texto no “Entenda as regras”. Com “Todos os horários”, o painel fica como na versão 8.8/8.9.
+
+4) Tempo de Execução e Comparativo: o cartão “Processos analisados” agora é clicável e abre a lista dos processos que o formam (respeitando o filtro de horário). A lista usa a mesma janela dos demais detalhamentos (300 linhas por vez, com “Mostrar mais”).
+
+5) Padronização visual (herdada da correção feita ainda na 8.9): os controles de horário usam as mesmas classes e medidas dos filtros do painel de execução (rótulo, caixa de seleção, menu com caixas, links “Selecionar todas / Limpar”, contagem (n)); o filtro “Atividade analisada” das Estatísticas (v8.8) ficou com o mesmo tamanho e fonte dos demais campos da barra e o menu no mesmo estilo.
+
+6) Regras, fórmulas, metas e extensão não foram alterados. Tempo de Execução continua Data3 − Data2. O Mapa de Concentração não foi modificado.
+
+7) Alterações técnicas: funções hourStateV89, hourIntervalsV89, hourPredicateV89, hourSigV90, hourBindV89, renderHourBlockV89, renderGeneralHourV90 e auxiliares; filterSignatureV74 e filterSnapshotV74 (filtro geral e cache), activeFilterItems, removeActiveFilter, clearFilters, renderSummary e exportContext (envoltórios); distributionSnapshotV72; executionKpiV82 e renderExecutionTimeV82; estilo da barra de Estatísticas. Recurso de apoio a testes: getState().hourFilter e window.RadarNUPACI.hourFilterV89.
+
+VALIDAÇÃO DA VERSÃO 9.0 (Chrome, extensão e dados reais do Microsoft Lists, cerca de 55,9 mil registros)
+- Regressão com “Todos os horários” (mesmos dados): idêntica às versões 8.8/8.9. Tempo de Execução 25 de 25 pontos; Origem dos cadastramentos 10 de 10; Acompanhamento das distribuições (cartões, resumo de unidades, tabela e texto do período) 4 de 4; e, para o restante do Radar, o conteúdo completo do estado do aplicativo (indicadores, intervalos, atividades, distribuição, estatísticas, tempo de execução, institucional, cartões e resumo) com resultados idênticos aos da 8.8.
+- Filtro geral: com Data3 em 08h–10h o recorte passou de 55.917 para 6.652 registros; as 24 horas do menu somam 50.422 + 5.495 sem horário = 55.917. Duas faixas personalizadas (07:30–11:45 e 14:00–17:30) combinadas com a Data3 em 08h–10h deram 4.194 + 1.142 = 5.336 (a soma das faixas isoladas); remover uma faixa, remover pelo “×” do cabeçalho e “Limpar filtros” voltaram aos números originais (55.917). O filtro aparece no resumo do período e nos filtros ativos.
+- Acompanhamento das distribuições com 08h–10h: 1.714 distribuições = 796 (08h) + 918 (09h); com todas as 24 horas, ou limpo, os cartões voltam exatamente aos de “Todos”.
+- Tempo de Execução: duas faixas personalizadas 08:00–10:00 e 14:00–16:00 = 16.905, igual a marcar as faixas prontas 08h–10h e 14h–16h; 08:00–10:00 = 5.915, igual às horas 08h e 09h. O cartão “Processos analisados” abriu a lista com 44.313 ocorrências.
+- Desempenho (aba visível): Tempo de Execução ≈ 0,35–0,40 s por atualização (na 8.9, ≈ 0,45 s); aplicar o filtro geral de horário ≈ 0,5 s, igual a uma troca comum de filtro geral. Sem erros no console do navegador.
+- Não verificado: aparência em celular e telas estreitas; arquivos XLSX e PNG gerados com o filtro de horário (o texto do filtro foi incluído nos dados de contexto, mas os arquivos não foram abertos); uso com dados carregados por CSV (somente dados do Microsoft Lists foram usados); regressão em pop-ups dos demais painéis (a comparação foi feita nos três painéis com filtro local e no estado geral do aplicativo).
+
+NOVIDADES DA VERSÃO 8.9 — FILTRO DE HORÁRIO EM “TEMPO DE EXECUÇÃO E COMPARATIVO” E “ORIGEM DOS CADASTRAMENTOS”
+
+- Dois painéis ganharam um bloco “Filtro de horário”, que restringe a análise pelo horário (hora e minuto) já registrado em Data2 e Data3. Nenhum outro painel foi alterado (inclusive o Mapa de Concentração).
+  • Tempo de Execução e Comparativo: o bloco fica logo abaixo dos filtros Atividade/Servidor/+ Mais filtros. O campo “Horário analisado” escolhe entre Distribuição — Data2 e Conclusão — Data3. Ele é independente da “Base temporal” (que continua escolhendo o período). Enquanto o usuário não escolher, o horário acompanha a Base temporal.
+  • Origem dos cadastramentos: o bloco fica logo abaixo do recorte de data/período. O horário analisado é sempre Data2 (cadastro/distribuição).
+- Modos (mesmos nos dois painéis):
+  • Todos os horários: sem filtro; o painel fica exatamente como na versão 8.8.
+  • Hora a hora: menu com 24 caixas de seleção (00h–01h … 23h–00h), com “Selecionar todas”, “Limpar” e a quantidade (n) de cada hora no recorte atual.
+  • Faixas horárias: Antes das 08h, 08h–10h, 10h–12h, 12h–14h, 14h–16h, 16h–18h e Após 18h (a partir de 18:00), também com caixas de seleção e (n).
+  • Intervalo personalizado: horário inicial e final (HH:mm). O início é inclusivo e o fim é exclusivo. Se o início for maior que o fim, o intervalo atravessa a meia-noite (ex.: 22:00 → 02:00). Início igual ao fim não é aceito: aparece um aviso e o filtro não é aplicado.
+- “Limpar horário” volta a Todos os horários. Uma linha de resumo mostra “Horário: Todos” ou o filtro ativo (ex.: “Horário (Conclusão (Data3)): 08h–10h”). O resumo também aparece no texto do recorte do painel, nos detalhamentos e nas exportações (XLSX e imagem).
+- Padronização visual: os controles do filtro de horário usam as mesmas classes e medidas dos filtros do painel de execução (rótulo, caixa de seleção, menu com caixas, links Selecionar todas e Limpar, e contagem (n)). Pela mesma razão, o filtro Atividade analisada das Estatísticas (v8.8) passou a ter o mesmo tamanho e fonte dos demais campos da barra e o menu com o mesmo estilo do menu dos filtros do painel de execução.
+- O filtro faz parte do recorte real: vale para os cartões, a tabela, o período atual e o período de comparação (o mesmo horário é aplicado aos dois), os detalhamentos e “← Voltar”, e os filtros em cascata (as contagens (n) das opções dos demais filtros do painel de execução passam a refletir o horário). É local: não altera os filtros gerais nem os outros painéis, não é salvo e é zerado quando os dados são recarregados. Permanece ao abrir e fechar detalhamentos.
+- A fórmula Tempo de Execução = Data3 − Data2 e as demais regras do Radar não foram alteradas. Foram incluídos textos de ajuda (ícone “i”) e uma seção “Filtro de horário” em “Entenda as regras” de cada painel.
+
+REGRAS E LIMITES (importante para interpretar os números)
+- Registros sem horário informado ficam fora do recorte enquanto houver filtro de horário. Como uma data sem hora é guardada como 00:00:00, um registro exatamente às 00:00:00 também é tratado como “sem horário”. O painel informa quantos ficaram de fora.
+- No Tempo de Execução com horário de Conclusão (Data3), processos pendentes não têm Data3 e não aparecem; com horário de Distribuição (Data2), o botão “ainda pendentes” respeita o filtro.
+- O painel de execução conta processos distintos. Um processo com ocorrências em horas diferentes pode aparecer em mais de uma hora; por isso a soma das horas pode superar o total. No painel Origem, a contagem (n) é de linhas de cadastramento.
+- O filtro é aplicado depois da regra de identidade operacional (processo + dia de distribuição) já existente.
+- Alterações técnicas: funções hourStateV89, hourIntervalsV89, hourPredicateV89 e demais auxiliares (hour…V89), renderHourBlockV89, renderExecutionTimeV82 (recorte, comparação, pendentes, contagens), executionScopeTextV82, exportExecutionV82Xlsx, registrationRowsV72, renderRegistration, openExecutionRulesV82, openRegistrationRulesV72 e exportContext. Recurso de apoio a testes: window.RadarNUPACI.hourFilterV89 e getState().hourFilter.
+
+VALIDAÇÃO DA VERSÃO 8.9 (Chrome, extensão e dados reais do Microsoft Lists, cerca de 55,9 mil registros)
+- Regressão com “Todos os horários”: resultados idênticos aos da v8.8 com o mesmo cache de dados — 25 de 25 pontos em Tempo de Execução (cartões, texto do recorte, qualidade, tabela, pop-up de linha, de faixa, de pendentes e de inconsistências; bases Data3 e Data2; período de comparação personalizado) e 8 de 8 em Origem dos cadastramentos (cartões, tabela, texto do período e pop-ups de cartão, linha, célula e total).
+- Selecionar as 24 horas, ou as 7 faixas, resulta nos mesmos números de “Todos” (período atual e comparação, nos dois painéis). Uma única hora altera cartões, tabela e comparação; o pop-up de detalhe de um servidor com 08h mostrou apenas conclusões entre 08:00 e 08:59. Em Origem, as 24 horas somam o total de linhas do dia, exceto 2 linhas sem horário informado (4.163 de 4.165).
+- Limites testados (início inclusivo, fim exclusivo): 07:59:59 fora e 08:00:00 dentro de 08h; 09:59:59 dentro e 10:00:00 fora de 08h–10h; 17:59 fora e 18:00 dentro de “Após 18h”; 22:00→02:00 inclui 22:00, 23:59, 00:30 e 01:59 e exclui 21:59 e 02:00; 08:30→12:15 exclui 08:29 e inclui 12:14. 00:00:00 exato é tratado como sem horário. Intervalo com início igual ao fim e intervalo incompleto não filtram.
+- “Limpar horário”, abertura e fechamento do menu, marcação de várias opções e atualização com meio segundo de espera funcionam; o filtro permanece depois de abrir e fechar detalhamentos. Sem erros no console do navegador.
+- Desempenho (aba visível; mesmos dados): Tempo de Execução ≈ 0,45 s por atualização do painel, com ou sem filtro (na v8.8, ≈ 0,40 s); Origem dos cadastramentos ≈ 0,11–0,14 s (na v8.8, ≈ 0,09 s). O acréscimo é pequeno (dezenas de milissegundos).
+- Não verificado: aparência em celular e telas estreitas; arquivos XLSX e PNG gerados com filtro de horário (o texto do filtro foi incluído nos dados de contexto, mas os arquivos não foram abertos); uso com dados carregados por CSV (somente dados do Microsoft Lists foram usados); ← Voltar entre pop-ups aninhados além de abrir e fechar o detalhamento.
+
+NOVIDADES DA VERSÃO 8.8 — ESTATÍSTICAS COM SELEÇÃO DE VÁRIAS ATIVIDADES
+
+- No painel Estatísticas, o filtro “Atividade analisada” deixou de ser uma lista de escolha única e passou a ser um menu com caixas de seleção (checkbox), no mesmo estilo dos demais filtros do Radar:
+  • É possível marcar uma ou mais atividades ao mesmo tempo. O botão mostra “Todas as atividades”, o nome da atividade (quando há uma) ou “N atividades selecionadas”.
+  • “Selecionar todas” marca todas as atividades exibidas na lista (se houver pesquisa ativa, apenas as visíveis). “Limpar” desmarca tudo.
+  • Sem nenhuma marcada, ou com todas marcadas, o painel considera todas as atividades (mesmo resultado de “Todas as atividades” da versão anterior).
+  • A caixa de pesquisa dentro do menu filtra a lista de atividades. O menu fecha ao clicar fora ou com a tecla Esc.
+  • O item “Audiências — todas” continua disponível e equivale a qualquer atividade de audiência; pode ser combinado com outras atividades.
+- A atualização do painel ocorre cerca de meio segundo após o último clique, para que a marcação de várias atividades não dispare um recálculo a cada clique.
+- Os botões rápidos (Todas as atividades, Audiências — todas, Urgências, Alvarás, Audiência cível e Audiência criminal) continuam funcionando e passam a marcar as caixas correspondentes. Escolher um botão rápido substitui a seleção atual.
+- Todos os indicadores, comparativos, gráfico, tabelas, popups de detalhamento, Origem dos cadastramentos e exportações das Estatísticas respeitam o conjunto selecionado. O texto “Atividade:” exibido no painel, nos popups e nas exportações lista os nomes das atividades marcadas.
+- “Documentos específicos produzidos” segue a regra do painel: considera somente as atividades marcadas que possuem esse controle (SAE/Alvará, BNMP/Guias e SAPRE/TRF5). Se nenhuma das marcadas tiver controle específico, o card mostra “Não se aplica”, como já ocorria com uma única atividade.
+- Com mais de uma atividade marcada, as faixas de tempo de cumprimento usam a escala padrão (a escala em horas, específica de Urgência, só é usada quando Urgência é a única atividade).
+- Escolha única, “Todas” e os demais painéis do Radar permanecem como na v8.7. Regras, fórmulas, metas, exportações e extensão não foram alterados.
+- Alterações técnicas: funções statisticsActivityMatch, statisticsActivityLabel, statisticsActivityEquivalent, statisticsCanonicalActivity, syncStatisticsActivityControls, initializeStatisticsControls, statisticsTimeBands e o card de documentos específicos; novas funções do menu (buildStatisticsActivityControlV88 e auxiliares) e a marcação do filtro. O valor interno da atividade continua um texto; várias atividades usam o formato “set:”.
+
+VALIDAÇÃO DA VERSÃO 8.8 (Chrome, extensão e dados reais do Microsoft Lists, cerca de 55,9 mil registros)
+- O menu abre, pesquisa, marca e desmarca; o botão e o resumo do período refletem a seleção; “Selecionar todas” e “Limpar” voltam exatamente aos números de “Todas as atividades”.
+- Conferência aritmética: Análise (26.997 distribuídas) + Baixa (2.284) = 29.281 com as duas marcadas; o mesmo vale para cumpridas, pendentes e documentos. SAE/Alvará + Análise somam as duas atividades, e os documentos específicos mostram apenas os de SAE/Alvará (492). Análise + Baixa mostram “Não se aplica”. O popup de “Quantidade cumprida” com Análise + Baixa lista 24.897 linhas (22.717 + 2.180). Os números de Análise isolada coincidem com os da v8.7.
+- Escolher o botão rápido “Urgências” atualiza a marcação no menu; acrescentar uma segunda atividade resulta em “2 atividades selecionadas”.
+- Sem erros no console do navegador.
+- Não verificado: aparência em celular e telas estreitas; a verificação completa por comparação de resultados dos demais painéis (feita nas versões 8.6 e 8.7) não foi repetida nesta versão, pois a mudança está restrita ao painel Estatísticas; exportações em XLSX/PNG com várias atividades.
+
+
 
 NOVIDADES DA VERSÃO 8.7 — ATUALIZAÇÃO RÁPIDA E ATUALIZAÇÃO COMPLETA
 
@@ -965,4 +1114,3 @@ O processamento foi separado da visualização e expõe internamente uma camada 
 
 - comparação entre coletas e registro persistente de relativizações gerenciais.
 Validação do fluxo em nuvem realizada com sucesso.
-
