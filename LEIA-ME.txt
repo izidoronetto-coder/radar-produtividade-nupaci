@@ -1,5 +1,29 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 9.6
+Versão 9.7
+
+NOVIDADES DA VERSÃO 9.7 — ESCALA E NÚMEROS NO GRÁFICO “EVOLUÇÃO NO PERÍODO” (ESTATÍSTICAS) E BOTÃO “COPIAR IMAGEM” NA VISÃO GERAL
+
+Nenhuma regra da planilha, fórmula, meta ou rotina foi alterada, e a extensão não foi modificada. As mudanças são apenas de layout e leitura; nenhum número calculado mudou.
+
+1) Estatísticas — gráfico “Evolução no período”
+- Eixo de valores à esquerda, com 4 a 6 marcas “redondas” (por exemplo 0, 2.000, 4.000, 6.000), escolhidas automaticamente conforme o maior valor do período, e linhas de grade horizontais fracas para acompanhar o olho da barra até o número.
+- Número sobre cada barra (Distribuídos, Cumpridos e Pendentes), escrito na vertical, de baixo para cima, para que três números lado a lado nunca se sobreponham, mesmo quando as barras têm alturas parecidas. Barras zeradas mostram “0”.
+- Barras e grupos um pouco mais afastados e mais largos (barra de 12 para 15 px; espaço entre grupos de 8 para 12 px) e gráfico mais alto (para caber os números). Em períodos longos o gráfico continua rolando na horizontal; o eixo de valores fica fixo à esquerda.
+- A escala agora termina na última marca do eixo (a maior barra pode não encostar no topo). As informações ao passar o mouse sobre um grupo e o clique nas barras (abrir os processos) continuam como antes.
+- A imagem exportada (Copiar imagem / Baixar PNG das Estatísticas) também sai com o eixo, a grade e os números.
+
+2) Visão geral — botão “Copiar imagem”
+- Novo botão “Copiar imagem” no cabeçalho da Visão geral, ao lado de “Entenda Data2 e Data3”, no mesmo padrão dos demais painéis: janela com destino “Copiar imagem” ou “Baixar PNG” e escolha entre “Área exibida” e “Tabela completa” (na Visão geral, que não tem tabela, as duas dão o mesmo resultado).
+- A imagem inclui o título e os cartões do recorte atual; o botão e o cabeçalho de comandos não aparecem na imagem, como nos outros painéis.
+- Os painéis “Evolução das distribuições e conclusões” e “Ritmo de conclusão” também não têm o botão (não foi pedido); ficam como estavam.
+
+Verificação (mesmos dados reais, cerca de 60,8 mil registros)
+- Período de 31 dias: 31 grupos, marcas 0 · 2.000 · 4.000 · 6.000 · 8.000; períodos curtos (8 dias) conferidos visualmente, sem sobreposição de números, com o valor mais alto (5.326 numa escala de 6.000) cabendo no gráfico.
+- Imagem do botão da Visão geral gerada (2.482 × 1.227 px) e copiada para a área de transferência; imagem exportada das Estatísticas conferida visualmente, com eixo, grade e números verticais corretos.
+- Regressão: com os mesmos dados, o conteúdo de texto dos 15 painéis do Sumário ficou idêntico ao da versão 9.6 em 13 de 15; as únicas diferenças são as esperadas: Visão geral (+14 caracteres, o texto do botão) e Estatísticas (novos números e escala do gráfico). Sem erros no console.
+- Não verificado: aparência em celular e telas estreitas; download efetivo do PNG; uso com CSV; exportação XLSX.
+
+Alterações técnicas: renderStatistics (barras com escala própria e número em cada barra), novas funções statisticsScaleV97 e statisticsAxisV97, invólucro #statisticsAxisV97 / .statistics-chart-wrap-v97 e regras de estilo no bloco principal de CSS (necessário porque a exportação de imagem só copia o primeiro bloco de estilos da página), botão data-export-target="#overview".
 
 NOVIDADES DA VERSÃO 9.6 — LINHA DE MÉDIA, MÉDIA MÓVEL E TENDÊNCIA NO GRÁFICO “EVOLUÇÃO DAS DISTRIBUIÇÕES E CONCLUSÕES”
 
