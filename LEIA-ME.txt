@@ -1,5 +1,26 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 9.7
+Versão 9.8
+
+NOVIDADES DA VERSÃO 9.8 — CORREÇÃO: PAINÉIS EM BRANCO COM A BASE DE DADOS GRANDE (VERSÕES 9.7 E ANTERIORES PODIAM FALHAR)
+
+IMPORTANTE: esta versão substitui a 9.7. O defeito corrigido NÃO foi criado na 9.7: ele existia em todas as versões anteriores (testado também na 9.5) e apareceu quando a base passou de cerca de 65 mil registros (em 09/10/2026, 65.575 registros e 102 mil linhas lidas das duas listas). A 9.7 deve ser substituída por esta.
+
+Sintoma: ao abrir o RADAR, o cabeçalho e as bases apareciam, mas a Visão geral, os cartões do topo e vários painéis (Acompanhamento diário, Ranking, Estatísticas etc.) ficavam vazios, e o Acompanhamento diário não abria. Nenhuma mensagem de erro era exibida.
+
+Causa: na montagem inicial, a função que descobre a data mais recente do Acompanhamento diário (operationalLatestDateV69) montava uma lista com duas datas por registro (Data2 e Data3) e a passava inteira para Math.max(...lista). O navegador só aceita cerca de 120 mil itens nessa forma; com mais registros ocorre “Maximum call stack size exceeded”, a montagem para no meio e nenhum filtro é aplicado.
+
+Correção (só no código; nenhuma regra, fórmula, meta ou rotina mudou e a extensão não foi alterada):
+- Duas funções auxiliares seguras para listas grandes (maxOfV98 e minOfV98), que percorrem a lista sem espalhá-la.
+- Trocadas todas as chamadas com o mesmo risco por listas que crescem com o número de registros: data mais recente do Acompanhamento diário, data mais recente dos painéis locais (Origem e Acompanhamento das distribuições), tempos de cadastramento (menor e maior), tempo de cumprimento máximo das Estatísticas, menor e maior tempo da distribuição por faixa e menor e maior tempo da comparação de execução.
+- Os demais usos de maior/menor valor operam sobre listas pequenas (dias, servidores, atividades) e não foram alterados.
+- Além disso, esta versão inclui tudo da 9.7 (eixo e números no gráfico “Evolução no período” das Estatísticas e botão “Copiar imagem” na Visão geral) e da 9.6 (linha de média, média móvel e tendência na Evolução).
+
+Verificação (mesmos dados que derrubavam a 9.5 e a 9.7: 65.575 registros)
+- Reproduzido o defeito nas versões 9.5 e 9.7 (filtros aplicados 0 vezes, 0 registros no recorte, painéis vazios) e confirmada a causa pela pilha de chamadas do erro.
+- Na 9.8: 65.575 registros no recorte, cartões da Visão geral preenchidos, 15 de 15 painéis do Sumário com conteúdo (Acompanhamento diário com 116 servidores avaliáveis), sem erros no console.
+- Janelas abertas com sucesso: processos distribuídos e concluídos da Visão geral, barra do gráfico de evolução, ficha de servidor do ranking, barra e cartão das Estatísticas, célula da matriz, processo da tabela analítica, e todos os botões “Entenda as regras”, “Bases utilizadas”, “Configurar metas”, “Configurar critérios” e “Gerenciar gestores” (25 janelas, todas com conteúdo).
+- Metas e jornada: visões Diária, Por servidor, Mensal e Por atividade carregam; linhas de média, média móvel e tendência da Evolução funcionam; gráfico das Estatísticas com eixo e números.
+- Não verificado: aparência em celular; download efetivo de PNG/XLSX; uso com CSV; bases ainda maiores (acima de cerca de 120 mil registros, outros pontos do código com listas muito grandes poderiam precisar de ajuste semelhante, embora todos os pontos conhecidos já tenham sido tratados).
 
 NOVIDADES DA VERSÃO 9.7 — ESCALA E NÚMEROS NO GRÁFICO “EVOLUÇÃO NO PERÍODO” (ESTATÍSTICAS) E BOTÃO “COPIAR IMAGEM” NA VISÃO GERAL
 
