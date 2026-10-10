@@ -1,5 +1,45 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 9.8
+Versão 9.9
+
+NOVIDADES DA VERSÃO 9.9 — PAINEL “ACOMPANHAMENTO DE AUSÊNCIAS” (LISTA NUPACIAusencias)
+
+Nenhuma regra da planilha, fórmula, meta, rotina ou situação do RADAR foi alterada. As ausências são INFORMATIVAS: não mudam meta esperada, % da meta, situação do dia, perfil ou qualquer cálculo existente. A leitura continua a cargo do coordenador.
+
+ATENÇÃO — ESTA VERSÃO É SOMENTE O HTML. A extensão do Chrome ainda NÃO lê a lista NUPACIAusencias (isso virá numa revisão própria da extensão). Enquanto isso, o painel mostra “Base de ausências não carregada” e todo o restante do RADAR funciona normalmente. Para usar o painel já, exporte a lista NUPACIAusencias em CSV e use o botão “Carregar CSV de ausências” (o formato do CSV real exportado pelo SharePoint ainda não foi validado; o leitor aceita separador “;” ou “,”, datas dd/mm/aaaa ou aaaa-mm-dd e as colunas Título/Servidor, Coordenadoria, Equipe, DataInicio, HoraInicio, DataFim, HoraFim, Justificativa).
+
+1) Painel “Acompanhamento de ausências” (item 13 do Sumário, antes do Acompanhamento diário)
+- Indicadores: registros de ausência (com programadas e em andamento), servidores com ausência, horas ausentes (ausências por horas), dias de ausência (ausências por dias), pausas cobertas por ausência e conclusões durante a ausência.
+- Visões: Por registro, Por servidor, Por dia e Por justificativa (categorias sugeridas por palavras-chave: Saúde, Família, Almoço / refeição, Banco de horas / compensação, Convocação / Justiça Eleitoral, Reunião / Capacitação, Problema técnico, Demanda de serviço, Assunto pessoal e Outros).
+- Filtros no mesmo padrão do painel Tempo de Execução: período (datas e atalhos Hoje, Últimos 7 dias, Este mês, Período completo, Período personalizado), e campos Coordenadoria, Equipe, Servidor, Situação, Tipo e Justificativa (categoria), todos com busca digitável, seleção de várias opções, “Selecionar todos”, “Limpar” e contagem por opção; botão “Limpar seleções” e busca livre por servidor ou justificativa.
+- “Copiar imagem”, “Entenda as regras” e “Bases utilizadas” no padrão dos demais painéis.
+
+2) Como as ausências são interpretadas
+- Ausência por horas: início e fim no mesmo dia, com horário. Duração = hora final − hora inicial.
+- Ausência por dias: início e fim em dias diferentes (ou sem horário). Conta o DIA INTEIRO de todos os dias do intervalo, inclusive fins de semana e feriados, sem considerar o horário informado (pode ser atestado, convocação etc.).
+- Situação: Programada (início ainda não chegou), Em andamento ou Encerrada, recalculada a cada abertura. Quando a data programada chega, ela passa a valer automaticamente nos cruzamentos.
+- Formato das datas: a lista NUPACIAusencias usa o padrão AMERICANO (mês/dia/ano, por exemplo 9/16/2026 na tela do SharePoint). O RADAR lê nesse padrão e EXIBE sempre em dia/mês/ano (por exemplo 16/09/2026). Em CSV, se alguma data tiver o primeiro número maior que 12 (16/09/2026), o arquivo inteiro é lido como dia/mês/ano; se nenhuma data permitir confirmar, vale o padrão da lista (mês/dia/ano) e o aviso da carga informa isso. Datas no formato aaaa-mm-dd (as que a extensão enviará) não têm ambiguidade.
+- Servidor identificado pelo nome (sem acentos e sem diferenciar maiúsculas); coordenadoria e equipe vêm das bases de produção. Nomes sem correspondência aparecem em aviso e os registros continuam no painel.
+- Pausa coberta: pausa (intervalo entre duas conclusões consecutivas acima do limite configurado, hoje 30 minutos) é “Justificada por ausência” quando o tempo não coberto pela ausência fica dentro do limite; “Parcialmente coberta” quando há ausência mas sobra tempo acima do limite; “Sem ausência registrada” nos demais casos. O indicador do painel considera as pausas ocorridas em dias em que o servidor tem ausência registrada.
+- Conclusões durante a ausência: conclusões próprias (Data3) dentro da janela da ausência. Sinal para conferência, não erro automático.
+
+3) Onde mais aparece (pop-ups)
+- Ficha do servidor (clique no nome): botão “Ausências (n)”, com resumo do servidor.
+- Jornada e pausas do dia: faixa “Ausência registrada neste dia” e coluna “Ausência” na tabela de pausas, indicando justificada, parcial ou sem registro.
+- Pausas por dia (Metas e jornada, Por servidor): coluna “Pausas cobertas por ausência”.
+- Acompanhamento diário: selo “Ausência registrada” na coluna de situação e filtro “Ausência registrada” (todos, com ausência na data, sem ausência na data).
+
+4) Privacidade
+- O texto da justificativa aparece completo no painel e nos pop-ups, mas NÃO sai nas imagens exportadas (Copiar imagem/PNG): nelas aparece somente a categoria sugerida.
+
+Verificação (dados reais de produção, 65.575 registros, e amostra real da lista NUPACIAusencias: 53 de 60 registros, transcritos para o teste)
+- Painel, indicadores, quatro visões, filtros (busca digitável, seleção múltipla, limpar, fechar ao clicar fora), atalhos de período, situação “em andamento” e tipo “por dias” conferidos. Soma de dias confere: 8 + 16 + 2 + 2 = 28. Horas somam 107h 10min.
+- Pop-ups conferidos com servidor real: ficha → Ausências → Jornada do dia com pausa “Justificada por ausência 09:45–12:05”; Pausas por dia com “1 justificada de 7”; Acompanhamento diário com 7 selos e filtro (121 servidores ocultos com “com ausência”).
+- Imagem exportada do painel conferida: mostra só a categoria da justificativa.
+- Leitor de CSV testado com arquivos sintéticos (separador “;” e “,”, aspas e vírgulas no texto) e datas: 10/9/2026 lido como 9 de outubro; 9/28/2026 a 10/13/2026 como 28/09 a 13/10; arquivo com 16/09/2026 detectado como dia/mês/ano; arquivo só com datas ambíguas assume mês/dia/ano e avisa.
+- Regressão: com os mesmos dados, o conteúdo de texto dos 15 painéis anteriores ficou idêntico ao da versão 9.8 (15 de 15, sem ausências carregadas); o painel novo é a única diferença. Sem erros no console.
+- Não verificado: leitura direta pela extensão (revisão da extensão pendente); CSV real exportado do SharePoint; aparência em celular; PNG baixado (apenas a cópia); feriados (não reconhecidos, só informação).
+
+Alterações técnicas: novo módulo v9.9 (absV99/absUiV99 e funções abs…V99), seção #absencesSection inserida antes de #dailyOperationalSection e no Sumário, envoltórios de openServer, openJourneyPanelV78, openGoalServerPauses, renderOperationalPanelV69 e openPanelSourcesV70, entrada window.RadarNUPACI.absencesV99 (load/loadCsv/clear/summary) e preparo do pedido RADAR_NUPACI_GET_BATCH com listKey “absences” para a extensão futura.
 
 NOVIDADES DA VERSÃO 9.8 — CORREÇÃO: PAINÉIS EM BRANCO COM A BASE DE DADOS GRANDE (VERSÕES 9.7 E ANTERIORES PODIAM FALHAR)
 
