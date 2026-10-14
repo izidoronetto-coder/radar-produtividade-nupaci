@@ -1,5 +1,28 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 9.9
+Versão 10.0
+
+NOVIDADES DA VERSÃO 10.0 — FAIXA SUPERIOR MAIS COMPACTA E AJUSTES NO PAINEL “TEMPO DE EXECUÇÃO E COMPARATIVO”
+
+Nenhuma regra, fórmula, meta ou rotina foi alterada, e a extensão não foi modificada. As mudanças são apenas de layout.
+
+1) Faixa superior (cabeçalho) mais estreita
+- Mantém exatamente as mesmas informações: título e versão, subtítulo, botões (Consultar processos, Limpar filtros, Atualização rápida, Atualização completa, Carregar/Trocar CSV), “2 bases carregadas”, origem, total de registros e período, as datas de última distribuição, última conclusão produtiva, Data3 mais recente e base atualizada até, e a última sincronização.
+- Passa a ocupar duas linhas: título e botões em cima; situação das bases embaixo, em uma linha única. Fontes e botões ficaram menores.
+- Medição no mesmo conjunto de dados (tela de 1.907 px a 125%): de 159 px para 74 px de altura (redução de mais da metade). Em tela de 1.366 px: 90 px (a linha de última sincronização desce para uma terceira linha).
+- O menu lateral (Sumário/Filtros) acompanha a nova altura: antes ele ficava com a base cortada em 48 px; agora encosta exatamente no rodapé da tela.
+- Ao navegar pelo Sumário, os títulos dos painéis continuam parando logo abaixo da faixa.
+- A versão para celular (telas até 760 px) não foi alterada.
+
+2) Tempo de Execução e Comparativo
+- A primeira coluna do cabeçalho da tabela (Coordenadoria, Servidor, Atividade…) estava em azul-marinho com texto escuro, quase ilegível. Agora usa a mesma cor dos demais cabeçalhos.
+- As dicas (ícones “i” dos filtros, cartões e cabeçalhos da tabela) agora usam a dica flutuante, a mesma do Acompanhamento diário e das Estatísticas. A dica antiga ficava presa dentro da tabela rolável e era cortada.
+
+Verificação (dados reais, dois CSVs de teste de 8 MB)
+- Cabeçalho medido antes e depois, no mesmo carregamento, e conferido por captura de tela. Sem estouro horizontal e sem erros no console.
+- Navegação pelo Sumário até Ranking, Estatísticas e Acompanhamento diário: títulos a 12 px abaixo da faixa.
+- Não verificado: dicas do Tempo de Execução em uso real pelo usuário (foram trocadas pelo mecanismo já usado em outros painéis, mas não houve confirmação visual na tela do usuário); modo Microsoft Lists real (a faixa foi medida com os botões de atualização simulados no modo CSV); celular.
+
+Alterações técnicas: regras de estilo da faixa (.topbar, .brand, .top-actions, .file-status…) dentro de media query para telas largas, com maior especificidade; variável --topbar-h mantida por ResizeObserver para o menu lateral; dica flutuante estendida a #executionTimeSection.
 
 NOVIDADES DA VERSÃO 9.9 — PAINEL “ACOMPANHAMENTO DE AUSÊNCIAS” (LISTA NUPACIAusencias)
 
