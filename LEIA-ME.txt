@@ -1,5 +1,27 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 10.1
+Versão 10.2
+
+NOVIDADES DA VERSÃO 10.2 — BOTÃO “EXPORTAR XLSX” NA TABELA ANALÍTICA, COM TODAS AS COLUNAS DA BASE
+
+Nenhuma regra, fórmula, meta ou rotina foi alterada, e a extensão não foi modificada.
+
+O que mudou
+- Novo botão “Exportar XLSX” na barra da Tabela analítica, ao lado de “Copiar processos visíveis”.
+- Linhas exportadas: TODOS os registros que atendem aos filtros gerais, aos filtros rápidos, à busca e à ordenação atuais da tabela (todas as páginas, não só a que aparece na tela). O número de linhas do arquivo é igual ao “N registros” mostrado abaixo da tabela.
+- Colunas exportadas: TODAS as colunas da base (o catálogo completo de “Colunas visíveis (15/25)”), inclusive as ocultas na tela e as colunas extras da lista (por exemplo Título, ObservacaoGestor, IDOrigem, FeitoOutro, DocumentosEspecificos, OrgaoJulgado, CompetenciaExpediente), mais uma coluna a mais, “Intervalo (min)”, com o mesmo intervalo em minutos para ordenar e somar no Excel (a coluna “Intervalo” continua em texto, como na tabela). Quais colunas estão visíveis na tela não altera o arquivo.
+- Datas saem como data/hora de verdade do Excel, formatadas em dd/mm/aaaa hh:mm. “Documentos” sai como número. “Fonte” sai com o nome da base (NUPACIProdutividade, ProditividadeDiaNUPACI), não com código interno.
+- O arquivo tem duas abas: “Registros” e “Contexto” (relatório, número de registros, base, filtros gerais, busca, ordenação, origem dos dados, data de geração e colunas exportadas).
+- Nome do arquivo: radar-nupaci-tabela-analitica-AAAA-MM-DD.xlsx.
+- Planilha compactada: o gerador antigo de XLSX grava o arquivo sem compressão (uma exportação desse tamanho sairia com cerca de 78 MB); a exportação da tabela analítica compacta o arquivo (cerca de 5,6 MB para 42 mil registros). Os outros botões “Exportar XLSX” não foram alterados.
+- Limite: uma planilha do Excel comporta cerca de 1.048.000 linhas; se a tabela tiver mais, o RADAR avisa para aplicar filtros e exportar em partes.
+
+Verificação (dados reais, dois CSVs de teste)
+- Sem filtro: 41.988 registros exportados, igual ao total da tabela; 26 colunas; arquivo de 5,65 MB; geração em cerca de 3,4 s. O XML é válido, as duas abas existem e o formato de data é dd/mm/aaaa hh:mm.
+- Com busca “saneamento”: 7.347 registros exportados, igual ao total mostrado na tabela, e a aba Contexto registra a busca.
+- Regressão: com os mesmos dados, 15 dos 16 painéis ficaram idênticos à 10.1; a única diferença é a Tabela analítica, que ganhou o botão. Sem erros no console.
+- Não verificado: abertura do arquivo no Excel propriamente dito (conferido pela estrutura do arquivo, não pelo programa); exportação com a base inteira do Microsoft Lists (cerca de 70 mil registros): o tempo e o tamanho devem crescer de forma proporcional; celular.
+
+Alterações técnicas: botão #exportAnalyticXlsxV102, funções exportAnalyticXlsxV102, createXlsxCompressedV102 e zipDeflateV102 (reaproveitam o gerador createXlsxBlob e compactam com deflate).
 
 NOVIDADES DA VERSÃO 10.1 — CARTÃO “PENDENTES AO FIM DO DIA” NO POP-UP “JORNADA E PAUSAS”
 
