@@ -1,5 +1,32 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 10.0
+Versão 10.1
+
+NOVIDADES DA VERSÃO 10.1 — CARTÃO “PENDENTES AO FIM DO DIA” NO POP-UP “JORNADA E PAUSAS”
+
+Sugestão de uma coordenadora. Nenhuma regra, fórmula, meta, situação ou rotina foi alterada, e a extensão não foi modificada. O cartão é informativo e usa dados que o RADAR já calcula para o Acompanhamento diário.
+
+O que mudou
+- No pop-up “Jornada e pausas”, o espaço vazio ao lado de “Maior pausa” passou a ter o cartão “Pendentes ao fim do dia”.
+- Número em destaque: quantos processos estavam na carga do servidor naquele dia (os “disponíveis”) e ainda não tinham sido resolvidos até o fim dele, nem pelo servidor nem por terceiros (FeitoOutro).
+- Linha de baixo: a conta completa, por exemplo “24 disponíveis · 14 concluídos pelo servidor · 0 resolvidos por terceiros”.
+- Cliques: o número em destaque abre a lista dos pendentes; “N disponíveis” abre a lista da carga do dia.
+- Ícone “i” (dica): explica a definição, a conta (disponíveis = concluídos pelo servidor + resolvidos por terceiros + pendentes), por que a “Produção do dia” pode ser um pouco maior e que o número segue os filtros em uso.
+- Também aparece na versão reduzida do pop-up para dias sem conclusão própria (onde ajuda mais) e sai na imagem exportada do pop-up (Copiar imagem).
+
+Como é contado
+- Processos distintos, na mesma base e na mesma regra da coluna “Processos disponíveis” do Acompanhamento diário (processos destinados ao servidor com Data2 igual ou anterior ao dia e ainda pendentes no início dele; redistribuições posteriores não alteram o dia).
+- “Resolvido” = concluído pelo servidor ou resolvido por terceiros até 23h59 do dia. Processo concluído em data posterior continua pendente naquele dia.
+- Concluídos pelo servidor, no cartão, contam apenas os que estavam na carga do dia. Por isso o cartão “Produção do dia” pode ser um pouco maior: ele também conta conclusões de processos que não constavam na carga pelo critério acima.
+
+Verificação (dados reais, dois CSVs de teste)
+- 23 combinações servidor × dia (10 servidores do ranking, em 3 datas): a conta fecha em 23 de 23 e os “disponíveis” do cartão batem com a coluna “Processos disponíveis” do Acompanhamento diário em 23 de 23, inclusive 4 casos com resolução por terceiros.
+- Durante os testes apareceu 1 divergência (9 contra 8): o pop-up aberto pela ficha usava uma base de linhas ligeiramente diferente da do diário. O cartão passou a usar a mesma base do Acompanhamento diário, e a divergência desapareceu.
+- Dia sem conclusão própria: conferido (Ana Beatriz Vieira, 06/10: 2 disponíveis, 2 pendentes, igual ao diário).
+- Dica flutuante, abertura das listas e imagem exportada do pop-up conferidas. Na imagem exportada o cartão sai completo.
+- Regressão: com os mesmos dados, o conteúdo dos 16 painéis do Sumário ficou idêntico ao da versão 10.0 (16 de 16). Sem erros no console.
+- Não verificado: uso com a extensão e o Microsoft Lists reais no navegador do usuário; celular.
+
+Alterações técnicas: novo cartão em .server-kpis do pop-up (journeyPendingCardV101), base diária por data com cache (journeyDailyDayV101) e regras de estilo no bloco principal de CSS.
 
 NOVIDADES DA VERSÃO 10.0 — FAIXA SUPERIOR MAIS COMPACTA E AJUSTES NO PAINEL “TEMPO DE EXECUÇÃO E COMPARATIVO”
 
