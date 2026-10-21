@@ -1,5 +1,32 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 10.2
+Versão 10.3
+
+NOVIDADES DA VERSÃO 10.3 — CARTÃO “PENDENTES AO FIM DO DIA” COM OS NÚMEROS CLICÁVEIS (POP-UP COM OS PROCESSOS)
+
+Nenhuma regra, fórmula, meta, situação ou rotina foi alterada, e a extensão não foi modificada. É apenas o acesso à lista de processos de cada número do cartão.
+
+O que mudou (janela “Jornada e pausas”, cartão “Pendentes ao fim do dia”)
+- Os números do cartão agora aparecem azuis e sublinhados, como links, e abrem o pop-up de processos (com filtros, busca, “Copiar processos” e “Exportar listagem (.xlsx)”):
+  • “N processos” (o número grande) → “Pendentes ao fim do dia”;
+  • “N disponíveis” → “Disponíveis no dia” (já existia);
+  • “N concluídos” (pelo servidor) → “Concluídos pelo servidor” (novo);
+  • “N resolvidos” (por terceiros) → “Resolvidos por terceiros” (novo).
+- Antes, o número de pendentes já abria a lista, mas não tinha aparência de link e por isso parecia não clicável. Agora o visual deixa isso claro.
+- Número zero não é link (não há lista para abrir).
+- A conta fecha sempre: disponíveis = concluídos pelo servidor + resolvidos por terceiros + pendentes. Os quatro pop-ups usam o mesmo cálculo do cartão, então a quantidade de processos de cada lista é igual ao número clicado.
+- O título do pop-up mostra o tipo da lista, o servidor e a data (ex.: “Pendentes ao fim do dia · Nome · 19/10/2026”). O botão “Voltar” retorna à janela da Jornada.
+- A dica (ícone “i”) do cartão foi atualizada para orientar o clique nos números sublinhados.
+- Cada linha do pop-up é um registro; um processo com mais de um documento pode ocupar mais de uma linha, mas o resumo do topo conta processos distintos.
+- Na imagem exportada (“Copiar imagem”), o cartão continua saindo como antes, agora com os números sublinhados; o clique existe apenas na tela.
+
+Verificação (dados reais, dois CSVs de teste)
+- Servidora de teste, dia 01/10/2026: 2 pendentes + 7 concluídos + 0 terceiros = 9 disponíveis; os pop-ups listaram 2, 7 e 9 processos, respectivamente.
+- Varredura de 29 combinações servidor/dia: a conta fechou em todas (pendentes + concluídos + terceiros = disponíveis). Caso com terceiros (1 processo): o pop-up “Resolvidos por terceiros” listou 1 processo.
+- Regressão: com os mesmos dados, os 16 painéis ficaram idênticos à 10.2; sem erros no console; imagens exportadas com as mesmas dimensões.
+- Não verificado: uso com a base real do Microsoft Lists; celular.
+
+Alterações técnicas: journeyPendingCardV101 (listas own/third, botões data-journey-pending-v101="own|third", função linkV103) e CSS .mini-kpi.journey-pending-v101 .cell-btn (cor azul e sublinhado).
+
 
 NOVIDADES DA VERSÃO 10.2 — BOTÃO “EXPORTAR XLSX” NA TABELA ANALÍTICA, COM TODAS AS COLUNAS DA BASE
 
