@@ -1,5 +1,30 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 10.3
+Versão 10.4
+
+NOVIDADES DA VERSÃO 10.4 — ABERTURA MAIS RÁPIDA DOS POP-UPS DE PROCESSOS
+
+Nenhuma regra, fórmula, meta, situação ou rotina foi alterada, e a extensão não foi modificada. É só desempenho: o conteúdo dos pop-ups é o mesmo da 10.3.
+
+O que mudou
+- Pop-ups com muitos processos (por exemplo, o cartão “Processos distribuídos” da Visão geral, com mais de 32 mil) abrem bem mais depressa. A tabela aparece primeiro; as listas de opções dos “Filtros rápidos” são montadas logo em seguida, em segundo plano, ou na hora, se você clicar num filtro antes disso.
+- Cálculo dos valores dos filtros reorganizado (menos memória e menos trabalho por processo).
+- Sem nenhum filtro marcado, o pop-up não percorre e copia a lista inteira de novo a cada atualização.
+- O resumo do cabeçalho (“N processos distintos · N documentos concluídos”) passou a somar os documentos direto, em vez de recalcular todas as métricas.
+- O agrupamento de linhas por processo (função usada por vários painéis) ganhou um atalho para processos com uma única linha; o resultado é idêntico.
+
+Medição (máquina de teste, dois CSVs reais, mediana de 7 aberturas; o tempo na sua máquina pode variar)
+- Processos distribuídos (32.828): de cerca de 360 ms para cerca de 125 ms até o pop-up aparecer.
+- Concluídos pelo servidor (30.337): de cerca de 285 ms para cerca de 100 ms.
+- Pop-ups pequenos (cerca de 900 a 1.700): de cerca de 75 ms para cerca de 65 ms (o piso é o tempo do próprio navegador desenhar a janela).
+- Marcar uma opção de filtro no pop-up grande: de cerca de 155 ms para cerca de 95 ms.
+
+Verificação
+- Mesmo resultado da 10.3: em 7 pop-ups diferentes, a abertura, a seleção de filtro, a ordenação, a busca e “Limpar filtros” deram a mesma quantidade de linhas, as mesmas linhas exibidas e os mesmos números nas opções dos filtros (comparação por assinatura do conteúdo). Clicar num filtro imediatamente depois de abrir também deu o mesmo resultado.
+- Regressão: com os mesmos dados, os 16 painéis ficaram idênticos à 10.3, sem erros no console.
+- Não verificado: base real do Microsoft Lists (cerca de 70 mil registros), celular, e a sensação de uso na sua máquina.
+
+Alterações técnicas: openProcessModal (filterValues com cache Map por filtro, modalRows com atalho sem filtros, listas de opções sob demanda via ensureFiltersV104 / requestIdleCallback, soma de documentos concluídos no cabeçalho) e uniqueProcesses (atalho de linha única).
+
 
 NOVIDADES DA VERSÃO 10.3 — CARTÃO “PENDENTES AO FIM DO DIA” COM OS NÚMEROS CLICÁVEIS (POP-UP COM OS PROCESSOS)
 
