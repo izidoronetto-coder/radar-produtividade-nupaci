@@ -1,5 +1,31 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 10.4
+Versão 10.5
+
+NOVIDADES DA VERSÃO 10.5 — ESTATÍSTICAS (E ACOMPANHAMENTO DIÁRIO) ABREM NA HORA PELO SUMÁRIO
+
+Nenhuma regra, fórmula, meta, situação ou rotina foi alterada, e a extensão não foi modificada. É só desempenho: o conteúdo dos painéis é exatamente o mesmo da 10.4.
+
+Por que o painel demorava
+- Até a 10.4, o painel de Estatísticas só era montado no momento em que você clicava nele no Sumário (cerca de 0,8 s com a base de teste). O Acompanhamento diário, que fica logo acima dele, também era montado nesse clique (cerca de 0,6 s a mais).
+
+O que mudou
+- Depois que a página carrega (ou depois de você mudar um filtro) e fica ociosa por cerca de 2,5 s, o RADAR monta Estatísticas e Acompanhamento diário em segundo plano, um por vez. Assim, quando você clica no Sumário, o painel já está pronto.
+- Só são montados antecipadamente os painéis que estão abaixo da tela; nada muda no que você está vendo. Se houver pop-up aberto, navegação em curso ou a aba estiver oculta, a antecipação espera.
+- Se você clicar antes de o painel estar pronto, ele é montado no clique, como antes.
+- Percentuais (ex.: taxas e percentuais de metas) deixaram de recriar o formatador de números a cada valor, o que reduz um pouco o tempo de qualquer painel que mostre muitos percentuais.
+
+Medição (máquina de teste, dois CSVs reais, página já ociosa; sua máquina pode variar)
+- Clique em Estatísticas no Sumário: de cerca de 800–870 ms para cerca de 45 ms.
+- Clique em Acompanhamento diário: de cerca de 620–700 ms para cerca de 40 ms.
+- Contrapartida: a montagem antecipada ocupa o navegador por cerca de 0,8 s (cerca de 2,5 s depois do carregamento ou do último filtro) e por mais cerca de 0,5 s logo depois. Se você clicar em algo exatamente nesse instante, a resposta pode demorar até esse tempo. Se clicar no Sumário antes disso, o comportamento é o da 10.4.
+
+Verificação
+- O HTML final de Estatísticas e de Acompanhamento diário montado antecipadamente é idêntico (mesma assinatura do conteúdo) ao montado no clique, sem filtro e também com um filtro aplicado logo antes de navegar.
+- Regressão: com os mesmos dados, os 16 painéis ficaram idênticos à 10.4, sem erros no console; imagens exportadas com as mesmas dimensões.
+- Não verificado: base real do Microsoft Lists (cerca de 70 mil registros, em que a montagem antecipada tende a demorar mais), celular, e a sensação de uso na sua máquina.
+
+Alterações técnicas: bloco “v10.5” (prewarmV105 / schedulePrewarmV105, encapsulando renderAll) e formatador pctFormatV105 em fmtPct.
+
 
 NOVIDADES DA VERSÃO 10.4 — ABERTURA MAIS RÁPIDA DOS POP-UPS DE PROCESSOS
 
