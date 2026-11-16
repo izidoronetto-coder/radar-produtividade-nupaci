@@ -1,5 +1,33 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 10.5
+Versão 10.6
+
+NOVIDADES DA VERSÃO 10.6 — ESTATÍSTICAS: CARTÕES “MÉDIA DIÁRIA DE DISTRIBUIÇÕES” E “MÉDIA DIÁRIA DE CUMPRIMENTOS”
+
+Nenhuma regra, fórmula, meta, situação ou rotina foi alterada, e a extensão não foi modificada. Os cartões existentes continuam iguais; foram acrescentados dois.
+
+O que mudou (painel Estatísticas, cartões do topo)
+- Novo cartão “Média diária de distribuições”, logo à direita de “Quantidade distribuída”.
+- Novo cartão “Média diária de cumprimentos”, logo à direita de “Quantidade cumprida”.
+- Os demais cartões apenas se reorganizam na grade (4 por linha).
+
+Como a média é calculada
+- Unidade: linhas (como os cartões vizinhos). Distribuições = linhas com Data2 no período; cumprimentos = linhas cumpridas com Data3 no período.
+- Média = linhas dos dias úteis (segunda a sexta) COM movimento ÷ número desses dias. Fins de semana e dias sem movimento não entram. É a mesma regra da linha de média do gráfico “Evolução das distribuições e conclusões” (versão 9.6), então os números são coerentes entre os dois painéis.
+- Feriados não são identificados: um feriado com movimento conta como dia útil; sem movimento, não entra de qualquer forma.
+- Cada cartão mostra, na linha de baixo, o total e os dias usados (ex.: “41.275 linhas em 20 dias úteis com movimento”). A dica (ícone “i”) explica a regra e informa quantas linhas de fim de semana ficaram fora do cálculo.
+- Segue a atividade, o período, o filtro de coordenadoria/uso exclusivo e a comparação escolhidos no painel. Com “Comparar” ligado, mostra “Anterior: X linhas/dia” e a variação; desligado, não mostra a linha de comparação.
+- Os cartões não são clicáveis (não há lista de processos por trás de uma média).
+
+Verificação (dados reais, dois CSVs de teste)
+- Período 08/09 a 06/10: 2.063,8 linhas/dia distribuídas (41.275 linhas em 20 dias úteis) e 1.858,5 linhas/dia cumpridas (39.028 linhas em 21 dias úteis). Conferido por uma conta independente feita a partir das barras do gráfico diário do próprio painel: valores idênticos.
+- Atividade “Audiências — todas”: 73,0 e 64,3 linhas/dia; também idênticos à conta independente.
+- Comparação: o “Anterior” de um período (474,0 e 481,8 linhas/dia) é igual ao valor do cartão quando o painel é ajustado para o período anterior.
+- Mudar o agrupamento do gráfico (dia/semana/mês) não altera os cartões. Sem erros no console.
+- Regressão: com os mesmos dados, os 15 painéis ficaram idênticos à 10.5 (no de Estatísticas, desconsiderando os dois cartões novos).
+- Não verificado: base real do Microsoft Lists, celular e imagem exportada do painel (usa as mesmas classes dos outros cartões).
+
+Alterações técnicas: funções statisticsDailyAverageV106, statisticsDailyAverageCardV106 e renderStatisticsDailyAveragesV106 (encapsulam renderStatistics); CSS .statistics-kpi.static-v106.
+
 
 NOVIDADES DA VERSÃO 10.5 — ESTATÍSTICAS (E ACOMPANHAMENTO DIÁRIO) ABREM NA HORA PELO SUMÁRIO
 
