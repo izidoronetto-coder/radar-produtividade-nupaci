@@ -1,5 +1,38 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 10.7
+Versão 10.8
+
+NOVIDADES DA VERSÃO 10.8 — ESTATÍSTICAS: POP-UP “SERVIDORES NO PERÍODO” (QUEM CUMPRIU, QUEM RECEBEU, E A AUSÊNCIA)
+
+Nenhuma regra, fórmula, meta, situação ou rotina foi alterada, e a extensão não foi modificada.
+
+O que mudou
+- No cartão “Servidores no período” (versão 10.7), os dois números agora são links azuis e sublinhados: “N cumpriram” e “N receberam distribuição”. Clicar em qualquer um abre o mesmo pop-up; clicar no resto do cartão também (abre com “Cumpriram”).
+- O pop-up tem uma linha por servidor que recebeu distribuição (Data2) e/ou cumpriu (Data3) no período do painel, com os mesmos filtros do painel (atividade, coordenadoria, etc.).
+- Resumo no topo: quantos receberam e cumpriram, quantos receberam e não cumpriram, e quantos cumpriram sem ter recebido no período.
+- Colunas: Servidor (clicável, abre a ficha dele e o “Voltar” retorna ao pop-up), Coordenadoria, Equipe, Linhas distribuídas, Linhas cumpridas, Situação e Ausência no período.
+- Filtro “Mostrar”: Todos os servidores · Cumpriram · Receberam distribuição · Receberam e cumpriram · Receberam e não cumpriram · Cumpriram sem receber no período (cada opção mostra a quantidade). Clicar em “cumpriram” abre com “Cumpriram”; clicar em “receberam distribuição” abre com “Receberam distribuição”. Os números das opções são os mesmos do cartão.
+- Filtro “Ausência no período”: Todos · Com ausência · Sem ausência.
+- Busca por servidor, coordenadoria ou equipe; ordenação clicando no título das colunas; “Copiar nomes exibidos”; “Exportar XLSX” (abas “Servidores” e “Contexto”); “Copiar imagem”.
+
+Coluna de ausência
+- Usa a base NUPACIAusencias carregada pela extensão. Mostra “Não” ou “Sim · N dias” (dias inteiros) e/ou “N parciais” (ausência por horas), contando só os dias que caem dentro do período do painel, e a categoria (Saúde, Banco de horas, etc.).
+- Vários dias contam como dias inteiros, incluindo fins de semana (mesma regra do painel de ausências).
+- A justificativa NÃO é exibida, nem no XLSX: só a categoria. Assim nada sensível sai na imagem exportada.
+- Se a base de ausências não estiver carregada, a coluna mostra “—”, o filtro de ausência fica desativado e o XLSX registra “Base de ausências não carregada”.
+- Ausência é informação de leitura: não altera meta, % meta nem situação.
+
+Como ler “receberam e não cumpriram”
+- Vale para o período escolhido: a pessoa pode ter cumprido depois dele ou estar ausente (por isso a coluna de ausência). O mesmo vale para “cumpriram sem receber no período” (cumpriu processos distribuídos antes do período).
+
+Verificação (dados reais, dois CSVs de teste)
+- Contagens conferidas por uma conta independente direto nas linhas da base: 121 cumpriram, 122 receberam, 121 receberam e cumpriram, 1 recebeu e não cumpriu, 0 cumpriram sem receber; linhas distribuídas e cumpridas de cada servidor testado idênticas.
+- Ausências de teste (injetadas): 3 dias, ausência parcial por horas, ausência fora do período (“Não”) e ausência que começa antes do período (conta só os dias dentro dele) saíram como esperado; o filtro “Com ausência” listou exatamente os servidores com ausência no período.
+- Busca, ordenação, XLSX (sem a justificativa), ficha do servidor com “Voltar” e imagem exportada do pop-up funcionaram. Sem a base de ausências: coluna “—” e filtro desativado.
+- Regressão: com os mesmos dados, os 15 painéis ficaram idênticos à 10.7 (sem o cartão). Sem erros no console.
+- Não verificado: base real do Microsoft Lists e da lista de ausências, celular, e abertura do XLSX no Excel.
+
+Alterações técnicas: funções srvBuildV108, srvAbsTextV108, openServersModalV108 e wireServersCardV108 (encapsulam renderStatistics); CSS .srv-*-v108 e .statistics-kpi .link-v108.
+
 
 NOVIDADES DA VERSÃO 10.7 — ESTATÍSTICAS: CARTÃO “SERVIDORES NO PERÍODO”
 
