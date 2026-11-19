@@ -1,5 +1,33 @@
 ﻿RADAR DE PRODUTIVIDADE E FREQUÊNCIA NUPACI
-Versão 10.6
+Versão 10.7
+
+NOVIDADES DA VERSÃO 10.7 — ESTATÍSTICAS: CARTÃO “SERVIDORES NO PERÍODO”
+
+Nenhuma regra, fórmula, meta, situação ou rotina foi alterada, e a extensão não foi modificada. Os cartões existentes continuam iguais; foi acrescentado um.
+
+O que mudou (painel Estatísticas, cartões do topo)
+- Novo cartão “Servidores no período”, logo depois de “Média diária de cumprimentos” (primeiro cartão da segunda linha). Com ele a grade passa a ter 20 cartões, em 5 linhas completas de 4.
+- Valor principal: quantos servidores cumpriram (“N cumpriram”). É o mesmo número que aparece na linha de baixo de “Quantidade cumprida”.
+- Linha de baixo: quantos servidores receberam distribuição (“N receberam distribuição”) e a produtividade média (“≈ X linhas/servidor/dia”).
+- Os dois grupos de servidores podem ser diferentes: quem recebeu distribuição pode não ter cumprido, e quem cumpriu pode ter recebido antes do período.
+
+Como é calculado
+- “Cumpriram” = servidores distintos com ao menos uma linha cumprida (Data3) no período. “Receberam distribuição” = servidores distintos com ao menos uma linha distribuída (Data2) no período.
+- “Linhas por servidor/dia” = linhas cumpridas nos dias úteis (segunda a sexta) com movimento ÷ soma, dia a dia, dos servidores que cumpriram naquele dia. Mesma regra de dias úteis das médias diárias da versão 10.6. Responde se a média diária vem de poucos servidores produzindo muito ou de muitos produzindo pouco.
+- A dica (ícone “i”) explica tudo isso e informa a média de servidores cumprindo e recebendo distribuição por dia útil.
+- Segue a atividade, o período, os filtros e a comparação escolhidos no painel. Com “Comparar” ligado, mostra “Anterior: N cumpriram” e a variação. Não é clicável.
+
+Tamanho do cartão
+- Com “Comparar” ligado, o cartão tem a mesma altura dos vizinhos (a linha não cresce), até na largura de 1280 px.
+- Com “Comparar” desligado e a tela estreita (cartões com menos de cerca de 300 px, como em tela de 1525 px com o menu lateral aberto), a linha de baixo quebra em duas e a linha da grade fica cerca de 15 px mais alta. Em telas mais largas ou com o menu lateral recolhido, cabe em uma linha.
+
+Verificação (dados reais, dois CSVs de teste)
+- Conferido por uma conta independente feita direto nas linhas da base, em 4 situações (período padrão, período personalizado, atividade “Audiências — todas” e atividade “Urgências”): servidores que cumpriram, servidores que receberam e linhas por servidor/dia foram idênticos em todas. Período padrão: 121 cumpriram, 122 receberam, ≈ 35,2 linhas/servidor/dia.
+- Regressão: com os mesmos dados, os 15 painéis ficaram idênticos à 10.6 (no de Estatísticas, desconsiderando o cartão novo). Sem erros no console.
+- Não verificado: base real do Microsoft Lists, celular e imagem exportada do painel.
+
+Alterações técnicas: funções statisticsServerStatsV107 e renderStatisticsServersCardV107 (encapsulam renderStatistics); CSS .statistics-kpi.static-v107.
+
 
 NOVIDADES DA VERSÃO 10.6 — ESTATÍSTICAS: CARTÕES “MÉDIA DIÁRIA DE DISTRIBUIÇÕES” E “MÉDIA DIÁRIA DE CUMPRIMENTOS”
 
